@@ -1,0 +1,839 @@
+ ▐▛███▛█   Claude Code v2.1.310
+▝▜██████▀  Opus 5.5 · Claude Pro
+ ▝▝   ▝▝   ~/…/mba-ia-greenfield-project/mba-ia-greenfield-project
+
+
+❯ /research phase 03                                                            
+                                                                                
+  Use o slug "phase-03-videos" (arquivo                                         
+  docs/decisions/technical-decisions-phase-03-videos.md),                       
+  seguindo a convenção de docs/decisions/technical-decisions-phase-02-auth.md.  
+  Escopo: só o backend (nestjs-project/); o frontend fica fora desta fase.      
+                                                                                
+  Decisões que precisam sair desta pesquisa, cada uma com opções, trade-offs e  
+  recomendação:                                                                 
+  - tecnologia de fila (o project-plan deixa "TBD"): tenho preferência por      
+  BullMQ + Redis                                                                
+    via @nestjs/bullmq, pela integração oficial com o NestJS 11; compare de     
+  verdade com as                                                                
+    alternativas (ex.: RabbitMQ, pg-boss) e registre os trade-offs              
+  (retry/backoff, jobs                                                          
+    que falharam, persistência do Redis)                                        
+  - estratégia de upload de até 10GB sem passar o arquivo pela API: preferência 
+  por                                                                           
+    multipart pré-assinado direto no object storage (MinIO local / S3 em        
+  produção); cubra                                                              
+    como o upload é iniciado, como a conclusão é detectada e o que fazer com    
+  uploads abandonados                                                           
+  - organização do storage: buckets/chaves e o host das URLs pré-assinadas (o   
+  cliente roda                                                                  
+    fora da rede do Compose)                                                    
+  - topologia do worker (processo/container) e extração de metadados +          
+  thumbnail com FFmpeg/ffprobe                                                  
+  - estratégia de URL única por vídeo                                           
+  - streaming (Range / 206 Partial Content) e download                          
+  - ciclo de status do vídeo (rascunho → processando → pronto/erro), falha,     
+  retentativa e idempotência                                                    
+                                                                                
+  Consulte a doc das libs candidatas via context7. Não invente requisitos fora  
+  da Fase 03                                                                    
+  do docs/project-plan.md.                                                      
+
+● Vou começar verificando se existe um comando /research no projeto e lendo a
+  convenção da fase 02.
+
+  Read 1 file, ran 2 shell commands (ctrl+o to expand)
+
+● Skill carregada. Agora vou ler o plano da Fase 03, as decisões anteriores e o
+  estado do backend.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Agora as decisões das fases anteriores e o estado atual do backend (manifest,
+  compose, módulos).
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● Contexto lido. Antes de pesquisar, vou checar a decisão de BFF do frontend
+  (afeta quem chama a API de upload) e depois consultar a doc das libs via
+  context7.
+
+  Called context7 11 times, ran 1 shell command (ctrl+o to expand)
+
+● Web Search("fluent-ffmpeg deprecated archived repository 2025")
+  ⎿  Did 1 search in 5s
+
+  Called context7 2 times (ctrl+o to expand)
+
+● Web Search("MinIO community edition docker image maintenance mode 2025 2026
+            minio/minio")
+  ⎿  Did 1 search in 6s
+
+● Descobri que a imagem Docker oficial do MinIO Community parou de ser publicada
+  e o projeto entrou em manutenção. Agora vou verificar alternativas
+  compatíveis com S3 para o ambiente local.
+
+● Web Search("RustFS vs Garage vs SeaweedFS S3 compatible local development
+            docker multipart presigned URL support")
+  ⎿  Did 1 search in 6s
+
+● Web Search("github.com/minio/minio README "source" community edition no longer
+            maintained docker image")
+  ⎿  Did 1 search in 5s
+
+● Agora vou checar as versões atuais das libs candidatas no registry do npm
+  (para compatibilidade com NestJS 11 / Node 25).
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Detalhe relevante: @nestjs/bullmq@12 e pg-boss@12 são ESM-only, e o projeto é
+  CommonJS. Vou ver a última linha 11.x do @nestjs/bullmq e o módulo do
+  tsconfig.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● BullMQ 6 declara pg como peer dependency — pode ter ganho um backend
+  PostgreSQL. Vou confirmar na doc, pois isso muda a comparação.
+
+  Called context7 2 times (ctrl+o to expand)
+
+● Web Search("BullMQ 6 PostgreSQL backend release announcement experimental
+            nestjs/bullmq support")
+  ⎿  Did 1 search in 5s
+
+● Vou verificar no código publicado do @nestjs/bullmq@11.0.5 se ele repassa a
+  "backend factory" do PostgreSQL.
+
+  Called context7, ran 3 shell commands (ctrl+o to expand)
+
+● Confirmei que minio/minio não existe mais no Docker Hub e o mirror do quay não
+  retornou tags, enquanto RustFS (1.0.3) e Garage (v2.5.0) estão ativos. Agora
+  vou verificar na documentação do RustFS o suporte a CORS, multipart e
+  presigned URLs.
+
+  Called context7 4 times (ctrl+o to expand)
+
+● Pesquisa concluída. Vou escrever o documento seguindo o template da skill e a
+  convenção da fase 02 (em inglês, com os bullets de capability literais do
+  project-plan).
+
+● Write(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Wrote 432 lines to
+     docs/decisions/technical-decisions-phase-03-videos.md
+      1 ---
+      3 related_phases: [3]
+      4 status: pending
+      6 scope_description: "Backend foundation for video upload and proce
+        key layout and presigned-URL host, direct-to-storage multipart up
+        load (initiation, completion, abandoned uploads), worker topology
+        /download delivery, and video status lifecycle with failure/retry
+        /idempotency."
+      8 
+        s
+     … +940 lines (ctrl+o to expand)
+
+● O documento da Fase 03 está pronto em
+  docs/decisions/technical-decisions-phase-03-videos.md. Ele tem 13 decisões,
+  todas com Decision: _[pending]_ para você preencher, e cobre os 9 bullets da
+  Fase 03. Não fiz commit.
+
+  Um ponto contraria uma preferência sua: o MinIO local não é mais viável. O
+  MinIO Community entrou em modo de manutenção e o repositório foi arquivado.
+  minio/minio não existe mais no Docker Hub (a API do Hub responde "object not
+  found") e o mirror do quay não retornou tags. O TD-02 recomenda o RustFS
+  (versão 1.0.3, um container só, experiência parecida com a do MinIO),
+  começando por um teste rápido de multipart, CORS com ETag e Range. Se falhar,
+  o Garage é a alternativa. O código usa só a API S3, então trocar de servidor é
+  só uma mudança no Compose.
+
+  Suas preferências que se mantiveram:
+  - Fila (TD-01): BullMQ + Redis continua sendo a recomendação, comparado de
+    fato com pg-boss e RabbitMQ.
+    - É preciso fixar @nestjs/bullmq@^11, porque a 12.x é só ESM e feita para o
+      Nest 12, e o projeto é CommonJS.
+    - O Redis precisa de appendonly yes e maxmemory-policy noeviction, senão
+      perde jobs ao reiniciar.
+    - Achado novo: o BullMQ 6 (julho de 2026) tem um backend PostgreSQL com a
+      mesma API. Ele aparece como opção B, mas não é o recomendado: tem cerca de
+      3 meses e o @nestjs/bullmq não documenta como ligá-lo.
+  - Upload (TD-05): multipart pré-assinado direto no storage, com partes de 64
+    MiB (160 partes para 10 GiB). O limite de 10 GB é garantido pela API, sem
+    extensões específicas de um fornecedor.
+    - Conclusão (TD-06): o cliente avisa e a própria API chama ListParts e
+      CompleteMultipartUpload.
+    - Uploads abandonados (TD-07): um job agendado na fila aborta o multipart e
+      marca o vídeo como falho.
+
+  Pontos que você deve revisar com atenção:
+  - TD-04 (host das URLs pré-assinadas): a assinatura cobre o Host, então uma
+    URL assinada para storage:9000 não pode ser reescrita para localhost:9000. A
+    recomendação são dois endpoints: o interno para as operações e o público só
+    para assinar o que vai ao navegador. O
+    S3_PUBLIC_ENDPOINT=http://localhost:9000 é uma exceção intencional à regra
+    do CLAUDE.md, porque quem lê é o navegador do host.
+  - TD-12 (status): recomendo uploading | processing | ready | failed em vez de
+    rascunho → processando → pronto/erro. "Rascunho" passa a significar "não
+    publicado", o que deixa a Fase 04 adicionar publicação sem mexer nesse enum.
+    É um refinamento da sua formulação, então vale você confirmar.
+  - TD-11 (streaming): a API checa o acesso e responde com 302 para um GET
+    pré-assinado, e o storage atende Range/206 sozinho. A URL de stream precisa
+    valer a sessão inteira (cerca de 6 h), porque a expiração é checada em cada
+    requisição de range.
+
+  Demais decisões:
+  - Bucket privado único com chaves videos/{videoId}/….
+  - Worker no mesmo código, com um segundo entrypoint e um container
+    video-worker separado.
+  - ffprobe/ffmpeg lendo direto da URL pré-assinada, sem baixar os 10 GB. O
+    fluent-ffmpeg está deprecated no npm.
+  - ID público aleatório de 11 caracteres base64url com índice UNIQUE.
+  - Retentativas da própria fila com jobId = videoId, para que tudo possa rodar
+    duas vezes sem efeito colateral.
+
+  Fora do escopo, sugiro uma tarefa separada: atualizar o rótulo "S3 or MinIO"
+  no diagrama de arquitetura.
+
+  Próximo passo: depois de preencher as decisões, rode /plan-context 03. A ordem
+  é plan-context → plan-validate → plan-resolve.
+
+  Fontes:
+  - docs.nestjs.com — Queues, RabbitMQ
+  - BullMQ — Retrying failing jobs, Going to production, PostgreSQL backend
+  - pg-boss retry configuration (DeepWiki)
+  - aws-sdk-js-v3 s3-request-presigner, CLIENTS.md (checksums)
+  - MinIO S3 compatibility, github.com/minio/minio, StableBuild: MinIO images 
+    disappeared, Elestio: MinIO maintenance mode
+  - Garage S3 compatibility, RustFS presigned size limits, Elestio: RustFS vs 
+    SeaweedFS vs Garage
+  - npm: fluent-ffmpeg (deprecated)
+
+✻ Brewed for 9m 21s · done 20:14
+
+※ recap: I researched Phase 03 (video upload and processing) and wrote 13 pending decisions in docs/decisions/technical-decisions-phase-03-videos.md; MinIO's image is gone, so RustFS is recommended. Next, you fill in the decisions, then run /plan-context 03. (disable recaps in /config)
+
+❯ /export _claude-sessions/15-research-fase03-videos.txt                          ⎿  Conversation exported to:
+     /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfi
+     eld-project/_claude-sessions/15-research-fase03-videos.txt
+
+❯ eu preenchi as decisões                                                       
+  @docs/decisions/technical-decisions-phase-03-videos.md Atualize o 'Decisions  
+  Summary' conforme as decisões escolhidas                                      
+  ⎿  Read docs/decisions/technical-decisions-phase-03-videos.md (433 lines)
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 13 lines, removed 13 lines
+      417  
+      418  | ID | Scope | Decision | Recommendation | Choice |
+      419  |----|-------|----------|---------------|--------|
+      420 -| TD-01 | Backend | Job Queue Technology | BullMQ + Redis via 
+          -`@nestjs/bullmq@^11` | _[pending]_ |                          
+      421 -| TD-02 | Repo-wide | Local S3-Compatible Object Storage Serve
+          -r | RustFS (spike first; Garage as fallback) | _[pending]_ |  
+      422 -| TD-03 | Backend | Bucket and Object Key Layout | Single priv
+          -ate bucket, `videos/{videoId}/…` | _[pending]_ |              
+      423 -| TD-04 | Backend | Presigned URL Host (Internal vs Public End
+          -point) | Two endpoints: internal for operations, public for br
+          -owser-facing signatures | _[pending]_ |                       
+      424 -| TD-05 | Cross-layer | Large-File Upload Protocol | Presigned
+          - S3 multipart orchestrated by the API (64 MiB parts) | _[pendi
+          -ng]_ |                                                        
+      425 -| TD-06 | Backend | Upload Completion Detection | Client signa
+          -ls, API completes using its own `ListParts` | _[pending]_ |   
+      426 -| TD-07 | Backend | Abandoned Upload Cleanup | Application cle
+          -anup job on the queue scheduler | _[pending]_ |               
+      427 -| TD-08 | Backend | Video Worker Topology | Same codebase, sec
+          -ond entrypoint, `video-worker` service | _[pending]_ |        
+      428 -| TD-09 | Backend | FFmpeg/ffprobe Invocation and Input Access
+          - | Spawn system binaries on a presigned URL (no download) | _[
+          -pending]_ |                                                   
+      429 -| TD-10 | Cross-layer | Unique Public Video ID | Random 11-cha
+          -r base64url `public_id` + `UNIQUE` index | _[pending]_ |      
+      430 -| TD-11 | Cross-layer | Streaming and Download Delivery | Acce
+          -ss check + `302` to presigned GET | _[pending]_ |             
+      431 -| TD-12 | Backend | Video Status Lifecycle Model | Separate pr
+          -ocessing status `uploading/processing/ready/failed` | _[pendin
+          -g]_ |                                                         
+      432 -| TD-13 | Backend | Processing Failure, Retry and Idempotency 
+          -| Queue-native retries + idempotent `jobId = videoId` | _[pend
+          -ing]_ |                                                       
+      420 +| TD-01 | Backend | Job Queue Technology | BullMQ + Redis via 
+          +`@nestjs/bullmq@^11` | A (BullMQ + Redis via `@nestjs/bullmq` 
+          +11.x) |                                                       
+      421 +| TD-02 | Repo-wide | Local S3-Compatible Object Storage Serve
+          +r | RustFS (spike first; Garage as fallback) | A (RustFS) |   
+      422 +| TD-03 | Backend | Bucket and Object Key Layout | Single priv
+          +ate bucket, `videos/{videoId}/…` | A (Single private bucket, p
+          +refix per video — internal UUID) |                            
+      423 +| TD-04 | Backend | Presigned URL Host (Internal vs Public End
+          +point) | Two endpoints: internal for operations, public for br
+          +owser-facing signatures | A (Two endpoints — internal for oper
+          +ations, public for browser-facing signatures) |               
+      424 +| TD-05 | Cross-layer | Large-File Upload Protocol | Presigned
+          + S3 multipart orchestrated by the API (64 MiB parts) | A (Pres
+          +igned S3 multipart, orchestrated by the API) |                
+      425 +| TD-06 | Backend | Upload Completion Detection | Client signa
+          +ls, API completes using its own `ListParts` | A (Client signal
+          +s, API completes using its own `ListParts`) |                 
+      426 +| TD-07 | Backend | Abandoned Upload Cleanup | Application cle
+          +anup job on the queue scheduler | A (Application cleanup job —
+          + scheduled job on the queue) |                                
+      427 +| TD-08 | Backend | Video Worker Topology | Same codebase, sec
+          +ond entrypoint, `video-worker` service | A (Same codebase, sec
+          +ond entrypoint, separate Compose service) |                   
+      428 +| TD-09 | Backend | FFmpeg/ffprobe Invocation and Input Access
+          + | Spawn system binaries on a presigned URL (no download) | A 
+          +(Spawn system binaries on a presigned URL) |                  
+      429 +| TD-10 | Cross-layer | Unique Public Video ID | Random 11-cha
+          +r base64url `public_id` + `UNIQUE` index | B (Random 11-char b
+          +ase64url `public_id`) |                                       
+      430 +| TD-11 | Cross-layer | Streaming and Download Delivery | Acce
+          +ss check + `302` to presigned GET | A (Access check + `302` to
+          + presigned GET) |                                             
+      431 +| TD-12 | Backend | Video Status Lifecycle Model | Separate pr
+          +ocessing status `uploading/processing/ready/failed` | B (Separ
+          +ate processing status: `uploading \| processing \| ready \| fa
+          +iled`) |                                                      
+      432 +| TD-13 | Backend | Processing Failure, Retry and Idempotency 
+          +| Queue-native retries + idempotent `jobId = videoId` | B (Tra
+          +nsactional outbox) |                                          
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      1  ---
+      2  scope_type: phase
+      3  related_phases: [3]
+      4 -status: pending                                                 
+      4 +status: decided                                                 
+      5  date: 2026-10-24
+      6  scope_description: "Backend foundation for video upload and proc
+         essing: job queue technology, local S3-compatible storage, bucke
+         t/key layout and presigned-URL host, direct-to-storage multipart
+          upload (initiation, completion, abandoned uploads), worker topo
+         logy and FFmpeg/ffprobe extraction, unique public video ID, stre
+         aming/download delivery, and video status lifecycle with failure
+         /retry/idempotency."
+      7  ---
+
+● O "Decisions Summary" agora tem as 13 escolhas que você preencheu, no formato
+  da fase 02 (por exemplo A (RustFS)). Também mudei o frontmatter de status: 
+  pending para status: decided, já que todas as decisões foram tomadas. Se
+  preferir manter pending, eu desfaço.
+
+  O TD-13 foi para um caminho diferente da recomendação. Você escolheu B 
+  (Transactional outbox) e a recomendação era a A. A escolha é válida, mas três
+  trechos do documento ainda descrevem a lógica da opção A:
+  - O TD-06 diz que o complete pode ser chamado de novo com segurança "combinado
+    com o TD-13", reenfileirando o mesmo job.
+  - O TD-07 recomenda que o job de limpeza também reenfileire vídeos travados em
+    processing. Com o outbox, quem garante o enfileiramento é o relay.
+  - Ficou em aberto onde roda o relay que lê a tabela outbox: no processo da
+    API, no video-worker ou como job agendado do BullMQ. Isso vai pesar no
+    planejamento.
+
+  Nada disso bloqueia, porque o plan-context lê a escolha do TD-13 diretamente.
+  Na fase 02, os TDs que divergiram da recomendação ganharam uma linha **Note:**
+  explicando o motivo. Se quiser fazer o mesmo aqui, me diga por que escolheu o
+  outbox e eu adiciono a nota.
+
+  Próximo passo: /plan-context 03.
+
+✻ Crunched for 29s · done 22:33
+
+❯ para facilitar, vamos alterar o TD-13 para a opção A                          
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      409  
+      410  **Recommendation:** **Option A (queue-native retries + idempot
+           ent `jobId = videoId`)** — every step is safe to repeat (dedup
+           licated enqueue, conditional update, fixed keys), so retries a
+           nd re-delivery cause no damage. Separating permanent from temp
+           orary errors keeps bad uploads from using up retries. The one 
+           gap (commit succeeded, enqueue failed) is closed by re-enqueui
+           ng the same `jobId`, without an outbox. Revisit Option B if mo
+           re job types later need guaranteed delivery.
+      411  
+      412 -**Decision:** Option B: Transactional outbox                  
+      412 +**Decision:** Option A (queue-native retries + idempotent `job
+          +Id = videoId`)                                                
+      413  
+      414  ---
+      415  
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      429  | TD-10 | Cross-layer | Unique Public Video ID | Random 11-cha
+           r base64url `public_id` + `UNIQUE` index | B (Random 11-char b
+           ase64url `public_id`) |
+      430  | TD-11 | Cross-layer | Streaming and Download Delivery | Acce
+           ss check + `302` to presigned GET | A (Access check + `302` to
+            presigned GET) |
+      431  | TD-12 | Backend | Video Status Lifecycle Model | Separate pr
+           ocessing status `uploading/processing/ready/failed` | B (Separ
+           ate processing status: `uploading \| processing \| ready \| fa
+           iled`) |
+      432 -| TD-13 | Backend | Processing Failure, Retry and Idempotency 
+          -| Queue-native retries + idempotent `jobId = videoId` | B (Tra
+          -nsactional outbox) |                                          
+      432 +| TD-13 | Backend | Processing Failure, Retry and Idempotency 
+          +| Queue-native retries + idempotent `jobId = videoId` | A (Que
+          +ue-native retries + idempotent `jobId = videoId`) |           
+
+● O TD-13 agora está na opção A (retentativas da própria fila + jobId = 
+  videoId). Mudei o campo **Decision:** do TD-13 e a linha dele no "Decisions
+  Summary".
+
+  Com isso, todas as 13 decisões seguem a recomendação. Os trechos do TD-06 e do
+  TD-07 que eu tinha apontado voltaram a bater com a decisão, então nenhuma
+  nota de divergência é necessária.
+
+  Próximo passo: /plan-context 03.
+
+✻ Worked for 7s · done 22:36
+
+❯ Revisando o documento de decisões antes do plan-context: quero trocar o TD-12 
+  para a                                                                        
+  Option A (draft | processing | ready | failed). Motivo: o requisito da fase   
+  descreve o                                                                    
+  ciclo "rascunho → processando → pronto/erro" e pede o pré-cadastro como       
+  rascunho; quero                                                               
+  esse ciclo refletido literalmente na coluna de status. draft passa a          
+  significar "vídeo                                                             
+  pré-cadastrado, upload ainda não concluído". A publicação/visibilidade da     
+  Fase 04                                                                       
+  continua sendo um campo separado, a ser criado na Fase 04.                    
+                                                                                
+  Atualize o Recommendation e o Decision do TD-12 (registrando por que a Option 
+  B não foi                                                                     
+  escolhida) e propague para tudo que cita os estados: TD-06, TD-07 (query de   
+  cleanup                                                                       
+  sobre draft), TD-13 (updates condicionais), o Decisions Summary e qualquer    
+  outra                                                                         
+  menção a uploading. Não mude as outras decisões.                              
+
+● Vou localizar todas as menções aos estados no documento antes de editar.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Achei todas as menções. As definições das Options B e C vou deixar como estão,
+  porque descrevem as alternativas rejeitadas (é o registro da pesquisa). Edito
+  o resto.
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 11 lines, removed 2 lines
+      381  - **Pros:** One field answers "what can the user do with this 
+           video".
+      382  - **Cons:** Defines Phase 04 states now (out of scope). Combin
+           ations can't be expressed (e.g. a published video being reproc
+           essed). Every publication change must also consider processing
+            states.
+      383  
+      384 -**Recommendation:** **Option B (separate processing status: `u
+          -ploading | processing | ready | failed`)** — it meets the "pré
+          --cadastro como rascunho" requirement (the row exists from uplo
+          -ad start and is unpublished), lets Phase 04 add publication as
+          - an independent field, and gives TD-07 and TD-13 the exact sta
+          -tes they need. This is a deliberate refinement of the "rascunh
+          -o → processando → pronto/erro" wording: "rascunho" refers to p
+          -ublication, the enum refers to the file.                      
+      384 +**Recommendation:** **Option A (single `status` enum: `draft |
+          + processing | ready | failed`)** — the phase literally describ
+          +es the cycle "rascunho → processando → pronto/erro" and asks f
+          +or "pré-cadastro como rascunho", so the status column mirrors 
+          +the requirement one-to-one. The main Option A con is removed b
+          +y fixing the meaning of `draft` and keeping publication out of
+          + this enum:                                                   
+      385 +- `draft` means only "video pre-registered, upload not yet com
+          +pleted". It is set at upload initiation (TD-05) and left only 
+          +by the `complete` call (TD-06), which moves `draft → processin
+          +g`.                                                           
+      386 +- Publication/visibility (Phase 04) will be a **separate field
+          +** created in Phase 04. It never adds values to this enum.    
+      387 +- TD-07 and TD-13 still get exact states: the cleanup job quer
+          +ies `draft` rows older than the threshold, and every transitio
+          +n is a conditional update on the current state (`WHERE status 
+          += 'draft'` on completion, `WHERE status = 'processing'` in the
+          + worker).                                                     
+      388  
+      386 -**Decision:** Option B (separate processing status: `uploading
+          - | processing | ready | failed`)                              
+      389 +Why Option B was not chosen: its only advantage over A was sep
+          +arating the file's state from publication. With the meaning of
+          + `draft` fixed as above and publication kept in its own Phase 
+          +04 field, A provides the same separation and uses the plan's o
+          +wn vocabulary. B would rename the requirement's "rascunho" sta
+          +te to `uploading` and require API docs explaining that "rascun
+          +ho" means something other than the status column.             
+      390  
+      391 +Known trade-off to carry into Phase 04: there, "rascunho → pub
+          +licação" uses "rascunho" in the *publication* sense, and a pro
+          +cessed but unpublished video has `status = ready`, not `draft`
+          +. Phase 04 must name its publication field/values without reus
+          +ing `draft`.                                                  
+      392 +                                                              
+      393 +**Decision:** Option A (single `status` enum: `draft | process
+          +ing | ready | failed`) — `draft` = pre-registered, upload not 
+          +yet completed; publication/visibility is a separate field crea
+          +ted in Phase 04.                                              
+      394 +                                                              
+      395 +**Note:** Changed from Option B to Option A during pre-`plan-c
+          +ontext` review, so that the status column reflects the phase's
+          + "rascunho → processando → pronto/erro" cycle literally. The R
+          +ecommendation above was rewritten to match.                   
+      396 +                                                              
+      397  ---
+      398  
+      399  ## TD-13: Processing Failure, Retry and Idempotency Strategy
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      437  | TD-09 | Backend | FFmpeg/ffprobe Invocation and Input Access
+            | Spawn system binaries on a presigned URL (no download) | A 
+           (Spawn system binaries on a presigned URL) |
+      438  | TD-10 | Cross-layer | Unique Public Video ID | Random 11-cha
+           r base64url `public_id` + `UNIQUE` index | B (Random 11-char b
+           ase64url `public_id`) |
+      439  | TD-11 | Cross-layer | Streaming and Download Delivery | Acce
+           ss check + `302` to presigned GET | A (Access check + `302` to
+            presigned GET) |
+      440 -| TD-12 | Backend | Video Status Lifecycle Model | Separate pr
+          -ocessing status `uploading/processing/ready/failed` | B (Separ
+          -ate processing status: `uploading \| processing \| ready \| fa
+          -iled`) |                                                      
+      440 +| TD-12 | Backend | Video Status Lifecycle Model | Separate pr
+          +ocessing status `uploading/processing/ready/failed` | A (Singl
+          +e `status` enum: `draft \| processing \| ready \| failed`) |  
+      441  | TD-13 | Backend | Processing Failure, Retry and Idempotency 
+           | Queue-native retries + idempotent `jobId = videoId` | A (Que
+           ue-native retries + idempotent `jobId = videoId`) |
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      437  | TD-09 | Backend | FFmpeg/ffprobe Invocation and Input Access
+            | Spawn system binaries on a presigned URL (no download) | A 
+           (Spawn system binaries on a presigned URL) |
+      438  | TD-10 | Cross-layer | Unique Public Video ID | Random 11-cha
+           r base64url `public_id` + `UNIQUE` index | B (Random 11-char b
+           ase64url `public_id`) |
+      439  | TD-11 | Cross-layer | Streaming and Download Delivery | Acce
+           ss check + `302` to presigned GET | A (Access check + `302` to
+            presigned GET) |
+      440 -| TD-12 | Backend | Video Status Lifecycle Model | Separate pr
+          -ocessing status `uploading/processing/ready/failed` | A (Singl
+          -e `status` enum: `draft \| processing \| ready \| failed`) |  
+      440 +| TD-12 | Backend | Video Status Lifecycle Model | Single `sta
+          +tus` enum `draft/processing/ready/failed` (`draft` = upload no
+          +t completed) | A (Single `status` enum: `draft \| processing \
+          +| ready \| failed`) |                                         
+      441  | TD-13 | Backend | Processing Failure, Retry and Idempotency 
+           | Queue-native retries + idempotent `jobId = videoId` | A (Que
+           ue-native retries + idempotent `jobId = videoId`) |
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      183  ### Option A: Client signals, API completes using its own `Lis
+           tParts`
+      184  - The client calls `POST /videos/{id}/upload/complete`. The AP
+           I calls `ListParts`, then `CompleteMultipartUpload` with the s
+           erver-side part list, checks the size with `HeadObject`, moves
+            the video to `processing` and enqueues the job.
+      185  - **Pros:** Synchronous and deterministic: when the endpoint r
+           eturns, the object exists and the job is queued. The API does 
+           not trust client-reported ETags. Works the same on every S3-co
+           mpatible server. Retry-safe when combined with TD-13 (calling 
+           it again is a no-op or re-enqueues the same job).
+      186 -- **Cons:** If the client never calls `complete` (tab closed a
+          -fter the last part), the video stays in `uploading` until TD-0
+          -7 cleans it up. Completing an upload of about 160 parts takes 
+          -a moment, but it is still fast.                               
+      186 +- **Cons:** If the client never calls `complete` (tab closed a
+          +fter the last part), the video stays in `draft` until TD-07 cl
+          +eans it up. Completing an upload of about 160 parts takes a mo
+          +ment, but it is still fast.                                   
+      187  
+      188  ### Option B: Client completes directly, storage event notifie
+           s the API
+      189  - The client also gets a presigned `CompleteMultipartUpload` U
+           RL. The storage server publishes an `ObjectCreated:CompleteMul
+           tipartUpload` event (webhook/queue) to the API.
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      191  - **Cons:** Event notifications are configured differently on 
+           each server (RustFS/Garage/S3→SQS/EventBridge), so the local a
+           nd production setups behave differently. Delivery is asynchron
+           ous and can be delayed or lost. A webhook endpoint must be aut
+           henticated. The API no longer checks the part list before acce
+           pting the object.
+      192  
+      193  ### Option C: Polling reconciler
+      194 -- A scheduled job lists videos in `uploading` and checks the s
+          -torage (`HeadObject`/`ListParts`) to see whether the object is
+          - now complete.                                                
+      194 +- A scheduled job lists videos in `draft` and checks the stora
+          +ge (`HeadObject`/`ListParts`) to see whether the object is now
+          + complete.                                                    
+      195  - **Pros:** Needs no client signal and no storage events.
+      196  - **Cons:** Delays processing by up to one polling interval; m
+           akes many storage calls; the client still has to complete the 
+           multipart upload itself (as in Option B).
+      197  
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      181  **Options:**
+      182  
+      183  ### Option A: Client signals, API completes using its own `Lis
+           tParts`
+      184 -- The client calls `POST /videos/{id}/upload/complete`. The AP
+          -I calls `ListParts`, then `CompleteMultipartUpload` with the s
+          -erver-side part list, checks the size with `HeadObject`, moves
+          - the video to `processing` and enqueues the job.              
+      184 +- The client calls `POST /videos/{id}/upload/complete`. The AP
+          +I calls `ListParts`, then `CompleteMultipartUpload` with the s
+          +erver-side part list, checks the size with `HeadObject`, moves
+          + the video `draft → processing` (conditional update `WHERE sta
+          +tus = 'draft'`) and enqueues the job.                         
+      185  - **Pros:** Synchronous and deterministic: when the endpoint r
+           eturns, the object exists and the job is queued. The API does 
+           not trust client-reported ETags. Works the same on every S3-co
+           mpatible server. Retry-safe when combined with TD-13 (calling 
+           it again is a no-op or re-enqueues the same job).
+      186  - **Cons:** If the client never calls `complete` (tab closed a
+           fter the last part), the video stays in `draft` until TD-07 cl
+           eans it up. Completing an upload of about 160 parts takes a mo
+           ment, but it is still fast.
+      187  
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      207  
+      208  **Capability:** Upload de vídeos com suporte a arquivos de até
+            10GB sem impacto na performance
+      209  
+      210 -**Context:** An incomplete multipart upload keeps its parts in
+          - storage (still using space, billed on S3) and leaves a draft 
+          -row stuck in `uploading`. Uploads can be abandoned (tab closed
+          -, user gave up) and must not pile up. Depends on TD-01 (schedu
+          -ler), TD-05, TD-12.                                           
+      210 +**Context:** An incomplete multipart upload keeps its parts in
+          + storage (still using space, billed on S3) and leaves the vide
+          +o row stuck in `draft`. Uploads can be abandoned (tab closed, 
+          +user gave up) and must not pile up. Depends on TD-01 (schedule
+          +r), TD-05, TD-12.                                             
+      211  
+      212  **Options:**
+      213  
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      212  **Options:**
+      213  
+      214  ### Option A: Application cleanup job (scheduled job on the qu
+           eue)
+      215 -- A recurring job (BullMQ job scheduler, e.g. hourly) finds vi
+          -deos in `uploading` whose `created_at`/last-activity is older 
+          -than a threshold (e.g. 24 h), calls `AbortMultipartUpload`, an
+          -d marks them `failed` with the reason `upload_abandoned` (or d
+          -eletes the row).                                              
+      215 +- A recurring job (BullMQ job scheduler, e.g. hourly) finds vi
+          +deos in `draft` whose `created_at`/last-activity is older than
+          + a threshold (e.g. 24 h), calls `AbortMultipartUpload`, and ma
+          +rks them `failed` (conditional update `WHERE status = 'draft'`
+          +, so a `complete` that wins the race is not overwritten) with 
+          +the reason `upload_abandoned` (or deletes the row).           
+      216  - **Pros:** Cleans storage **and** the DB together. Behaves th
+           e same on every storage server. Testable as normal application
+            code.
+      217  - **Cons:** It is more code to write; if `AbortMultipartUpload
+           ` fails, the job must retry on the next run.
+      218  
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      219  ### Option B: Storage lifecycle rule only
+      220  - Configure `AbortIncompleteMultipartUpload` (e.g. `DaysAfterI
+           nitiation: 1`) on the bucket.
+      221  - **Pros:** No application code; it is applied by the storage 
+           server.
+      222 -- **Cons:** It only removes parts — the DB row stays stuck in 
+          -`uploading`. Support depends on the server (S3/Garage/RustFS: 
+          -yes; MinIO: no).                                              
+      222 +- **Cons:** It only removes parts — the DB row stays stuck in 
+          +`draft`. Support depends on the server (S3/Garage/RustFS: yes;
+          + MinIO: no).                                                  
+      223  
+      224  ### Option C: Both
+      225  - The application cleanup job is the main mechanism; the lifec
+           ycle rule is a safety net for aborts that failed.
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      407  **Options:**
+      408  
+      409  ### Option A: Queue-native retries + idempotent job keyed by v
+           ideo + re-enqueue on repeat
+      410 -- Enqueue with `jobId = videoId` (duplicates are ignored), `at
+          -tempts: 3`, exponential `backoff`, and kept failures. Worker: 
+          -invalid media throws `UnrecoverableError` (fails at once); oth
+          -er errors are retried. Results are written with a conditional 
+          -update (`WHERE id = $1 AND status = 'processing'`) and a fixed
+          - thumbnail key (overwriting is safe). When the last attempt fa
+          -ils, the worker sets `status = failed` with a `failure_reason`
+          -. Commit/enqueue gap: `complete` is retry-safe (if the video i
+          -s already `processing`, it enqueues again with the same `jobId
+          -`), and the TD-07 scheduled job also re-enqueues videos stuck 
+          -in `processing` with no active job.                           
+      410 +- Enqueue with `jobId = videoId` (duplicates are ignored), `at
+          +tempts: 3`, exponential `backoff`, and kept failures. Worker: 
+          +invalid media throws `UnrecoverableError` (fails at once); oth
+          +er errors are retried. Results are written with a conditional 
+          +update (`WHERE id = $1 AND status = 'processing'`) and a fixed
+          + thumbnail key (overwriting is safe). When the last attempt fa
+          +ils, the worker sets `status = failed` with a `failure_reason`
+          +. Commit/enqueue gap: `complete` is retry-safe (it moves `draf
+          +t → processing` only with `WHERE status = 'draft'`; if the vid
+          +eo is already `processing`, it enqueues again with the same `j
+          +obId`), and the TD-07 scheduled job also re-enqueues videos st
+          +uck in `processing` with no active job.                       
+      411  - **Pros:** Uses only TD-01 features; every step can run twice
+            without side effects. Permanent failures stop immediately ins
+           tead of wasting retries. The commit/enqueue gap is closed by i
+           dempotent re-enqueue, with no new table.
+      412  - **Cons:** The gap is closed *eventually* (on the client's re
+           try or on the next scheduled run), not atomically. The "stuck 
+           in `processing`" check must use a threshold well above the lon
+           gest normal job.
+      413  
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      155  **Options:**
+      156  
+      157  ### Option A: Presigned S3 multipart, orchestrated by the API
+      158 -- `POST /videos/uploads` (with filename, size, MIME type) crea
+          -tes the video row as a draft (TD-12), calls `CreateMultipartUp
+          -load`, stores `upload_id` and the key, and returns the video I
+          -D, a fixed part size and the part count. The client then asks 
+          -for presigned `UploadPart` URLs in batches, `PUT`s each part d
+          -irectly to storage, and keeps the returned `ETag`s. To resume,
+          - an endpoint backed by `ListParts` reports which parts are alr
+          -eady stored, and only the missing ones are re-signed.         
+      158 +- `POST /videos/uploads` (with filename, size, MIME type) crea
+          +tes the video row with `status = draft` (TD-12), calls `Create
+          +MultipartUpload`, stores `upload_id` and the key, and returns 
+          +the video ID, a fixed part size and the part count. The client
+          + then asks for presigned `UploadPart` URLs in batches, `PUT`s 
+          +each part directly to storage, and keeps the returned `ETag`s.
+          + To resume, an endpoint backed by `ListParts` reports which pa
+          +rts are already stored, and only the missing ones are re-signe
+          +d.                                                            
+      159  - **Pros:** No file bytes go through the API or the BFF. Uses 
+           only standard S3 (works on RustFS/Garage/S3). Parts can be upl
+           oaded in parallel and retried individually. The API decides th
+           e part size and part count, so it controls the maximum size.
+      160  - **Cons:** The API needs several endpoints (initiate, sign pa
+           rts, list parts, complete, abort), and the client needs part-u
+           pload logic (or Uppy's `@uppy/aws-s3` later in the frontend). 
+           Storage needs CORS that allows `PUT` and exposes `ETag`. S3 ha
+           s no total-size limit for a multipart upload, so the 10 GB lim
+           it must be enforced by the API (see Recommendation).
+      161  
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      88  
+      89  **Capability:** Serviço de armazenamento de arquivos (vídeos e 
+          thumbnails)
+      90  
+      91 -**Context:** Videos and thumbnails must be stored in a way that
+         - supports per-video access control (drafts and, later, unlisted
+         - videos must not be publicly listable), easy deletion of everyt
+         -hing belonging to one video, and storage growth planning (Ponto
+         -s de Atenção: "Armazenamento"). The key format is a contract be
+         -tween the API (upload), the worker (reads the original, writes 
+         -the thumbnail) and the DB columns that store the keys. Depends 
+         -on TD-10 (which ID is public).                                 
+      91 +**Context:** Videos and thumbnails must be stored in a way that
+         + supports per-video access control (unpublished and, later, unl
+         +isted videos must not be publicly listable), easy deletion of e
+         +verything belonging to one video, and storage growth planning (
+         +Pontos de Atenção: "Armazenamento"). The key format is a contra
+         +ct between the API (upload), the worker (reads the original, wr
+         +ites the thumbnail) and the DB columns that store the keys. Dep
+         +ends on TD-10 (which ID is public).                            
+      92  
+      93  **Options:**
+      94  
+
+● Update(docs/decisions/technical-decisions-phase-03-videos.md)
+  ⎿  Added 1 line, removed 1 line
+      348  ### Option C: Public-read bucket with permanent object URLs
+      349  - Make the video objects publicly readable and return their di
+           rect URLs.
+      350  - **Pros:** Simplest; URLs never expire; works directly with a
+            CDN.
+      351 -- **Cons:** No access control at all: drafts (and later unlist
+          -ed videos) are readable by anyone with the URL, and a URL can 
+          -never be revoked. This conflicts with the private bucket in TD
+          --03.                                                          
+      351 +- **Cons:** No access control at all: unpublished videos (and 
+          +later unlisted ones) are readable by anyone with the URL, and 
+          +a URL can never be revoked. This conflicts with the private bu
+          +cket in TD-03.                                                
+      352  
+      353  **Recommendation:** **Option A (access check + `302` to presig
+           ned GET)** — it is the only option that keeps video bytes off 
+           the API and still has one place where access is checked for Ph
+           ases 04/05. Streaming and download become the same mechanism, 
+           and `Range`/`206` is handled by the storage server instead of 
+           custom code. Proposed TTLs: about 6 h for stream URLs (long en
+           ough for a viewing session with seeking), about 15 min for dow
+           nload URLs. Known limitation to record: the original file is p
+           layed as uploaded, so formats the browser can't play (e.g. som
+           e MKV/HEVC files) will download but not play. Transcoding is n
+           ot in this phase.
+      354  
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● O TD-12 agora está na Option A (draft | processing | ready | failed). A troca
+  foi propagada para todos os TDs que citam os estados, e as outras decisões
+  continuam as mesmas.
+
+  No TD-12:
+  - Recommendation: reescrita para recomendar a A, com o motivo que você deu e o
+    significado fixo de draft ("vídeo pré-cadastrado, upload ainda não
+    concluído"). Ela registra que a publicação/visibilidade será um campo
+    separado, criado na Fase 04.
+  - Por que não a B: o único ganho dela era separar o estado do arquivo da
+    publicação. Com draft definido assim e a publicação num campo próprio, a A
+    dá a mesma separação usando o vocabulário do plano.
+  - Decision: marcada como A, com uma linha **Note:** registrando a troca de B
+    para A nesta revisão, como na convenção da fase 02.
+
+  Propagação:
+  - TD-05: o pré-cadastro cria o vídeo com status = draft.
+  - TD-06: o complete faz draft → processing com WHERE status = 'draft'. Os
+    vídeos que nunca recebem o complete ficam em draft até a limpeza.
+  - TD-07: a query de limpeza busca draft antigos. Acrescentei que a marcação
+    como failed também é condicional (WHERE status = 'draft'), para não
+    sobrescrever um complete que chegue ao mesmo tempo.
+  - TD-13: o complete reexecutado usa a transição condicional a partir de draft.
+    A do worker (WHERE status = 'processing') já estava certa.
+  - Decisions Summary: recomendação e escolha do TD-12 atualizadas.
+  - TD-03 e TD-11: troquei "drafts" por "unpublished videos". Ali a palavra
+    queria dizer "não publicado", e com o novo significado de draft ficaria
+    ambígua.
+
+  O que não mudei de propósito: uploading só aparece agora nas definições das
+  Options B e C e na justificativa da rejeição. É o registro das alternativas
+  descartadas.
+
+  Ponto de atenção para a Fase 04: lá, "rascunho → publicação" usa "rascunho" no
+  sentido de publicação. Um vídeo processado e ainda não publicado fica com
+  status = ready, não draft. A Fase 04 precisa dar ao campo de publicação nomes
+  que não reutilizem draft. Isso está registrado no Recommendation do TD-12.
+
+  Próximo passo: /plan-context 03.
+
+✻ Cooked for 1m 5s · done 22:46
