@@ -48,6 +48,10 @@ _Subprojects in scope:_
 **Recommendation:** **Option A (BullMQ + Redis, `@nestjs/bullmq@^11`)** — it is the only option where retry/backoff, a kept failed-job record, stalled-job recovery, deduplicated enqueue and a periodic scheduler (needed by TD-07 and TD-13) all come out of the box with an official Nest integration that works on this CommonJS Nest 11 project. The cost is one Redis container that **must** be configured with `--appendonly yes --maxmemory-policy noeviction` in `compose.yaml`, plus new env keys (`REDIS_HOST=redis`, `REDIS_PORT`) in the Joi schema. Option B is the credible "no-Redis" alternative with the same code API; it is not recommended yet because it is new and has no documented Nest wiring — re-evaluate when `@nestjs/bullmq` supports backends officially.
 
 **Decision:** Option A: BullMQ + Redis via `@nestjs/bullmq` (11.x)
+**Libraries:** @nestjs/bullmq@^11.0.5, bullmq
+
+**Revisions:**
+- 2026-11-01 — Recorded the libraries implied by the decision: `@nestjs/bullmq@^11.0.5` (the last CommonJS-compatible line for Nest 11; 12.x is ESM-only) and its peer `bullmq`. Resolves IC-1 of phase-03-videos validation. Rationale: libraries implied by the decision were not recorded at decision time.
 
 ---
 
@@ -141,6 +145,10 @@ _Subprojects in scope:_
 **Recommendation:** **Option A (internal + public endpoints)** — it is the only option that works on a fresh clone with no host-machine changes and keeps all server-to-server traffic on Compose service names, as `CLAUDE.md` requires. `S3_PUBLIC_ENDPOINT=http://localhost:9000` is an intended exception to the "never `localhost`" rule because it is read by the host's browser, not by a container. It should be documented as such in `.env.example`. Proposed canonical keys: `S3_ENDPOINT`, `S3_PUBLIC_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET`, `S3_FORCE_PATH_STYLE` (true for the local server). Implementation note from the SDK docs: set `requestChecksumCalculation: 'WHEN_REQUIRED'` on the S3 clients, because the SDK's default flexible checksums add `x-amz-checksum-*` headers that break presigned part uploads against non-AWS servers.
 
 **Decision:** Option A: Two endpoints — internal for operations, public for browser-facing signatures
+**Libraries:** @aws-sdk/client-s3, @aws-sdk/s3-request-presigner
+
+**Revisions:**
+- 2026-11-01 — Recorded the S3 SDK packages implied by the two-client setup: `@aws-sdk/client-s3` (operations: multipart create/complete/abort, `ListParts`, `HeadObject`, worker reads/writes) and `@aws-sdk/s3-request-presigner` (browser-facing presigned URLs). TD-05, TD-06, TD-09 and TD-11 use the same packages. Resolves IC-1 of phase-03-videos validation. Rationale: libraries implied by the decision were not recorded at decision time.
 
 ---
 
@@ -167,6 +175,9 @@ _Subprojects in scope:_
 **Recommendation:** **Option A (presigned S3 multipart)** — it is the only option where the file never passes through an application process (API, BFF or tus server), which matches both the requirement and the diagram's direct frontend ↔ storage link. Resume uses standard `ListParts`. Proposed parameters: fixed **64 MiB** part size (10 GiB → 160 parts, well under 10,000 and above the 5 MiB minimum), presigned part URLs valid for 1 h and issued in batches. Size enforcement without vendor extensions: (1) reject `size > 10 GiB` at initiation, (2) sign only part numbers `1..partCount` and include `Content-Length` in each part's signature, (3) after completion, verify the object size with `HeadObject` before accepting it. Pre-registration happens in the same initiation call that creates the multipart upload.
 
 **Decision:** Option A: Presigned S3 multipart, orchestrated by the API
+
+**Revisions:**
+- 2026-11-01 — Draft pre-registration contents fixed: the video belongs to the uploader's **channel** (`channel_id` FK, resolved from the authenticated user; Phase 02 creates one channel per user). Initiation input: original filename, size in bytes and content type, all stored on the row. `title` defaults to the filename without its extension, `description` is null, `status = draft` (TD-12). Phase 04 edits title/description. Rationale: clarification from AMB-2 of phase-03-videos validation (owner and initial fields were undefined).
 
 ---
 
@@ -287,6 +298,9 @@ _Subprojects in scope:_
 
 **Decision:** Option A (spawn system binaries on a presigned URL)
 
+**Revisions:**
+- 2026-11-01 — Metadata persisted on the video row after processing: `duration_seconds`, `width`, `height`, `mime_type` (container/format), `video_codec`, `audio_codec` (null when there is no audio stream), `bitrate`, `frame_rate`. `size_bytes` is recorded at completion from `HeadObject` (TD-05), not by ffprobe. All of these stay nullable until processing finishes. Rationale: clarification from AMB-3 of phase-03-videos validation ("metadados" was not enumerated); codecs/bitrate kept for a future browser-playability check (TD-11 known limitation).
+
 ---
 
 ## TD-10: Unique Public Video ID (URL strategy)
@@ -353,6 +367,9 @@ _Subprojects in scope:_
 **Recommendation:** **Option A (access check + `302` to presigned GET)** — it is the only option that keeps video bytes off the API and still has one place where access is checked for Phases 04/05. Streaming and download become the same mechanism, and `Range`/`206` is handled by the storage server instead of custom code. Proposed TTLs: about 6 h for stream URLs (long enough for a viewing session with seeking), about 15 min for download URLs. Known limitation to record: the original file is played as uploaded, so formats the browser can't play (e.g. some MKV/HEVC files) will download but not play. Transcoding is not in this phase.
 
 **Decision:** Option A (access check + `302` to presigned GET)
+
+**Revisions:**
+- 2026-11-01 — Phase 03 access rule for stream and download: both require authentication **and** ownership (the video's channel belongs to the requesting user). Unauthenticated → `401` (existing auth guard); authenticated non-owner or unknown id → `404` (existence is not revealed); owner with `status ≠ ready` → `409`. Nothing is public in Phase 03; Phase 04 opens published videos to anonymous viewers through its visibility field. Rationale: clarification from AMB-1 of phase-03-videos validation (the Phase 03 access rule was undefined).
 
 ---
 
@@ -422,6 +439,37 @@ Known trade-off to carry into Phase 04: there, "rascunho → publicação" uses 
 
 ---
 
+## TD-14: Bucket and CORS Provisioning
+
+**Scope:** Repo-wide
+
+**Capability:** Transversal — covers: "Serviço de armazenamento de arquivos (vídeos e thumbnails)", "Upload de vídeos com suporte a arquivos de até 10GB sem impacto na performance"
+
+**Context:** TD-03 fixes one private bucket, and TD-05 has the browser `PUT` parts straight to storage through presigned URLs. The browser must read each part's `ETag` response header to build the `CompleteMultipartUpload` list, so storage must answer CORS preflights for the frontend origin (`http://localhost:3001` in dev) **and** list `ETag` in `Access-Control-Expose-Headers`. Nothing currently creates the bucket or sets that CORS policy, so a fresh clone has no working upload. RustFS (TD-02) offers two CORS mechanisms: a server-wide env var (`RUSTFS_CORS_ALLOWED_ORIGINS`, RustFS-only; its docs do not say which headers it exposes) and the standard per-bucket `PutBucketCors` S3 API, which RustFS implements and where `ExposeHeaders: ["ETag"]` is explicit (AWS SDK v3 docs: the browser "can only access headers that are exposed through CORS configuration"). The choice touches `compose.yaml`, `.env.example`, the API/worker startup and the storage integration-test setup, and must carry over to production S3 (Phase 07). Version note: the RustFS docs' Compose examples use `rustfs/rustfs-x86-musl:v2.3.1` and `rustfs/rc:latest`, while TD-02 pins `rustfs/rustfs:1.0.3`. The TD-02 spike must confirm `PutBucketCors` + exposed `ETag` on the pinned version, and any helper image must be pinned to an exact tag, not `latest`. Depends on TD-02, TD-03, TD-04, TD-05.
+
+**Options:**
+
+### Option A: Init container creates the bucket; CORS via RustFS env var
+- A one-shot Compose service (`storage-init`, `rustfs/rc` pinned) waits for storage to be healthy and runs `rc mb --ignore-existing`-style idempotent creation. CORS comes from `RUSTFS_CORS_ALLOWED_ORIGINS=http://localhost:3001` on the storage service. `nestjs-api` / `video-worker` depend on `storage-init: service_completed_successfully`.
+- **Pros:** Smallest setup; mirrors the RustFS docs' own Compose pattern; no application code; the app needs no bucket-admin permissions.
+- **Cons:** The env var is RustFS-specific: production S3 needs a separate, different CORS setup, so dev and prod configs drift. The docs don't say whether it exposes `ETag`, which is the one header the upload flow cannot work without (spike-dependent).
+
+### Option B: Init container creates the bucket **and** applies a versioned bucket CORS policy via the S3 API
+- Same one-shot `storage-init` service, but after creating the bucket it applies `PutBucketCors` from a JSON file committed to the repo (e.g. `nestjs-project/infra/storage/cors.json`: `AllowedOrigins` = frontend origin, `AllowedMethods` = `PUT`, `GET`, `HEAD`, `AllowedHeaders` = `*`, `ExposeHeaders` = `ETag`, `MaxAgeSeconds`). The origin comes from one env key (e.g. `STORAGE_CORS_ORIGIN`) substituted into the policy. Both steps are idempotent (create-if-missing; `PutBucketCors` replaces the whole policy).
+- **Pros:** Uses the standard S3 API, so the same policy file applies to production S3 unchanged (`aws s3api put-bucket-cors`); `ETag` exposure is explicit, not inferred. Provisioning stays in the infra layer; the API/worker keep least-privilege credentials. The policy is reviewable in git.
+- **Cons:** One more Compose service and a short shell script to maintain. Startup ordering depends on `service_completed_successfully`. The policy file and the env key must stay in sync with the frontend origin.
+
+### Option C: Application bootstrap provisions the bucket and CORS
+- A `StorageProvisioner` in the API runs on `onApplicationBootstrap`: `HeadBucket` → `CreateBucket` if missing (treating `BucketAlreadyOwnedByYou` as success) → `PutBucketCors` with rules built from config. Gated by an env flag (e.g. `STORAGE_AUTO_PROVISION=true` in dev/test, `false` in production).
+- **Pros:** No extra container; the rules live in typed TS next to the storage config. Integration tests can reuse the provisioner to create an isolated test bucket per suite.
+- **Cons:** The API's runtime credentials need bucket-admin rights (`CreateBucket`, `PutBucketCors`) wherever the flag is on, which conflicts with least privilege. It mixes infra provisioning into the storage module (the CLAUDE.md single-responsibility principle). Production still needs a separate path when the flag is off. If the worker also boots the provisioner, two processes race on startup.
+
+**Recommendation:** **Option B (init container + versioned bucket CORS policy)** — it is the only option where the CORS rule the upload flow depends on (`ExposeHeaders: ETag`) is stated explicitly in the standard S3 form, so the same file serves RustFS in dev and S3 in production (Phase 07) without drift. It also keeps admin operations out of the API/worker. Option A's env var is simpler but RustFS-only and silent about exposed headers. If the TD-02 spike shows it exposes `ETag`, it remains an acceptable fallback, not a portable contract. Option C works but gives the application admin rights and an infra responsibility it does not otherwise need. Integration tests run inside the same Compose network, so they get the provisioned bucket from `storage-init` and can isolate their data by key prefix.
+
+**Decision:** Option B: Init container creates the bucket and applies a versioned bucket CORS policy via the S3 API
+
+---
+
 ## Decisions Summary
 
 | ID | Scope | Decision | Recommendation | Choice |
@@ -439,3 +487,4 @@ Known trade-off to carry into Phase 04: there, "rascunho → publicação" uses 
 | TD-11 | Cross-layer | Streaming and Download Delivery | Access check + `302` to presigned GET | A (Access check + `302` to presigned GET) |
 | TD-12 | Backend | Video Status Lifecycle Model | Single `status` enum `draft/processing/ready/failed` (`draft` = upload not completed) | A (Single `status` enum: `draft \| processing \| ready \| failed`) |
 | TD-13 | Backend | Processing Failure, Retry and Idempotency | Queue-native retries + idempotent `jobId = videoId` | A (Queue-native retries + idempotent `jobId = videoId`) |
+| TD-14 | Repo-wide | Bucket and CORS Provisioning | Init container + versioned bucket CORS policy (`ExposeHeaders: ETag`) via the S3 API | B (Init container + versioned bucket CORS policy via the S3 API) |
