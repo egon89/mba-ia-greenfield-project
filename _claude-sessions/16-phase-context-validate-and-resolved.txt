@@ -1,0 +1,2608 @@
+ ▐▛███▛█   Claude Code v2.1.316
+▝▜██████▀  Opus 5.5 · Claude Pro
+ ▝▝   ▝▝   ~/…/mba-ia-greenfield-project/mba-ia-greenfield-project
+
+
+❯ /plan-context phase-03-videos                                                 
+
+● I'll start by reading the shared pipeline conventions and resolving the slug
+  phase-03-videos.
+
+  Ran 4 shell commands (ctrl+o to expand)
+
+● Slice resolved: phase-03-videos, phase 03, no covers_capabilities (monolithic
+  fallback). Reading the phase bullets from the project plan for scope and UI
+  detection.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● The UI-scope check fired, but it's a false positive: the substring "ui"
+  matches inside "arquivos" in two bullets. The skill says I must still honor
+  the detection and ask, so here's the question.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● User answered Claude's questions:
+  ⎿  · Phase 03 (phase-03-videos) tripped the UI-scope check only because the 
+     substring "ui" appears inside "arquivos" in two capability bullets. The 
+     decisions doc says the frontend is out of this phase, and no screen 
+     inventory exists. How should context.md handle the UI Inventory section? → 
+     Deferred (Recommended)
+
+● Going with deferred. Now dispatching the five reader subagents in parallel.
+
+● 5 background agents launched (↓ to manage)
+   ├ plan-reader (plan-reader phase 03)
+   ├ decisions-reader (decisions-reader phase 03)
+   ├ decisions-detail-reader (decisions-detail-reader phase 03)
+   ├ decisions-correlator (decisions-correlator phase 03)
+   └ phases-reader (phases-reader phase 03)
+
+● While those run, I'll load the testing guide (only nestjs-project is in scope;
+  frontend is deferred).
+
+● Skill(testing-guide-nestjs-project)
+  ⎿  Successfully loaded skill
+
+● Testing checklist captured. While the subagents finish, I'll gather the glob
+  set and source mtimes.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● I'll match that timestamp format. Waiting on the subagents now.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+› Message from decisions-correlator
+  ## Correlated for Phase 03 / slice phase-03-videos
+
+  | File | Slug | Score | Rationale |
+  |------|------|-------|-----------|
+  | technical-decisions-openapi-docs-nestjs.md | openapi-docs-nestjs | medium |
+  New upload, completion and streaming/download endpoints must follow the
+  established NestJS OpenAPI tooling and artifact strategy |
+  | technical-decisions-next-frontend-config-base.md | next-frontend-config-base
+  | low | Frontend env-var validation could matter for storage/presigned-URL
+  hosts but this slice is backend-only |
+  | technical-decisions-next-frontend-msw-foundation.md |
+  next-frontend-msw-foundation | low | MSW handler organization is frontend test
+  infra with no bearing on backend upload or processing |
+  | technical-decisions-next-frontend-openapi-typing.md |
+  next-frontend-openapi-typing | low | Frontend codegen from openapi.json
+  consumes backend contracts downstream but does not constrain backend video
+  design |
+
+  ### Ranked candidates
+
+  - **openapi-docs-nestjs** (medium): New upload, completion and
+  streaming/download endpoints must follow the established NestJS OpenAPI
+  tooling and artifact strategy
+  - **next-frontend-config-base** (low): Frontend env-var validation could
+  matter for storage/presigned-URL hosts but this slice is backend-only
+  - **next-frontend-msw-foundation** (low): MSW handler organization is frontend
+  test infra with no bearing on backend upload or processing
+  - **next-frontend-openapi-typing** (low): Frontend codegen from openapi.json
+  consumes backend contracts downstream but does not constrain backend video
+  design
+
+● Agent "decisions-correlator phase 03" finished · 10s
+
+● The correlator came back with 4 candidates: one medium (openapi-docs-nestjs)
+  and three low. None are ranked high, so none are pre-selected by default. I'll
+  ask you to confirm once the other four readers finish.
+
+✻ Cogitated for 56s · done 16:10
+
+› Message from plan-reader
+  ## Phase 03 — Upload e Processamento de Vídeos
+
+  > Depende de: Fase 01, Fase 02
+
+  Upload de arquivos grandes sem travar o sistema, processamento automático do
+  vídeo e geração de URL única.
+
+  **Capabilities** (literal bullets, verbatim from project-plan.md):
+
+  - Serviço de armazenamento de arquivos (vídeos e thumbnails)
+  - Serviço de processamento em segundo plano (filas)
+  - Upload de vídeos com suporte a arquivos de até 10GB sem impacto na
+  performance
+  - Pré-cadastro automático do vídeo como rascunho ao iniciar o upload
+  - Processamento automático do vídeo após upload (extração de duração e
+  metadados)
+  - Geração automática de thumbnail a partir de um frame do vídeo
+  - URL única por vídeo, sem conflito com outros vídeos
+  - Reprodução via streaming (sem necessidade de download completo)
+  - Download do vídeo pelo usuário
+
+  **Out of scope:** _Not specified._
+
+  **Deliverables:** upload de até 10GB funcional, processamento automático do
+  vídeo, streaming funcionando, URLs únicas geradas.
+
+  **Affected subprojects:**
+
+  _None named in the phase body. It does not mention `nestjs-project`,
+  `nextjs-project` or any other subproject path._
+
+  **Deferred subprojects:** _None._
+
+  **Sequencing notes:** "> Depende de: Fase 01, Fase 02"
+
+  ## Neighbors
+
+  - **Phase 02:** Fluxo completo de criação de conta, confirmação por e-mail,
+  login, logout e recuperação de senha. (Cadastro, Login e Gerenciamento de
+  Conta; depende de Fase 01)
+  - **Phase 04:** Edição das informações do vídeo, fluxo de rascunho e
+  publicação, painel de administração do canal e página pública. (Gerenciamento
+  de Vídeos e Canal; depende de Fase 02, Fase 03)
+
+  _Notes:_
+  - None of the four required heading patterns matched. In
+  /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield
+  -project/docs/project-plan.md the phases are level-3 headings (`### Fase NN —
+  ...`) under `## 3. Fases do Projeto` at line 32. I found them with a wider
+  search (`^#+ .*(Fase|Phase)`). Phase 03 is lines 67–86.
+  - For the neighbor summaries I read 1 line past the 3-line limit for each
+  neighbor (lines 52 and 91), because the first 3 lines held only the heading
+  and the dependency line.
+
+● Phase scope is in: 9 capabilities and neighbors Phase 02 and 04. The plan
+  names no subprojects for this phase; the decisions doc puts all the work in
+  nestjs-project. Still waiting on three readers: decisions index, decisions
+  detail, and prior phases.
+
+✻ Worked for 1s · done 16:10
+
+● Agent "plan-reader phase 03" finished · 23s
+
+› Message from decisions-reader
+  ## Decisions Index for Phase 03 / slice phase-03-videos
+
+  | Ref | Source | Scope | Topic | Status | Decision | Libraries | Capability |
+  |-----|--------|-------|-------|--------|----------|-----------|------------|
+  | phase-03-videos/TD-01 | phase | Backend | Job Queue Technology | decided |
+  A: BullMQ + Redis via `@nestjs/bullmq` (11.x) | — | Serviço de processamento
+  em segundo plano (filas) |
+  | phase-03-videos/TD-02 | phase | Repo-wide | Local S3-Compatible Object
+  Storage Server | decided | A: RustFS | — | Serviço de armazenamento de
+  arquivos (vídeos e thumbnails) |
+  | phase-03-videos/TD-03 | phase | Backend | Bucket and Object Key Layout |
+  decided | A: Single private bucket, prefix per video (internal UUID) | — |
+  Serviço de armazenamento de arquivos (vídeos e thumbnails) |
+  | phase-03-videos/TD-04 | phase | Backend | Presigned URL Host (Internal vs
+  Public Storage Endpoint) | decided | A: Two endpoints (internal ops / public
+  browser-facing signatures) | — | Serviço de armazenamento de arquivos (vídeos
+  e thumbnails) |
+  | phase-03-videos/TD-05 | phase | Cross-layer | Large-File Upload Protocol (up
+  to 10 GB, direct to storage) | decided | A: Presigned S3 multipart,
+  orchestrated by the API | — | Transversal: Upload até 10GB; Pré-cadastro como
+  rascunho |
+  | phase-03-videos/TD-06 | phase | Backend | Upload Completion Detection |
+  decided | A: Client signals, API completes using its own `ListParts` | — |
+  Transversal: Upload até 10GB; Processamento automático (duração/metadados) |
+  | phase-03-videos/TD-07 | phase | Backend | Abandoned Upload Cleanup | decided
+  | A: Application cleanup job (scheduled job on the queue) | — | Upload de
+  vídeos com suporte a arquivos de até 10GB sem impacto na performance |
+  | phase-03-videos/TD-08 | phase | Backend | Video Worker Topology | decided |
+  A: Same codebase, second entrypoint, separate Compose service | — |
+  Transversal: Processamento em segundo plano (filas); Processamento automático
+  (duração/metadados); Geração automática de thumbnail |
+  | phase-03-videos/TD-09 | phase | Backend | FFmpeg/ffprobe Invocation and
+  Input Access | decided | A: Spawn system binaries on a presigned URL | — |
+  Transversal: Processamento automático (duração/metadados); Geração automática
+  de thumbnail |
+  | phase-03-videos/TD-10 | phase | Cross-layer | Unique Public Video ID (URL
+  strategy) | decided | B: Random 11-char base64url `public_id` | — | URL única
+  por vídeo, sem conflito com outros vídeos |
+  | phase-03-videos/TD-11 | phase | Cross-layer | Streaming and Download
+  Delivery | decided | A: Access check + `302` to presigned GET | — |
+  Transversal: Reprodução via streaming; Download do vídeo pelo usuário |
+  | phase-03-videos/TD-12 | phase | Backend | Video Status Lifecycle Model |
+  decided | A: Single `status` enum `draft \| processing \| ready \| failed` | —
+  | Transversal: Pré-cadastro como rascunho; Processamento automático
+  (duração/metadados) |
+  | phase-03-videos/TD-13 | phase | Backend | Processing Failure, Retry and
+  Idempotency Strategy | decided | A: Queue-native retries + idempotent `jobId =
+  videoId` | — | Transversal: Processamento automático (duração/metadados);
+  Geração automática de thumbnail |
+
+  Notes on the table:
+  - The `Renders in` column is left out because no TD in scope has a `**Renders
+  in:**` field. My contract allows this when every value would be `—`.
+  - I added the `Capability` column because you asked for it. Its full source
+  strings for the transversal TDs are:
+    - "Upload de vídeos com suporte a arquivos de até 10GB sem impacto na
+  performance"
+    - "Pré-cadastro automático do vídeo como rascunho ao iniciar o upload"
+    - "Processamento automático do vídeo após upload (extração de duração e
+  metadados)"
+    - "Geração automática de thumbnail a partir de um frame do vídeo"
+    - "Serviço de processamento em segundo plano (filas)"
+    - "Reprodução via streaming (sem necessidade de download completo)"
+    - "Download do vídeo pelo usuário"
+  - None of the TDs has a `**Libraries:**` field, a `**Revisions:**` block or a
+  superseded marker.
+
+  ## Source Files
+
+  - phase-03-videos —
+  /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield
+  -project/docs/decisions/technical-decisions-phase-03-videos.md (scope_type:
+  phase, related_phases: [3])
+
+  ## Filter Trace
+
+  Globbed T=8 candidates from `docs/decisions/*.md`. Per-file decisions:
+
+  | File | scope_type | related_phases | Decision | Reason |
+  |------|-----------|----------------|----------|--------|
+  | technical-decisions-phase-03-videos.md | phase | [3] | kept | phase rule:
+  filename-slug == identifier |
+  | technical-decisions-next-frontend-config-base.md | ad-hoc | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-next-frontend-msw-foundation.md | ad-hoc | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-next-frontend-openapi-typing.md | ad-hoc | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-openapi-docs-nestjs.md | ad-hoc | ? | dropped | ad-hoc
+  rule: in S_adhoc but not in S_NN |
+  | technical-decisions-phase-02-auth-frontend.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-02-auth.md | ? | ? | dropped | phase rule:
+  filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-01-configuracao-base.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+
+  Note on the `S_NN` search: ripgrep rejected the lookahead `(?=[,\s\]])`, so I
+  used `^related_phases:\s*\[(?:[^\]]*[,\s])?3[,\s\]]` instead. It matches the
+  same files. Only the phase-03-videos doc matched.
+
+● The decisions index passed its check: it traced all 8 decision files, the same
+  8 I counted, and kept only phase-03-videos. All 13 TDs are decided. Still
+  waiting on the decisions detail and prior-phases readers.
+
+✻ Baked for 2s · done 16:10
+
+● Agent "decisions-reader phase 03" finished · 29s
+
+› Message from decisions-detail-reader
+  ## Decisions Detail for Phase 03 / slice phase-03-videos
+
+  ### phase-03-videos/TD-01
+
+  **Recommendation:** It is the only option where retry/backoff, a kept
+  failed-job record, stalled-job recovery, deduplicated enqueue and a periodic
+  scheduler (needed by TD-07 and TD-13) all come out of the box with an official
+  Nest integration that works on this CommonJS Nest 11 project. The cost is one
+  Redis container that **must** be configured with `--appendonly yes
+  --maxmemory-policy noeviction` in `compose.yaml`, plus new env keys
+  (`REDIS_HOST=redis`, `REDIS_PORT`) in the Joi schema. Option B is the credible
+  "no-Redis" alternative with the same code API; it is not recommended yet
+  because it is new and has no documented Nest wiring — re-evaluate when
+  `@nestjs/bullmq` supports backends officially.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-02
+
+  **Recommendation:** It keeps the one-container developer experience the plan
+  assumed with MinIO, is actively maintained, and its documented features cover
+  everything this phase needs (multipart, presign, CORS, `Range`,
+  abandoned-upload cleanup). Because the code depends only on the S3 API, the
+  risk of its youth is limited: the first implementation step should be a short
+  spike that checks presigned `UploadPart` + `CompleteMultipartUpload`, CORS
+  with `ETag` exposed, and `Range` → `206` against RustFS. If the spike fails,
+  switch to Option B (Garage) with only Compose changes. Option C is not
+  recommended: dev environments should not depend on an archived server with no
+  official image. Separate task to note: update the diagram's "S3 or MinIO"
+  label.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-03
+
+  **Recommendation:** It is the smallest correct setup: one bucket to create and
+  protect, immutable keys based on the internal UUID (independent of TD-10's
+  public ID), and one-prefix deletion. Storage growth is tracked through a
+  `size_bytes` column in the DB rather than through key structure. If Phase 07
+  needs cacheable public thumbnails, a prefix policy or a move to Option B can
+  be decided then.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-04
+
+  **Recommendation:** It is the only option that works on a fresh clone with no
+  host-machine changes and keeps all server-to-server traffic on Compose service
+  names, as `CLAUDE.md` requires. `S3_PUBLIC_ENDPOINT=http://localhost:9000` is
+  an intended exception to the "never `localhost`" rule because it is read by
+  the host's browser, not by a container. It should be documented as such in
+  `.env.example`. Proposed canonical keys: `S3_ENDPOINT`, `S3_PUBLIC_ENDPOINT`,
+  `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET`,
+  `S3_FORCE_PATH_STYLE` (true for the local server). Implementation note from
+  the SDK docs: set `requestChecksumCalculation: 'WHEN_REQUIRED'` on the S3
+  clients, because the SDK's default flexible checksums add `x-amz-checksum-*`
+  headers that break presigned part uploads against non-AWS servers.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-05
+
+  **Recommendation:** It is the only option where the file never passes through
+  an application process (API, BFF or tus server), which matches both the
+  requirement and the diagram's direct frontend ↔ storage link. Resume uses
+  standard `ListParts`. Proposed parameters: fixed **64 MiB** part size (10 GiB
+  → 160 parts, well under 10,000 and above the 5 MiB minimum), presigned part
+  URLs valid for 1 h and issued in batches. Size enforcement without vendor
+  extensions: (1) reject `size > 10 GiB` at initiation, (2) sign only part
+  numbers `1..partCount` and include `Content-Length` in each part's signature,
+  (3) after completion, verify the object size with `HeadObject` before
+  accepting it. Pre-registration happens in the same initiation call that
+  creates the multipart upload.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-06
+
+  **Recommendation:** It gives a single, synchronous point where the API knows
+  for certain that the object exists. It does not depend on storage-specific
+  event setups, which differ between local and production environments. The only
+  gap (a client that never signals) is covered by the cleanup job in TD-07.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-07
+
+  **Recommendation:** The DB row is what users and later phases see, and only
+  application code can clean the DB and storage together. It reuses the TD-01
+  scheduler, so no new library is needed. A lifecycle rule (Option C) can be
+  added cheaply at deploy time (Phase 07) as defense in depth, and RustFS
+  already removes stale uploads after 24 h by default.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-08
+
+  **Recommendation:** It gives the process/container isolation the diagram and
+  the performance requirement call for, without duplicating the domain model or
+  creating a shared-package setup. FFmpeg runs as a child process, so the
+  worker's event loop stays free to renew BullMQ job locks during long jobs.
+  Responsibilities stay separate: the API's videos module only *produces* jobs,
+  and a processing module loaded only by `WorkerModule` *consumes* them.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-09
+
+  **Recommendation:** Metadata and a single frame only need a small part of the
+  file, so reading through HTTP `Range` avoids the disk space and download time
+  of Option B, which grow with file size. Install binaries with `apt-get install
+  ffmpeg` in the worker image (Debian package, versioned with the base image)
+  rather than `ffmpeg-static`, so the version is visible and patchable. Pick the
+  thumbnail frame relative to the duration (e.g. 10 % of the duration, with a
+  fallback to the first frame for very short clips). If ffprobe reports no video
+  stream, the file is treated as invalid media → permanent failure (TD-13).
+  **Libraries:** —
+
+  ### phase-03-videos/TD-10
+
+  **Recommendation:** It satisfies "short" and "never conflicts" (enforced by
+  the `UNIQUE` index, not by probability) and cannot be guessed, which Phase
+  04's unlisted visibility depends on. It uses the same
+  generate-and-retry-on-unique-violation pattern already used for channel
+  nicknames, and needs no new dependency. Storage keys keep using the internal
+  UUID (TD-03), so the public ID can change without moving any object.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-11
+
+  **Recommendation:** It is the only option that keeps video bytes off the API
+  and still has one place where access is checked for Phases 04/05. Streaming
+  and download become the same mechanism, and `Range`/`206` is handled by the
+  storage server instead of custom code. Proposed TTLs: about 6 h for stream
+  URLs (long enough for a viewing session with seeking), about 15 min for
+  download URLs. Known limitation to record: the original file is played as
+  uploaded, so formats the browser can't play (e.g. some MKV/HEVC files) will
+  download but not play. Transcoding is not in this phase.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-12
+
+  **Recommendation:** The phase literally describes the cycle "rascunho →
+  processando → pronto/erro" and asks for "pré-cadastro como rascunho", so the
+  status column mirrors the requirement one-to-one. The main Option A con is
+  removed by fixing the meaning of `draft` and keeping publication out of this
+  enum:
+  - `draft` means only "video pre-registered, upload not yet completed". It is
+  set at upload initiation (TD-05) and left only by the `complete` call (TD-06),
+  which moves `draft → processing`.
+  - Publication/visibility (Phase 04) will be a **separate field** created in
+  Phase 04. It never adds values to this enum.
+  - TD-07 and TD-13 still get exact states: the cleanup job queries `draft` rows
+  older than the threshold, and every transition is a conditional update on the
+  current state (`WHERE status = 'draft'` on completion, `WHERE status =
+  'processing'` in the worker).
+
+  Why Option B was not chosen: its only advantage over A was separating the
+  file's state from publication. With the meaning of `draft` fixed as above and
+  publication kept in its own Phase 04 field, A provides the same separation and
+  uses the plan's own vocabulary. B would rename the requirement's "rascunho"
+  state to `uploading` and require API docs explaining that "rascunho" means
+  something other than the status column.
+
+  Known trade-off to carry into Phase 04: there, "rascunho → publicação" uses
+  "rascunho" in the *publication* sense, and a processed but unpublished video
+  has `status = ready`, not `draft`. Phase 04 must name its publication
+  field/values without reusing `draft`.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-13
+
+  **Recommendation:** Every step is safe to repeat (deduplicated enqueue,
+  conditional update, fixed keys), so retries and re-delivery cause no damage.
+  Separating permanent from temporary errors keeps bad uploads from using up
+  retries. The one gap (commit succeeded, enqueue failed) is closed by
+  re-enqueuing the same `jobId`, without an outbox. Revisit Option B if more job
+  types later need guaranteed delivery.
+  **Libraries:** —
+
+  ## Filter Trace
+
+  Globbed T=8 candidates from `docs/decisions/*.md`. Per-file decisions:
+
+  | File | scope_type | related_phases | Decision | Reason |
+  |------|-----------|----------------|----------|--------|
+  | technical-decisions-phase-03-videos.md | phase | [3] | kept | phase rule:
+  filename-slug == identifier |
+  | technical-decisions-next-frontend-config-base.md | ? | ? | dropped | ad-hoc
+  rule: not in S_NN |
+  | technical-decisions-next-frontend-msw-foundation.md | ? | ? | dropped |
+  ad-hoc rule: not in S_NN |
+  | technical-decisions-next-frontend-openapi-typing.md | ? | ? | dropped |
+  ad-hoc rule: not in S_NN |
+  | technical-decisions-openapi-docs-nestjs.md | ? | ? | dropped | ad-hoc rule:
+  not in S_NN |
+  | technical-decisions-phase-02-auth-frontend.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-02-auth.md | ? | ? | dropped | phase rule:
+  filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-01-configuracao-base.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+
+● The decisions detail reader returned all 13 TDs. Its trace matches the index
+  reader's. Next I'll check the TD count against the decisions doc and look for
+  cosmetic drift.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Agent "decisions-detail-reader phase 03" finished · 46s
+
+● All the decisions checks passed: 13 decided TDs in the doc and 13 emitted,
+  with no cosmetic warnings. Only the prior-phases reader is still running.
+
+✻ Crunched for 5s · done 16:11
+
+› Message from phases-reader
+  ## Prior Phases (for Phase 03 inheritance)
+
+  ### Phase 02 — auth / auth-frontend (sliced: phase-02-auth,
+  phase-02-auth-frontend)
+
+  **Conventions to Match** (inherited as hard constraints):
+
+  _Source: `phase-02-auth/context.md` § Inherited Conventions. Each bullet is
+  tagged `(from phase 01)` in the source because phase-02-auth inherited it from
+  phase 01. Phase 01 has no conventions section of its own, and
+  phase-02-auth-frontend's section is empty, so this is the only source._
+
+  - Backend config uses `@nestjs/config` with namespaced `registerAs(name, () =>
+  ({...}))` factories — one file per domain in `src/config/`. _(from phase 01)_
+  - Env variables are validated by a Joi schema in
+  `src/config/env.validation.ts`, passed to `ConfigModule.forRoot({
+  validationSchema, validationOpti...
+  - Config is injected into modules via `ConfigType<typeof xxxConfig>` and
+  `@Inject(xxxConfig.KEY)`; the same factory is importable as a plain functi...
+  - `data-source.ts` loads `.env` via `import 'dotenv/config'` at the top, then
+  imports `databaseConfig` and calls it as a plain function. _(from phase 01)_
+  - Database connection parameters (host, port, etc.) are sourced from a single
+  `databaseConfig` factory — never duplicated between `AppModule` and `da...
+  - `TypeOrmModule.forRootAsync` is used (not `forRoot`), with `imports:
+  [ConfigModule]`, `inject: [databaseConfig.KEY]`, `useFactory` returning
+  optio...
+
+  ---
+
+  ## Inherited TD Details for Phase 03
+
+  ### phase-01-configuracao-base/TD-01
+
+  **Recommendation:** Option A (@nestjs/config) — Official,
+  core-team-maintained, guaranteed NestJS 11 compatibility. The `registerAs()`
+  factory pattern solves the TypeORM CLI sharing problem: the factory function
+  can be imported as a plain function by `data-source.ts` while also serving as
+  a DI injection token inside NestJS. Building a custom module recreates solved
+  functionality; third-party packages carry maintenance risk.
+
+  **Libraries:** `@nestjs/config@^4.x`
+
+  ### phase-01-configuracao-base/TD-02
+
+  **Recommendation:** Option A (Joi) — First-class integration with
+  `@nestjs/config` via `validationSchema`, requiring zero custom wiring. Handles
+  string-to-number coercion natively. Using a different tool for env validation
+  vs. request validation is reasonable — env config is validated once at
+  startup, DTOs are validated per-request. Zod is elegant but adds a third
+  validation paradigm to the project.
+
+  **Libraries:** `joi@^17.x`
+
+  ### phase-01-configuracao-base/TD-03
+
+  **Recommendation:** Option B (Namespaced/grouped with registerAs) — The
+  project roadmap explicitly calls for auth, email, and storage in upcoming
+  phases. Namespaced configs provide clear file boundaries per domain, typed
+  injection via `ConfigType<typeof databaseConfig>`, and natural scalability.
+  The `registerAs()` factory is dual-purpose: DI token inside NestJS and plain
+  importable function for `data-source.ts`. Initial files for Phase 01:
+  `src/config/database.config.ts`, `src/config/app.config.ts`.
+
+  **Libraries:** —
+
+  ### phase-01-configuracao-base/TD-04
+
+  **Recommendation:** Option A (Shared registerAs factory) — Natural outcome of
+  choosing `@nestjs/config` with `registerAs`. The factory is already callable
+  by design. `data-source.ts` imports it, calls `dotenv.config()`, then calls
+  the factory. Zero duplication, minimal code, no extra abstraction.
+
+  **Libraries:** `dotenv` (transitive via `@nestjs/config`)
+
+  ### phase-02-auth/TD-01
+
+  **Recommendation:** Argon2id — For a greenfield project in 2026, Argon2id is
+  the OWASP-recommended choice. The native build dependency is a one-time Docker
+  setup cost. The project has no legacy constraints favoring bcrypt. OWASP
+  minimum: 19MiB memory, 2 iterations.
+
+  **Libraries:** `argon2@^0.41.x`
+
+  ### phase-02-auth/TD-02
+
+  **Recommendation:** Option A (@nestjs/passport) — The project plan includes
+  only email/password auth for now, but the plugin architecture costs little and
+  future phases may add social login. Aligns with official NestJS docs, making
+  onboarding and maintenance easier.
+
+  **Note:** Decision deliberately diverged from the Recommendation during
+  implementation — custom guards were preferred over `@nestjs/passport` to keep
+  the dependency surface smaller; social login is not on the near-term roadmap,
+  so the plugin-architecture benefit did not justify the extra abstraction
+  layer.
+
+  **Libraries:** `@nestjs/jwt@^11.0.0`
+
+  ### phase-02-auth/TD-03
+
+  **Recommendation:** Option A (Refresh Token Rotation) — Provides the strongest
+  security model with automatic theft detection. The DB write overhead is
+  acceptable for a video platform (auth refresh is infrequent vs. video
+  operations). PostgreSQL is already in the stack, so no new infrastructure
+  needed. Race conditions can be mitigated with a short grace period for the old
+  token.
+
+  **Libraries:** —
+
+  ### phase-02-auth/TD-04
+
+  **Recommendation:** Option B (Random Opaque Tokens in DB) — Revocability is
+  important: when a user requests a new password reset, previous tokens should
+  be invalidated. The DB table is trivial to implement, and the tokens table can
+  also serve future needs (e.g., API keys). Keeps email tokens decoupled from
+  the JWT auth system.
+
+  **Libraries:** —
+
+  ### phase-02-auth/TD-05
+
+  **Recommendation:** Option A (@nestjs-modules/mailer) — Best NestJS
+  integration with minimal boilerplate. Supports SMTP (matching the architecture
+  diagram), works with MailHog/Mailpit for local development without external
+  dependencies, and scales to any SMTP provider in production. Template engine
+  support (Handlebars) simplifies email formatting. No vendor lock-in.
+
+  **Libraries:** `@nestjs-modules/mailer@^2.x`, `handlebars@^4.x`
+
+  ### phase-02-auth/TD-06
+
+  **Recommendation:** Option A (class-validator + class-transformer) — This is a
+  backend-only project (no shared schemas with frontend), so Zod's
+  single-source-of-truth advantage is less impactful. class-validator is the
+  documented NestJS approach, and the project already uses decorators
+  extensively (TypeORM entities, NestJS DI). Fewer integration surprises with
+  NestJS 11.
+
+  **Libraries:** `class-validator@^0.14.x`, `class-transformer@^0.5.x`
+
+  ### phase-02-auth/TD-07
+
+  **Recommendation:** Option A (Custom Domain Exception Filter) — Provides
+  machine-readable error codes that the Next.js frontend can switch on, without
+  the overhead of RFC 9457's URI-based type system. The project is
+  single-consumer (first-party frontend), so a simple `{ statusCode, error,
+  message }` format with domain codes balances clarity and simplicity. The
+  custom filter cost is low — two small files.
+
+  **Libraries:** —
+
+  ### phase-02-auth/TD-08
+
+  **Recommendation:** Option A (@nestjs/throttler) — Native NestJS integration
+  is decisive: the guard system allows scoping rate limiting to `AuthModule`
+  only via module-level `APP_GUARD`, with `@SkipThrottle()` for exemptions. The
+  project is single-instance with no distributed requirements, so in-memory
+  storage is sufficient. Using express-rate-limit would bypass NestJS's DI and
+  guard lifecycle for no clear benefit.
+
+  **Libraries:** `@nestjs/throttler@^6.x`
+
+  ### phase-02-auth/TD-09
+
+  **Recommendation:** Option B (Opaque) — Since DB lookup is mandatory (TD-03),
+  JWT signature adds no security value. Opaque tokens are shorter, leak no data,
+  and are simpler to generate.
+
+  **Note:** Decision deliberately diverged from the Recommendation — JWT was
+  kept to reuse the access-token signing/verification infrastructure
+  (`@nestjs/jwt`), trading token size and base64-readability for a single token
+  format across the codebase.
+
+  **Libraries:** `@nestjs/jwt@^11.0.0`
+
+  ### phase-02-auth/TD-10
+
+  **Recommendation:** Option A — The platform is a video sharing service with
+  URL-based channel handles. A strict `[a-z0-9_]` allowlist is the simplest and
+  most portable choice: no extra dependencies, no edge cases around hyphen
+  positioning, and the `user_<random>` fallback provides a valid handle even for
+  extreme email prefixes. Hyphens can always be added in a future iteration if
+  user feedback justifies it.
+
+  **Libraries:** —
+
+  ### phase-02-auth-frontend/TD-01
+
+  **Recommendation:** Three reasons. (1) **Architectural fit.** The strict-BFF
+  model in `next-frontend-config-base/TD-03` already nominates the Route Handler
+  as the only NestJS caller; cookie-based sessions are the natural match, and
+  Auth.js's framework adds layers between the BFF and the cookie that buy
+  nothing because the backend is the auth authority — Auth.js's value (DB
+  adapters, OAuth providers, magic-link, `getServerSession` helpers) is mostly
+  unused in this configuration. (2) **Smaller blast radius.** A ~50-LOC session
+  helper is grep-friendly, debuggable, and test-friendly via the existing
+  MSW+BFF integration test pattern; a misconfigured Auth.js callback is a longer
+  fault-isolation loop. (3) **Compatibility with Next.js 16 / React 19.**
+  Built-in `next/headers` `cookies()` is the canonical primitive both runtimes
+  already use; Auth.js v5 versions track Next.js majors with a lag, adding
+  compatibility risk that Option A does not have. Option C is rejected as unsafe
+  (`localStorage` for refresh tokens) and architecturally regressive (loses RSC
+  personalization).
+  **Libraries:** —
+
+  ### phase-02-auth-frontend/TD-02
+
+  **Recommendation:** Three reasons. (1) **Defense in depth on the cookie
+  content** — `httpOnly` blocks JS, encryption blocks accidental log/proxy
+  inspection; the marginal cost is one ~3KB dep. (2) **Single cookie to manage**
+  simplifies logout (one `session.destroy()` call) and avoids the orphan-cookie
+  failure mode of Option A. (3) **Room to carry minimal user metadata**
+  (`userId`, `email`, `channelSlug`) lets `app/layout.tsx` RSC render the
+  authenticated chrome (avatar, channel name) without a per-render `/auth/me`
+  round-trip — Phase 04+ gains compound here. Option A is a viable downgrade if
+  the team rejects `iron-session` for any reason; the migration A→B (or B→A) is
+  a one-Route-Handler refactor with no test changes downstream because the BFF
+  interface is unchanged. Option C is rejected: it solves a problem (server-side
+  revocation) the project does not have at the cost of infrastructure the
+  project does not own.
+  **Libraries:** iron-session
+
+  ### phase-02-auth-frontend/TD-03
+
+  **Recommendation:** The single-flight detail is non-trivial and goes in the
+  helper from day one — tested by MSW with a "two concurrent intercepted
+  upstream calls; one refresh expected" assertion. Option B's client-driven
+  pattern is rejected because it doesn't replace Option A (RSC still needs
+  server-side refresh) — adopting B means doing both. Option C's pre-emptive
+  timer is rejected because the failure modes (multiple tabs, sleep/wake)
+  outweigh the latency saving and force a `"use client"` shell near the root.
+  **Libraries:** —
+
+  ### phase-02-auth-frontend/TD-04
+
+  **Recommendation:** Three reasons. (1) **Decoupled from TD-05** — works with
+  Route Handlers OR Server Actions; the form code does not change if TD-05 is
+  revisited later. (2) **Aligned with shadcn's canonical form primitive** — the
+  project already commits to `radix-nova` shadcn (`components.json`); `npx
+  shadcn@latest add form` produces react-hook-form wrappers; choosing
+  react-hook-form means using the supported primitive instead of hand-rolling
+  around it. (3) **Zod-first developer ergonomics match the rest of the FE
+  foundation** — `next-frontend-config-base/TD-01` chose Zod 4 for env; the same
+  schemas-as-source-of-truth pattern carries to forms with zero new validator
+  paradigm. Option B is rejected for impedance with shadcn's primitive and for
+  over-investing in progressive-enhancement that the strict-BFF model does not
+  require. Option C is rejected for the per-field boilerplate and the loss of
+  client-side feedback on a project that values quick, type-safe form iteration.
+  **Libraries:** react-hook-form, @hookform/resolvers
+
+  ### phase-02-auth-frontend/TD-05
+
+  **Recommendation:** Three reasons. (1) **Strict-BFF alignment.**
+  `next-frontend-config-base/TD-03` named Route Handlers as the BFF surface;
+  Option A keeps every mutation visible under `app/api/**`. (2) **Test scaffold
+  already exists** — `next-frontend/CLAUDE.md` § Testing and
+  `next-frontend-msw-foundation` were authored for Route-Handlers-as-functions;
+  Option A reuses them with zero invention. (3) **Single mutation surface** —
+  Phase 02 sets the precedent for Phases 03–07; uniformity beats per-mutation
+  idiom-picking when the cost of inconsistency compounds (Option C). Option B
+  has real ergonomic appeal for the simplest forms but fragments the BFF surface
+  and forces test-pattern reinvention; if the team later wants progressive
+  enhancement for specific forms, the migration A→B is per-form and doesn't
+  require touching unrelated routes — A is the safer default and the cheaper
+  baseline.
+  **Libraries:** —
+
+  ### phase-02-auth-frontend/TD-06
+
+  **Recommendation:** Two reinforcing reasons. (1) **No first-render flicker, no
+  round-trip** — the session is delivered in the same response as the page
+  HTML; the Client Provider hydrates with the correct initial state; users never
+  see "Login" briefly turn into their avatar. (2) **No new BFF endpoint** — the
+  cookie is the source of truth, RSC reads it, the Provider broadcasts it; the
+  BFF surface stays minimal. The `router.refresh()` requirement after
+  mid-session mutations is a small price (one line in the relevant mutation
+  handler) for the structural benefits. Option B is rejected for the
+  double-read-and-flicker; Option C is dominated by Option B and rejected.
+  **Libraries:** —
+
+  ### phase-02-auth-frontend/TD-07
+
+  **Recommendation:** Three reasons. (1) **First-paint-correct** — the user sees
+  the right outcome on the first paint, no skeleton, no flicker. (2) **Single
+  integration pattern across both flows** — confirmation is RSC-only; reset is
+  RSC + Client form (TD-04, TD-05 patterns reused) — both share the "RSC owns
+  the token, Client Component owns the input" split. (3) **Email-prefetch
+  behavior** is solved at the backend's idempotent-confirmation level (a small
+  note for `/plan-build` to confirm; not a separate TD). Option B's
+  Route-Handler-as-link-target adds redirects for no clean gain. Option C is
+  dominated.
+  **Libraries:** —
+
+  ---
+
+  ## Inherited Deferred Capabilities for Phase 03
+
+  | Capability | Status | Origin phase | Rationale |
+  |-----------|--------|--------------|-----------|
+  | Telas de frontend | deferred | phase-01-configuracao-base | `next-frontend/`
+  is not initialized in this phase; UI surfaces start in a later phase. |
+  | Telas de cadastro, login, confirmação de conta e recuperação de senha |
+  deferred | phase-02-auth | `next-frontend/` is not initialized in this phase;
+  UI surfaces start in a later phase. |
+  | "Confirmação de conta via e-mail com link de ativação" | deferred |
+  phase-02-auth-frontend | deferred_to_next_phase — UI landing screen de-scoped
+  2026-05-14; FE confirmation flow (TD-07) picked up by a future phase. BE side
+  unchanged in `phase-02-auth`. |
+  | "Logout" | deferred | phase-02-auth-frontend | deferred_to_next_phase —
+  logout button lives inside authenticated chrome (typically Phase 04). Phase 02
+  still implements POST `/api/auth/logout` (BFF route handler +
+  `session.destroy()`) so the contract is ready when the chrome lands. |
+  | "Recuperação de senha (destination screen / set-new-password)" | deferred |
+  phase-02-auth-frontend | deferred_to_next_phase — `/forgot-password` ships
+  this phase sending the e-mail; the reset-password destination screen is absent
+  from Figma → link destination remains a 404 until a later phase delivers the
+  screen via `/screen-inventory` extension run. Documented as a known gap. |
+  | "Telas de cadastro, login, confirmação de conta e recuperação de senha" |
+  deferred | phase-02-auth-frontend | a tela de confirmação da conta não será
+  implementada nesta fase corrente, será adiada — the umbrella bullet's full
+  coverage requires the confirmação and reset-password destination screens; both
+  are deferred per Non-UI rows above. The 3 ship-this-phase telas (signup,
+  login, forgot-password) are inventoried and covered by their own verbs; the
+  umbrella bullet itself is deferred to the phase-that lands the missing
+  screens. |
+
+  ---
+
+  **Notes for the caller (not part of the contract):**
+  - None of the prior final phase docs (`phase-01-configuracao-base.md`,
+  `phase-02-auth.md`, `phase-02-auth-frontend.md`) has a `## Conventions to
+  Match` section. I checked their headers and read none of their bodies.
+  - Phase 02 has two slices. Its TDs are listed by slice slug in ascending
+  order: phase-02-auth, then phase-02-auth-frontend. Conventions were
+  deduplicated across both slices.
+  - In the deferred table, the phase-01 row "Telas de frontend" and the
+  phase-02-auth row are copied as written. Later slices may have addressed them
+  in part, since phase-02-auth-frontend initialized `next-frontend/`. You decide
+  whether to keep them.
+  - Prior-phase context.md files read (bounded reads only):
+    - /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenf
+  ield-project/docs/phases/phase-01-configuracao-base/context.md (lines 1–101)
+    - /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenf
+  ield-project/docs/phases/phase-02-auth/context.md (lines 72–137, 164–182)
+    - /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenf
+  ield-project/docs/phases/phase-02-auth-frontend/context.md (lines 80–116,
+  233–242, 276–284)
+
+● All five readers are back. Two things are left before writing:
+  1. Four of the inherited convention bullets came back cut off mid-word (for
+     example "validationOpti..."). I'll ask the prior-phases reader for the full
+     text instead of reading those files myself.
+  2. You need to choose which correlated decisions docs to include.
+● Agent "phases-reader phase 03" finished · 1m 2s
+  ⎿  Resuming agent a538914
+
+● User answered Claude's questions:
+  ⎿  · The correlator found 4 standalone decisions docs that might relate to 
+     phase-03-videos. Which should feed its Inherited Decisions Detail? (None 
+     are ranked high, so none are selected by default.) → openapi-docs-nestjs 
+     (medium), next-frontend-config-base (low)
+
+› Message from phases-reader
+  - Backend config uses `@nestjs/config` with namespaced `registerAs(name, () =>
+  ({...}))` factories — one file per domain in `src/config/`. _(from phase 01)_
+  - Env variables are validated by a Joi schema in
+  `src/config/env.validation.ts`, passed to `ConfigModule.forRoot({
+  validationSchema, validationOptions: { allowUnknown: true, abortEarly: false }
+  })`. _(from phase 01)_
+  - Config is injected into modules via `ConfigType<typeof xxxConfig>` and
+  `@Inject(xxxConfig.KEY)`; the same factory is importable as a plain function
+  for non-DI contexts (e.g., TypeORM CLI). _(from phase 01)_
+  - `data-source.ts` loads `.env` via `import 'dotenv/config'` at the top, then
+  imports `databaseConfig` and calls it as a plain function. _(from phase 01)_
+  - Database connection parameters (host, port, etc.) are sourced from a single
+  `databaseConfig` factory — never duplicated between `AppModule` and
+  `data-source.ts`. _(from phase 01)_
+  - `TypeOrmModule.forRootAsync` is used (not `forRoot`), with `imports:
+  [ConfigModule]`, `inject: [databaseConfig.KEY]`, `useFactory` returning
+  options including `autoLoadEntities: true`, `synchronize: false`. _(from phase
+  01)_
+
+● Agent "phases-reader phase 03" finished · 1m 19s
+
+● I have the full convention bullets. Next I'll read only the TD headers,
+  Recommendation, Libraries, Renders in and Revisions lines from the two docs
+  you confirmed.
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● I have everything. Writing context.md now.
+
+● Write(docs/phases/phase-03-videos/context.md)
+  ⎿  Wrote 366 lines to docs/phases/phase-03-videos/context.md
+       1 ---
+       2 kind: phase
+       3 name: phase-03-videos
+       4 sources_mtime:
+       5   docs/project-plan.md: "2026-10-17T19:41:40-03:00"
+       6   docs/decisions/technical-decisions-phase-03-videos.md: "2026-1
+         0-24T22:46:07-03:00"
+       7   docs/decisions/technical-decisions-openapi-docs-nestjs.md: "20
+         26-10-17T19:41:40-03:00"
+       8   docs/decisions/technical-decisions-next-frontend-config-base.m
+     … +359 lines (~36 KB) (ctrl+o to expand)
+
+● I wrote docs/phases/phase-03-videos/context.md. The next step is
+  /plan-validate phase-03-videos.
+
+  What's in it:
+  - Scope: the 9 Phase 03 capabilities from project-plan.md, plus Phase 02 and
+    04 as neighbors. The plan doesn't name any subprojects for this phase. The
+    decisions doc puts all the work in nestjs-project.
+  - Decisions: all 13 TDs are decided, and every capability has at least one TD
+    covering it.
+  - Inherited from earlier phases: 21 TDs from phases 01 and 02, 6
+    config/TypeORM conventions from phase 01, and 6 deferred frontend
+    capabilities from earlier phases.
+  - Correlated docs you picked: 3 TDs from openapi-docs-nestjs and 3 from
+    next-frontend-config-base.
+  - UI inventory: marked deferred, as you chose. The UI check only fired because
+    "arquivos" contains "ui"; the phase has no screens.
+  - Testing requirements: taken from the nestjs-project testing guide checklist.
+    That checklist has no rows for queue workers or scheduled jobs yet; the
+    guide's future-types.md file covers them.
+
+  Checks: both decisions readers saw all 8 decisions files, kept the same one,
+  and returned exactly the 13 decided TDs in the doc, with no warnings.
+
+  Four of the inherited convention bullets came back cut off mid-word, so I
+  asked the prior-phases reader for the full text before writing them in.
+
+  I didn't commit anything.
+
+✻ Churned for 7m 9s · done 16:14
+
+※ recap: We're planning Phase 03 (video upload and processing), and its context file, docs/phases/phase-03-videos/context.md, is written with all 13 decisions and full capability coverage. Next, run /plan-validate phase-03-videos; nothing is committed yet. (disable recaps in /config)
+
+❯ /plan-validate phase-03-videos                                                
+
+● Running validation for phase-03-videos. First the preflight checks: staleness,
+  any prior validation, custom rules, and the slice count.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Preflight checks pass—context.md is current, no earlier validation or custom
+  rules exist, and phase 03's single slice skips the cross-slice check. I
+  already have context.md in memory, so I'll proceed directly to the coherence
+  checks.
+
+● Write(docs/phases/phase-03-videos/validation.md)
+  ⎿  Wrote 66 lines to docs/phases/phase-03-videos/validation.md
+       1 ---
+       2 kind: phase
+       3 name: phase-03-videos
+       4 status: dirty
+       5 issue_count: 5
+       6 sources_mtime:
+       7   docs/phases/phase-03-videos/context.md: "2026-11-01T16:14:44-0
+         3:00"
+       8   docs/decisions/technical-decisions-phase-03-videos.md: "2026-1
+         0-24T22:46:07-03:00"
+     … +58 lines (ctrl+o to expand)
+
+● Validation found 5 open issues, so docs/phases/phase-03-videos/validation.md
+  is marked status: dirty. The next step is /plan-resolve phase-03-videos, which
+  walks you through each one.
+
+  Inconsistency
+  - IC-1: every TD has its Libraries field set to —, but TD-01 picks
+    @nestjs/bullmq 11.x and bullmq, and TD-04/05/06/11 need an S3 SDK. Later
+    steps (library-refs.md, /plan-build) read that field, so those dependencies
+    would be lost. The fix is probably a revision note on TD-01 and TD-04.
+
+  Ambiguities
+  - AMB-1: it isn't defined who can stream or download a video in Phase 03.
+    Visibility only arrives in Phase 04, so it's open whether a ready video is
+    public or owner-only for now, and what draft, processing and failed videos
+    return.
+  - AMB-2: the draft created at upload start has no defined owner (the user or
+    their channel) and no defined initial fields (filename, size, default
+    title).
+  - AMB-3: "metadados" only names duration. The other fields to store
+    (resolution, codec, mime type, size_bytes…) aren't listed, and they decide
+    the database columns and the API response.
+
+  Missing decision
+  - MD-1: no TD says how the private bucket and its CORS policy get created.
+    Browser uploads need CORS to expose the ETag header. The options are a
+    Compose init container, setup when the API boots, or a manual step.
+
+  The other checks came back clean:
+  - No dependency gaps on earlier phases.
+  - No conflicts with inherited decisions. The strict-BFF rule and the direct
+    browser-to-storage design were already reconciled in the decisions doc.
+  - No open questions, since all 13 TDs are decided.
+  - The UI check and the cross-slice check were skipped, because the UI is
+    deferred and the phase has a single slice.
+
+✻ Churned for 1m 18s · done 16:31
+
+※ recap: We're planning Phase 03 (video upload and processing): its context file is written, and validation found 5 open issues, including missing library names and an undecided bucket setup. Next, run /plan-resolve phase-03-videos to settle them. (disable recaps in /config)
+
+❯ /plan-resolve phase-03-videos                                                 
+
+● Running resolve preflight first.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Resolve stopped before asking anything, and no files were changed. MD-1 (a
+  missing decision) is still open. In phase mode that stops resolve up front,
+  before any other issue is asked, because a missing decision has to go through
+  research first.
+
+  ▎ Issue MD-1 requires a new technical decision (bucket + CORS provisioning for
+  ▎ object storage). Run /research bucket-cors-provisioning with 
+  ▎ related_phases=[3], then /plan-context phase-03-videos to reaggregate, then 
+  ▎ /plan-validate phase-03-validate to reconfirm, then /plan-resolve 
+  ▎ phase-03-videos to continue.
+
+  Correction to the line above: the validate command is /plan-validate 
+  phase-03-videos.
+
+  Two ways to handle MD-1:
+  - A separate decisions doc: run /research with related_phases: [3], as the
+    message above says.
+  - A new TD in the existing doc: add it to
+    technical-decisions-phase-03-videos.md by re-running /research on that
+    slice. This is probably the cleaner option, since bucket and CORS setup
+    belong with TD-02, TD-03 and TD-04.
+
+  Either way, run /plan-context, /plan-validate and /plan-resolve again for
+  phase-03-videos afterwards.
+
+  Still open: IC-1 (empty Libraries fields), AMB-1 (who can stream or download),
+  AMB-2 (draft owner and initial fields) and AMB-3 (which metadata to store).
+  They will come up as questions on the next resolve run, once MD-1 is closed.
+
+✻ Sautéed for 10s · done 17:19
+
+❯ /research phase-03-videos                                                     
+
+● phase-03-videos already has a phase-scope decisions doc, so the skill requires
+  me to ask how to proceed rather than create a suffixed copy. The goal of this
+  run is to close MD-1 (how the bucket and its CORS policy are provisioned).
+
+● User answered Claude's questions:
+  ⎿  · technical-decisions-phase-03-videos.md already exists as the Phase 03 
+     slice. Where should the new decision for MD-1 (how the storage bucket + 
+     CORS policy get provisioned) go? → Add TD-14 to existing (Recommended)
+
+● Adding TD-14 to the existing doc. First I'll look at what TD-02 already says
+  about RustFS's CORS and bucket features, plus the current Compose file and the
+  backend's dependencies.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● TD-02 confirms RustFS handles CORS via the RUSTFS_CORS_ALLOWED_ORIGINS env
+  variable rather than bucket-level S3 API config, which changes the options I
+  need to consider. I'll now check the current Compose file and RustFS docs for
+  more details.
+
+  Called context7 3 times, ran 1 shell command (ctrl+o to expand)
+
+● Confirmed RustFS supports server-wide CORS via env var and per-bucket
+  PutBucketCors, with a one-shot rc container creating the bucket. Now checking
+  whether the env-var mode exposes the ETag header and if per-bucket CORS
+  overrides it.
+
+  Called context7 (ctrl+o to expand)
+● The docs don't clarify if env-var CORS mode exposes ETag, and since per-bucket
+  CORS sets ExposeHeaders explicitly with no production equivalent for
+  env-vars, that's the key trade-off here. Next I'll verify the SDK
+  side—specifically that CreateBucket and PutBucketCors are idempotent—before
+  writing the code.
+
+  Called context7 2 times (ctrl+o to expand)
+
+● I have what I need. Before writing TD-14 I'll check the Decisions Summary
+  table and the doc's end, to match the format.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Now writing TD-14 into the decisions doc. I'm also adding its Summary row and
+  flipping the doc's status to pending, since it now has an undecided TD.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project; cat >
+      /tmp/claude-1000/-home-everton-fullcycle-mba-swe-ia-mba-ia-gree…)
+  ⎿  4:status: pending
+     425:## TD-14: Bucket and CORS Provisioning
+     473:| TD-14 | Repo-wide | Bucket and CORS Provisioning | Init containe
+     … +8 lines (ctrl+o to expand)
+  ⎿  Updated docs/decisions/technical-decisions-phase-03-videos.md (+33 -1)
+      1  ---
+      2  scope_type: phase
+      3  related_phases: [3]
+      4 -status: decided                                                 
+      4 +status: pending                                                 
+      5  date: 2026-10-24
+      6  scope_description: "Backend foundation for video upload and proc
+         essing: job queue technology, local S3-compatible storage, bucke
+         t/key layout and presigned-URL host, direct-to-storage multipart
+          upload (initiation, completion, abandoned uploads), worker topo
+         logy and FFmpeg/ffprobe extraction, unique public video ID, stre
+         aming/download delivery, and video status lifecycle with failure
+         /retry/idempotency."
+      7  ---
+     ...
+      422  
+      423  ---
+      424  
+      425 +## TD-14: Bucket and CORS Provisioning                        
+      426 +                                                              
+      427 +**Scope:** Repo-wide                                          
+      428 +                                                              
+      429 +**Capability:** Transversal — covers: "Serviço de armazenament
+          +o de arquivos (vídeos e thumbnails)", "Upload de vídeos com su
+          +porte a arquivos de até 10GB sem impacto na performance"      
+      430 +                                                              
+      431 +**Context:** TD-03 fixes one private bucket, and TD-05 has the
+          + browser `PUT` parts straight to storage through presigned URL
+          +s. The browser must read each part's `ETag` response header to
+          + build the `CompleteMultipartUpload` list, so storage must ans
+          +wer CORS preflights for the frontend origin (`http://localhost
+          +:3001` in dev) **and** list `ETag` in `Access-Control-Expose-H
+          +eaders`. Nothing currently creates the bucket or sets that COR
+          +S policy, so a fresh clone has no working upload. RustFS (TD-0
+          +2) offers two CORS mechanisms: a server-wide env var (`RUSTFS_
+          +CORS_ALLOWED_ORIGINS`, RustFS-only; its docs do not say which 
+          +headers it exposes) and the standard per-bucket `PutBucketCors
+          +` S3 API, which RustFS implements and where `ExposeHeaders: ["
+          +ETag"]` is explicit (AWS SDK v3 docs: the browser "can only ac
+          +cess headers that are exposed through CORS configuration"). Th
+          +e choice touches `compose.yaml`, `.env.example`, the API/worke
+          +r startup and the storage integration-test setup, and must car
+          +ry over to production S3 (Phase 07). Version note: the RustFS 
+          +docs' Compose examples use `rustfs/rustfs-x86-musl:v2.3.1` and
+          + `rustfs/rc:latest`, while TD-02 pins `rustfs/rustfs:1.0.3`. T
+          +he TD-02 spike must confirm `PutBucketCors` + exposed `ETag` o
+          +n the pinned version, and any helper image must be pinned to a
+          +n exact tag, not `latest`. Depends on TD-02, TD-03, TD-04, TD-
+          +05.                                                           
+      432 +                                                              
+      433 +**Options:**                                                  
+      434 +                                                              
+      435 +### Option A: Init container creates the bucket; CORS via Rust
+          +FS env var                                                    
+      436 +- A one-shot Compose service (`storage-init`, `rustfs/rc` pinn
+          +ed) waits for storage to be healthy and runs `rc mb --ignore-e
+          +xisting`-style idempotent creation. CORS comes from `RUSTFS_CO
+          +RS_ALLOWED_ORIGINS=http://localhost:3001` on the storage servi
+          +ce. `nestjs-api` / `video-worker` depend on `storage-init: ser
+          +vice_completed_successfully`.                                 
+      437 +- **Pros:** Smallest setup; mirrors the RustFS docs' own Compo
+          +se pattern; no application code; the app needs no bucket-admin
+          + permissions.                                                 
+      438 +- **Cons:** The env var is RustFS-specific: production S3 need
+          +s a separate, different CORS setup, so dev and prod configs dr
+          +ift. The docs don't say whether it exposes `ETag`, which is th
+          +e one header the upload flow cannot work without (spike-depend
+          +ent).                                                         
+      439 +                                                              
+      440 +### Option B: Init container creates the bucket **and** applie
+          +s a versioned bucket CORS policy via the S3 API               
+      441 +- Same one-shot `storage-init` service, but after creating the
+          + bucket it applies `PutBucketCors` from a JSON file committed 
+          +to the repo (e.g. `nestjs-project/infra/storage/cors.json`: `A
+          +llowedOrigins` = frontend origin, `AllowedMethods` = `PUT`, `G
+          +ET`, `HEAD`, `AllowedHeaders` = `*`, `ExposeHeaders` = `ETag`,
+          + `MaxAgeSeconds`). The origin comes from one env key (e.g. `ST
+          +ORAGE_CORS_ORIGIN`) substituted into the policy. Both steps ar
+          +e idempotent (create-if-missing; `PutBucketCors` replaces the 
+          +whole policy).                                                
+      442 +- **Pros:** Uses the standard S3 API, so the same policy file 
+          +applies to production S3 unchanged (`aws s3api put-bucket-cors
+          +`); `ETag` exposure is explicit, not inferred. Provisioning st
+          +ays in the infra layer; the API/worker keep least-privilege cr
+          +edentials. The policy is reviewable in git.                   
+      443 +- **Cons:** One more Compose service and a short shell script 
+          +to maintain. Startup ordering depends on `service_completed_su
+          +ccessfully`. The policy file and the env key must stay in sync
+          + with the frontend origin.                                    
+      444 +                                                              
+      445 +### Option C: Application bootstrap provisions the bucket and 
+          +CORS                                                          
+      446 +- A `StorageProvisioner` in the API runs on `onApplicationBoot
+          +strap`: `HeadBucket` → `CreateBucket` if missing (treating `Bu
+          +cketAlreadyOwnedByYou` as success) → `PutBucketCors` with rule
+          +s built from config. Gated by an env flag (e.g. `STORAGE_AUTO_
+          +PROVISION=true` in dev/test, `false` in production).          
+      447 +- **Pros:** No extra container; the rules live in typed TS nex
+          +t to the storage config. Integration tests can reuse the provi
+          +sioner to create an isolated test bucket per suite.           
+      448 +- **Cons:** The API's runtime credentials need bucket-admin ri
+          +ghts (`CreateBucket`, `PutBucketCors`) wherever the flag is on
+          +, which conflicts with least privilege. It mixes infra provisi
+          +oning into the storage module (the CLAUDE.md single-responsibi
+          +lity principle). Production still needs a separate path when t
+          +he flag is off. If the worker also boots the provisioner, two 
+          +processes race on startup.                                    
+      449 +                                                              
+      450 +**Recommendation:** **Option B (init container + versioned buc
+          +ket CORS policy)** — it is the only option where the CORS rule
+          + the upload flow depends on (`ExposeHeaders: ETag`) is stated 
+          +explicitly in the standard S3 form, so the same file serves Ru
+          +stFS in dev and S3 in production (Phase 07) without drift. It 
+          +also keeps admin operations out of the API/worker. Option A's 
+          +env var is simpler but RustFS-only and silent about exposed he
+          +aders. If the TD-02 spike shows it exposes `ETag`, it remains 
+          +an acceptable fallback, not a portable contract. Option C work
+          +s but gives the application admin rights and an infra responsi
+          +bility it does not otherwise need. Integration tests run insid
+          +e the same Compose network, so they get the provisioned bucket
+          + from `storage-init` and can isolate their data by key prefix.
+      451 +                                                              
+      452 +**Decision:** _[pending]_                                     
+      453 +                                                              
+     … 9 more lines (ctrl+o to expand)
+
+● I added TD-14 "Bucket and CORS Provisioning" to
+  docs/decisions/technical-decisions-phase-03-videos.md, which closes MD-1. It's
+  pending your decision, so the doc's status is now pending.
+
+  Why it matters: browser uploads only work if storage exposes the ETag header
+  on each uploaded part, because the frontend needs those values to finish the
+  multipart upload. RustFS can set CORS two ways. Its server-wide environment
+  variable is RustFS-only, and its docs don't say whether it exposes ETag. The
+  standard per-bucket CORS policy (PutBucketCors, which RustFS supports) lets
+  you list ETag explicitly.
+
+  Options:
+  - A: a one-shot Compose container creates the bucket, and CORS comes from the
+    RUSTFS_CORS_ALLOWED_ORIGINS env var. Simplest, but RustFS-only, and the ETag
+    exposure is unconfirmed.
+  - B (recommended): the same one-shot container creates the bucket and also
+    applies a bucket CORS policy from a JSON file kept in the repo, with
+    ExposeHeaders: ETag. That file works unchanged on AWS S3 in production, and
+    the API and worker don't need bucket-admin permissions.
+  - C: the API creates the bucket and CORS policy itself at startup. No extra
+    container, but the app would need admin permissions and would take on
+    infrastructure work.
+
+  Version mismatch: the RustFS docs' examples use rustfs/rustfs-x86-musl:v2.3.1
+  and rustfs/rc:latest, but TD-02 pins rustfs/rustfs:1.0.3. I put a note in
+  TD-14: the TD-02 spike should confirm per-bucket CORS and the exposed ETag on
+  the pinned version, and the helper image should be pinned to an exact tag
+  instead of latest.
+
+  Next steps:
+  1. Fill in TD-14's **Decision:** field (or let /plan-resolve ask you).
+  2. Run /plan-context phase-03-videos to rebuild the context, since the
+     decisions doc changed.
+  3. Run /plan-validate phase-03-videos, then /plan-resolve phase-03-videos.
+     Resolve will ask about TD-14 if it's still pending, plus IC-1, AMB-1, AMB-2
+     and AMB-3.
+
+✻ Brewed for 1m 37s · done 17:23
+
+❯ /plan-context phase-03-videos                                                 
+
+● Re-running context for phase-03-videos. Only the decisions doc changed since
+  the last run (TD-14 was added), so first I'll confirm that nothing else moved
+  and check whether TD-14 is decided yet.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Only the videos technical-decisions file changed, with TD-14 still pending, so
+  everything else from before still holds. I'll re-run just the two decisions
+  readers for that file.
+
+● 2 background agents launched (↓ to manage)
+   ├ decisions-reader (decisions-reader phase 03 rerun)
+   └ decisions-detail-reader (decisions-detail-reader phase 03 rerun)
+
+● Both decisions readers are running. I'll update context.md once they finish
+  and their checks pass.
+
+✻ Worked for 17s · done 17:25
+
+› Message from decisions-reader
+  ## Decisions Index for Phase 3 / slice phase-03-videos
+
+  | Ref | Source | Scope | Topic | Status | Decision | Libraries | Capability |
+  |-----|--------|-------|-------|--------|----------|-----------|------------|
+  | phase-03-videos/TD-01 | phase | Backend | Job Queue Technology | decided |
+  A: BullMQ + Redis via `@nestjs/bullmq` (11.x) | — | Serviço de processamento
+  em segundo plano (filas) |
+  | phase-03-videos/TD-02 | phase | Repo-wide | Local S3-Compatible Object
+  Storage Server | decided | A: RustFS | — | Serviço de armazenamento de
+  arquivos (vídeos e thumbnails) |
+  | phase-03-videos/TD-03 | phase | Backend | Bucket and Object Key Layout |
+  decided | A: Single private bucket, prefix per video (internal UUID) | — |
+  Serviço de armazenamento de arquivos (vídeos e thumbnails) |
+  | phase-03-videos/TD-04 | phase | Backend | Presigned URL Host (Internal vs
+  Public Storage Endpoint) | decided | A: Two endpoints (internal for ops,
+  public for browser-facing signatures) | — | Serviço de armazenamento de
+  arquivos (vídeos e thumbnails) |
+  | phase-03-videos/TD-05 | phase | Cross-layer | Large-File Upload Protocol (up
+  to 10 GB, direct to storage) | decided | A: Presigned S3 multipart,
+  orchestrated by the API | — | Transversal: "Upload de vídeos … até 10GB …",
+  "Pré-cadastro automático do vídeo como rascunho ao iniciar o upload" |
+  | phase-03-videos/TD-06 | phase | Backend | Upload Completion Detection |
+  decided | A: Client signals, API completes using its own `ListParts` | — |
+  Transversal: "Upload de vídeos … até 10GB …", "Processamento automático do
+  vídeo após upload (extração de duração e metadados)" |
+  | phase-03-videos/TD-07 | phase | Backend | Abandoned Upload Cleanup | decided
+  | A: Application cleanup job (scheduled job on the queue) | — | Upload de
+  vídeos com suporte a arquivos de até 10GB sem impacto na performance |
+  | phase-03-videos/TD-08 | phase | Backend | Video Worker Topology | decided |
+  A: Same codebase, second entrypoint, separate Compose service | — |
+  Transversal: "Serviço de processamento em segundo plano (filas)",
+  "Processamento automático do vídeo após upload …", "Geração automática de
+  thumbnail …" |
+  | phase-03-videos/TD-09 | phase | Backend | FFmpeg/ffprobe Invocation and
+  Input Access | decided | A: Spawn system binaries on a presigned URL | — |
+  Transversal: "Processamento automático do vídeo após upload …", "Geração
+  automática de thumbnail a partir de um frame do vídeo" |
+  | phase-03-videos/TD-10 | phase | Cross-layer | Unique Public Video ID (URL
+  strategy) | decided | B: Random 11-char base64url `public_id` | — | URL única
+  por vídeo, sem conflito com outros vídeos |
+  | phase-03-videos/TD-11 | phase | Cross-layer | Streaming and Download
+  Delivery | decided | A: Access check + `302` to presigned GET | — |
+  Transversal: "Reprodução via streaming (sem necessidade de download
+  completo)", "Download do vídeo pelo usuário" |
+  | phase-03-videos/TD-12 | phase | Backend | Video Status Lifecycle Model |
+  decided | A: Single `status` enum `draft \| processing \| ready \| failed`
+  (visibility is a separate field in Phase 04) | — | Transversal: "Pré-cadastro
+  automático do vídeo como rascunho …", "Processamento automático do vídeo após
+  upload …" |
+  | phase-03-videos/TD-13 | phase | Backend | Processing Failure, Retry and
+  Idempotency Strategy | decided | A: Queue-native retries + idempotent `jobId =
+  videoId` | — | Transversal: "Processamento automático do vídeo após upload
+  …", "Geração automática de thumbnail …" |
+  | phase-03-videos/TD-14 | phase | Repo-wide | Bucket and CORS Provisioning |
+  pending | — | — | Transversal: "Serviço de armazenamento de arquivos (vídeos e
+  thumbnails)", "Upload de vídeos … até 10GB …" |
+
+  I left out the `Renders in` column because none of the 14 TDs has a `**Renders
+  in:**` field. None has a `**Libraries:**` or `**Revisions:**` field either,
+  and none is marked superseded. Some long Capability values are shortened with
+  `…`.
+
+  ## Source Files
+
+  - phase-03-videos —
+  /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield
+  -project/docs/decisions/technical-decisions-phase-03-videos.md (scope_type:
+  phase, related_phases: [3])
+
+  ## Filter Trace
+
+  Globbed T=8 candidates from `docs/decisions/*.md`. Per-file decisions:
+
+  | File | scope_type | related_phases | Decision | Reason |
+  |------|-----------|----------------|----------|--------|
+  | technical-decisions-phase-03-videos.md | phase | [3] | kept | phase rule:
+  filename-slug == identifier |
+  | technical-decisions-next-frontend-config-base.md | ? | ? | dropped | ad-hoc
+  rule: in S_adhoc but not in S_NN |
+  | technical-decisions-next-frontend-msw-foundation.md | ? | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-next-frontend-openapi-typing.md | ? | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-openapi-docs-nestjs.md | ? | ? | dropped | ad-hoc rule:
+  in S_adhoc but not in S_NN |
+  | technical-decisions-phase-02-auth-frontend.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-02-auth.md | ? | ? | dropped | phase rule:
+  filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-01-configuracao-base.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+
+  Note on S_NN: ripgrep rejected the spec's lookahead pattern `(?=[,\s\]])`
+  because it needs PCRE2. I swapped it for the consuming class `[,\s\]]`, which
+  matches the same lines (`^related_phases:\s*\[(?:[^\]]*[,\s])?3[,\s\]]`). With
+  NN=3, S_NN = {technical-decisions-phase-03-videos.md}, so the ad-hoc result
+  S_adhoc ∩ S_NN is empty.
+
+● The decisions index check passed: all 8 files were traced, only
+  phase-03-videos was kept, and TD-14 shows as pending. Now waiting on the
+  decisions detail reader.
+
+✻ Worked for 2s · done 17:26
+
+● Agent "decisions-reader phase 03 rerun" finished · 28s
+
+› Message from decisions-detail-reader
+  ## Decisions Detail for Phase 03 / slice phase-03-videos
+
+  ### phase-03-videos/TD-01
+
+  **Recommendation:** It is the only option where retry/backoff, a kept
+  failed-job record, stalled-job recovery, deduplicated enqueue and a periodic
+  scheduler (needed by TD-07 and TD-13) all come out of the box with an official
+  Nest integration that works on this CommonJS Nest 11 project. The cost is one
+  Redis container that **must** be configured with `--appendonly yes
+  --maxmemory-policy noeviction` in `compose.yaml`, plus new env keys
+  (`REDIS_HOST=redis`, `REDIS_PORT`) in the Joi schema. Option B is the credible
+  "no-Redis" alternative with the same code API; it is not recommended yet
+  because it is new and has no documented Nest wiring — re-evaluate when
+  `@nestjs/bullmq` supports backends officially.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-02
+
+  **Recommendation:** It keeps the one-container developer experience the plan
+  assumed with MinIO, is actively maintained, and its documented features cover
+  everything this phase needs (multipart, presign, CORS, `Range`,
+  abandoned-upload cleanup). Because the code depends only on the S3 API, the
+  risk of its youth is limited: the first implementation step should be a short
+  spike that checks presigned `UploadPart` + `CompleteMultipartUpload`, CORS
+  with `ETag` exposed, and `Range` → `206` against RustFS. If the spike fails,
+  switch to Option B (Garage) with only Compose changes. Option C is not
+  recommended: dev environments should not depend on an archived server with no
+  official image. Separate task to note: update the diagram's "S3 or MinIO"
+  label.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-03
+
+  **Recommendation:** It is the smallest correct setup: one bucket to create and
+  protect, immutable keys based on the internal UUID (independent of TD-10's
+  public ID), and one-prefix deletion. Storage growth is tracked through a
+  `size_bytes` column in the DB rather than through key structure. If Phase 07
+  needs cacheable public thumbnails, a prefix policy or a move to Option B can
+  be decided then.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-04
+
+  **Recommendation:** It is the only option that works on a fresh clone with no
+  host-machine changes and keeps all server-to-server traffic on Compose service
+  names, as `CLAUDE.md` requires. `S3_PUBLIC_ENDPOINT=http://localhost:9000` is
+  an intended exception to the "never `localhost`" rule because it is read by
+  the host's browser, not by a container. It should be documented as such in
+  `.env.example`. Proposed canonical keys: `S3_ENDPOINT`, `S3_PUBLIC_ENDPOINT`,
+  `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET`,
+  `S3_FORCE_PATH_STYLE` (true for the local server). Implementation note from
+  the SDK docs: set `requestChecksumCalculation: 'WHEN_REQUIRED'` on the S3
+  clients, because the SDK's default flexible checksums add `x-amz-checksum-*`
+  headers that break presigned part uploads against non-AWS servers.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-05
+
+  **Recommendation:** It is the only option where the file never passes through
+  an application process (API, BFF or tus server), which matches both the
+  requirement and the diagram's direct frontend ↔ storage link. Resume uses
+  standard `ListParts`. Proposed parameters: fixed **64 MiB** part size (10 GiB
+  → 160 parts, well under 10,000 and above the 5 MiB minimum), presigned part
+  URLs valid for 1 h and issued in batches. Size enforcement without vendor
+  extensions: (1) reject `size > 10 GiB` at initiation, (2) sign only part
+  numbers `1..partCount` and include `Content-Length` in each part's signature,
+  (3) after completion, verify the object size with `HeadObject` before
+  accepting it. Pre-registration happens in the same initiation call that
+  creates the multipart upload.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-06
+
+  **Recommendation:** It gives a single, synchronous point where the API knows
+  for certain that the object exists. It does not depend on storage-specific
+  event setups, which differ between local and production environments. The only
+  gap (a client that never signals) is covered by the cleanup job in TD-07.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-07
+
+  **Recommendation:** The DB row is what users and later phases see, and only
+  application code can clean the DB and storage together. It reuses the TD-01
+  scheduler, so no new library is needed. A lifecycle rule (Option C) can be
+  added cheaply at deploy time (Phase 07) as defense in depth, and RustFS
+  already removes stale uploads after 24 h by default.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-08
+
+  **Recommendation:** It gives the process/container isolation the diagram and
+  the performance requirement call for, without duplicating the domain model or
+  creating a shared-package setup. FFmpeg runs as a child process, so the
+  worker's event loop stays free to renew BullMQ job locks during long jobs.
+  Responsibilities stay separate: the API's videos module only *produces* jobs,
+  and a processing module loaded only by `WorkerModule` *consumes* them.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-09
+
+  **Recommendation:** Metadata and a single frame only need a small part of the
+  file, so reading through HTTP `Range` avoids the disk space and download time
+  of Option B, which grow with file size. Install binaries with `apt-get install
+  ffmpeg` in the worker image (Debian package, versioned with the base image)
+  rather than `ffmpeg-static`, so the version is visible and patchable. Pick the
+  thumbnail frame relative to the duration (e.g. 10 % of the duration, with a
+  fallback to the first frame for very short clips). If ffprobe reports no video
+  stream, the file is treated as invalid media → permanent failure (TD-13).
+  **Libraries:** —
+
+  ### phase-03-videos/TD-10
+
+  **Recommendation:** It satisfies "short" and "never conflicts" (enforced by
+  the `UNIQUE` index, not by probability) and cannot be guessed, which Phase
+  04's unlisted visibility depends on. It uses the same
+  generate-and-retry-on-unique-violation pattern already used for channel
+  nicknames, and needs no new dependency. Storage keys keep using the internal
+  UUID (TD-03), so the public ID can change without moving any object.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-11
+
+  **Recommendation:** It is the only option that keeps video bytes off the API
+  and still has one place where access is checked for Phases 04/05. Streaming
+  and download become the same mechanism, and `Range`/`206` is handled by the
+  storage server instead of custom code. Proposed TTLs: about 6 h for stream
+  URLs (long enough for a viewing session with seeking), about 15 min for
+  download URLs. Known limitation to record: the original file is played as
+  uploaded, so formats the browser can't play (e.g. some MKV/HEVC files) will
+  download but not play. Transcoding is not in this phase.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-12
+
+  **Recommendation:** The phase literally describes the cycle "rascunho →
+  processando → pronto/erro" and asks for "pré-cadastro como rascunho", so the
+  status column mirrors the requirement one-to-one. The main Option A con is
+  removed by fixing the meaning of `draft` and keeping publication out of this
+  enum:
+  - `draft` means only "video pre-registered, upload not yet completed". It is
+  set at upload initiation (TD-05) and left only by the `complete` call (TD-06),
+  which moves `draft → processing`.
+  - Publication/visibility (Phase 04) will be a **separate field** created in
+  Phase 04. It never adds values to this enum.
+  - TD-07 and TD-13 still get exact states: the cleanup job queries `draft` rows
+  older than the threshold, and every transition is a conditional update on the
+  current state (`WHERE status = 'draft'` on completion, `WHERE status =
+  'processing'` in the worker).
+
+  Why Option B was not chosen: its only advantage over A was separating the
+  file's state from publication. With the meaning of `draft` fixed as above and
+  publication kept in its own Phase 04 field, A provides the same separation and
+  uses the plan's own vocabulary. B would rename the requirement's "rascunho"
+  state to `uploading` and require API docs explaining that "rascunho" means
+  something other than the status column.
+
+  Known trade-off to carry into Phase 04: there, "rascunho → publicação" uses
+  "rascunho" in the *publication* sense, and a processed but unpublished video
+  has `status = ready`, not `draft`. Phase 04 must name its publication
+  field/values without reusing `draft`.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-13
+
+  **Recommendation:** Every step is safe to repeat (deduplicated enqueue,
+  conditional update, fixed keys), so retries and re-delivery cause no damage.
+  Separating permanent from temporary errors keeps bad uploads from using up
+  retries. The one gap (commit succeeded, enqueue failed) is closed by
+  re-enqueuing the same `jobId`, without an outbox. Revisit Option B if more job
+  types later need guaranteed delivery.
+  **Libraries:** —
+
+  ## Filter Trace
+
+  Globbed T=8 candidates from `docs/decisions/*.md`. Per-file decisions:
+
+  | File | scope_type | related_phases | Decision | Reason |
+  |------|-----------|----------------|----------|--------|
+  | technical-decisions-phase-03-videos.md | phase | [3] | kept | phase rule:
+  filename-slug == identifier |
+  | technical-decisions-next-frontend-config-base.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-next-frontend-msw-foundation.md | ? | ? | dropped |
+  phase rule: filename-slug != identifier; ad-hoc rule: in S_adhoc but not in
+  S_NN |
+  | technical-decisions-next-frontend-openapi-typing.md | ? | ? | dropped |
+  phase rule: filename-slug != identifier; ad-hoc rule: in S_adhoc but not in
+  S_NN |
+  | technical-decisions-openapi-docs-nestjs.md | ? | ? | dropped | phase rule:
+  filename-slug != identifier; ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-phase-02-auth-frontend.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-02-auth.md | ? | ? | dropped | phase rule:
+  filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-01-configuracao-base.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+
+● Both checks passed: 8 files traced, the kept sets match, and 13 decided TDs
+  were returned (TD-14 is correctly left out because it's pending). The detail
+  output matches what's already in context.md. Applying the changes now: the
+  TD-14 index row, the coverage entries, and the decisions-doc mtime.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project; grep -cE '^\*\*Decision:\*\* [A-Z]'
+      docs/decisions/technical-decision…)
+  ⎿  13
+     6:  docs/decisions/technical-decisions-phase-03-videos.md: "2026-11-01
+     T17:23:17-03:00"
+     … +8 lines (ctrl+o to expand)
+  ⎿  Updated docs/phases/phase-03-videos/context.md (+4 -3)
+      3  name: phase-03-videos
+      4  sources_mtime:
+      5    docs/project-plan.md: "2026-10-17T19:41:40-03:00"
+      6 -  docs/decisions/technical-decisions-phase-03-videos.md: "2026-1
+        -0-24T22:46:07-03:00"                                            
+      6 +  docs/decisions/technical-decisions-phase-03-videos.md: "2026-1
+        +1-01T17:23:17-03:00"                                            
+      7    docs/decisions/technical-decisions-openapi-docs-nestjs.md: "20
+         26-10-17T19:41:40-03:00"
+      8    docs/decisions/technical-decisions-next-frontend-config-base.m
+         d: "2026-10-17T19:41:40-03:00"
+      9    docs/phases/phase-01-configuracao-base/context.md: "2026-10-17
+         T19:41:40-03:00"
+     ...
+      62  | phase-03-videos/TD-11 | phase | Cross-layer | Streaming and D
+          ownload Delivery | decided | A: Access check + `302` to presign
+          ed GET | — |
+      63  | phase-03-videos/TD-12 | phase | Backend | Video Status Lifecy
+          cle Model | decided | A: Single `status` enum `draft \| process
+          ing \| ready \| failed` | — |
+      64  | phase-03-videos/TD-13 | phase | Backend | Processing Failure,
+           Retry and Idempotency Strategy | decided | A: Queue-native ret
+          ries + idempotent `jobId = videoId` | — |
+      65 +| phase-03-videos/TD-14 | phase | Repo-wide | Bucket and CORS P
+         +rovisioning | pending | — | — |                                
+      66  
+      67  _Source files:_
+      68  
+     ...
+      72  
+      73  | Capability (from project-plan.md) | Covered by |
+      74  |-----------------------------------|------------|
+      74 -| Serviço de armazenamento de arquivos (vídeos e thumbnails) | 
+         -phase-03-videos/TD-02, phase-03-videos/TD-03, phase-03-videos/T
+         -D-04 |                                                         
+      75 +| Serviço de armazenamento de arquivos (vídeos e thumbnails) | 
+         +phase-03-videos/TD-02, phase-03-videos/TD-03, phase-03-videos/T
+         +D-04, phase-03-videos/TD-14 |                                  
+      76  | Serviço de processamento em segundo plano (filas) | phase-03-
+          videos/TD-01, phase-03-videos/TD-08 |
+      76 -| Upload de vídeos com suporte a arquivos de até 10GB sem impac
+         -to na performance | phase-03-videos/TD-05, phase-03-videos/TD-0
+         -6, phase-03-videos/TD-07 |                                     
+      77 +| Upload de vídeos com suporte a arquivos de até 10GB sem impac
+         +to na performance | phase-03-videos/TD-05, phase-03-videos/TD-0
+         +6, phase-03-videos/TD-07, phase-03-videos/TD-14 |              
+      78  | Pré-cadastro automático do vídeo como rascunho ao iniciar o u
+          pload | phase-03-videos/TD-05, phase-03-videos/TD-12 |
+      79  | Processamento automático do vídeo após upload (extração de du
+          ração e metadados) | phase-03-videos/TD-06, phase-03-videos/TD-
+          08, phase-03-videos/TD-09, phase-03-videos/TD-12, phase-03-vide
+          os/TD-13 |
+      80  | Geração automática de thumbnail a partir de um frame do vídeo
+           | phase-03-videos/TD-08, phase-03-videos/TD-09, phase-03-video
+          s/TD-13 |
+
+● Agent "decisions-detail-reader phase 03 rerun" finished · 37s
+
+● I updated docs/phases/phase-03-videos/context.md with TD-14. The next step is
+  /plan-validate phase-03-videos.
+
+  What changed:
+  - Decisions Index: a new TD-14 row "Bucket and CORS Provisioning" (Repo-wide),
+    marked pending.
+  - Capability Coverage: TD-14 is now listed under "Serviço de armazenamento…"
+    and "Upload de vídeos… até 10GB…".
+  - Decisions Detail: no change, because it only lists decided TDs and TD-14 is
+    still pending.
+  - Source timestamps: the decisions doc's new modification time is recorded.
+
+  Both decisions readers passed their checks. Their other output matched the
+  previous run.
+
+  Instead of re-running the whole stage, I patched the existing file. Every
+  other source was unchanged, so I also kept your earlier answers (UI inventory
+  deferred; openapi-docs-nestjs and next-frontend-config-base as correlated
+  docs) without asking again. If you want a fully fresh rebuild with the
+  questions asked again, say so.
+
+  What to expect from validate: MD-1 should now be covered by TD-14. Because
+  TD-14 is pending, it will come back as an open question (OQ), along with IC-1
+  and AMB-1/2/3. /plan-resolve can then settle all of them, including asking you
+  to pick TD-14's option.
+
+✻ Worked for 1m 9s · done 17:26
+
+❯ /plan-validate phase-03-videos                                                
+
+● Running the preflight checks (staleness and prior issue state) before the
+  coherence checks.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Preflight passed: context.md is fresh, there are no previously resolved issues
+  to carry over, and there's still a single slice, so Check 8 is skipped.
+  Writing the new validation file.
+
+● Write(docs/phases/phase-03-videos/validation.md)
+  ⎿  Added 6 lines, removed 6 lines
+       4  status: dirty
+       5  issue_count: 5
+       6  sources_mtime:
+       7 -  docs/phases/phase-03-videos/context.md: "2026-11-01T16:14:44-
+         -03:00"                                                         
+       8 -  docs/decisions/technical-decisions-phase-03-videos.md: "2026-
+         -10-24T22:46:07-03:00"                                          
+       7 +  docs/phases/phase-03-videos/context.md: "2026-11-01T17:26:25-
+         +03:00"                                                         
+       8 +  docs/decisions/technical-decisions-phase-03-videos.md: "2026-
+         +11-01T17:23:17-03:00"                                          
+       9  issues:
+      10    - id: IC-1
+      11      status: open
+     ...
+      19    - id: AMB-3
+      20      status: open
+      21      summary: "'metadados' to extract/persist are not enumerated
+           (beyond duration)"
+      22 -  - id: MD-1                                                   
+      22 +  - id: OQ-1                                                   
+      23      status: open
+      24 -    summary: "No TD decides how the bucket + CORS policy are pr
+         -ovisioned in storage"                                          
+      24 +    summary: "TD-14 pending — Bucket and CORS Provisioning"    
+      25  advisories: []
+      26  ---
+      27  
+     ...
+      43  
+      44  ### Missing Decisions
+      45  
+      46 -- **MD-1** — Capabilities "Serviço de armazenamento de arquivos
+         - (vídeos e thumbnails)" and "Upload de vídeos com suporte a arq
+         -uivos de até 10GB" need a provisioning strategy that no TD deci
+         -des. TD-03 fixes "a single private bucket" and TD-02/TD-05 requ
+         -ire CORS with `ETag` exposed for browser-side presigned `Upload
+         -Part`, but nothing decides *how* the bucket and its CORS policy
+         - come to exist. Options include a Compose init container (e.g. 
+         -an `mc`/`aws` CLI one-shot), creation at application bootstrap 
+         -(idempotent `CreateBucket` + `PutBucketCors` on API start), or 
+         -a manual setup documented in the README. This affects `compose.
+         -yaml`, startup ordering, the test setup for storage integration
+         - tests, and fresh-clone behavior (which TD-04 explicitly optimi
+         -zes for). Explicit choice: run `/research phase-03-videos` to a
+         -dd a TD covering bucket + CORS provisioning (Scope: Repo-wide o
+         -r Backend).                                                    
+      46 +_None._                                                        
+      47  
+      48  ### Dependency Gaps
+      49  
+     ...
+      55  
+      56  ### Unresolved Open Questions
+      57  
+      58 -_None._                                                        
+      58 +- **OQ-1** — TD-14 pending — Bucket and CORS Provisioning (opti
+         +ons: A init container + `RUSTFS_CORS_ALLOWED_ORIGINS` env var; 
+         +B init container + versioned bucket CORS policy via `PutBucketC
+         +ors` with `ExposeHeaders: ETag` — recommended; C application-bo
+         +otstrap provisioner). Resolution: fill the **Decision:** field 
+         +of TD-14 in `docs/decisions/technical-decisions-phase-03-videos
+         +.md` (or answer it in `/plan-resolve phase-03-videos`), then re
+         +-run /plan-validate phase-03-videos.                           
+      59  
+      60  ### UI Coverage Gaps
+      61  
+
+● Phase 03 still has 5 open issues, so validation.md stays status: dirty. MD-1
+  is gone: TD-14 now covers it, and since TD-14 is still pending it became an
+  open question (OQ-1). Nothing blocks /plan-resolve any more.
+
+  Open issues:
+
+  ┌───────┬──────────────────────────────────────────────────────────────────┐
+  │  ID   │                              Issue                               │
+  ├───────┼──────────────────────────────────────────────────────────────────┤
+  │ IC-1  │ Every TD's Libraries field is —, but TD-01 needs @nestjs/bullmq  │
+  │       │ 11.x and bullmq, and TD-04/05/06/11 need an S3 SDK.              │
+  ├───────┼──────────────────────────────────────────────────────────────────┤
+  │ AMB-1 │ Who can stream or download a video in Phase 03, before Phase 04  │
+  │       │ adds visibility?                                                 │
+  ├───────┼──────────────────────────────────────────────────────────────────┤
+  │ AMB-2 │ The draft has no defined owner (user or channel) and no defined  │
+  │       │ initial fields.                                                  │
+  ├───────┼──────────────────────────────────────────────────────────────────┤
+  │ AMB-3 │ Which metadata to store besides duration.                        │
+  ├───────┼──────────────────────────────────────────────────────────────────┤
+  │ OQ-1  │ TD-14 is pending: pick A, B (recommended) or C for bucket and    │
+  │       │ CORS setup.                                                      │
+  └───────┴──────────────────────────────────────────────────────────────────┘
+
+  No missing decisions, dependency gaps or conflicts with inherited decisions
+  came up. The UI check and the cross-slice check were skipped, as before.
+
+  MD-1 doesn't appear under "Resolved Issues" because it was never formally
+  resolved. Validate dropped it once TD-14 covered the capability, and the
+  pending decision now shows up as OQ-1.
+
+  The next step is /plan-resolve phase-03-videos. It will ask about all 5
+  issues, up to 4 per prompt, and then write your answers into the decisions doc
+  and context.md.
+
+✻ Baked for 28s · done 17:28
+
+❯ /plan-resolve phase-03-videos                                                 
+
+● Running the resolve preflight: validation status and staleness.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Preflight passed: status is dirty, nothing is stale, and there are no missing
+  decisions left. Here are the first 4 of the 5 open issues:
+● User answered Claude's questions:
+  ⎿  · IC-1: every TD's Libraries field is '—', but TD-01 depends on 
+     @nestjs/bullmq 11.x + bullmq and TD-04/05/06/11 depend on an S3 SDK. How 
+     should this be fixed? (Revisions add a dated **Libraries:** line + 
+     Revisions note to TD-01 and TD-04.) → Revise: libs omitted (Recommended)
+     · AMB-1: who may stream/download a video in Phase 03 (before Phase 04 adds 
+     publication/visibility)? Applies to the TD-11 access check. → Owner-only 
+     (Recommended)
+     · AMB-2: what does the draft video row hold at upload initiation, and who 
+     owns it? → Channel-owned, title=filename (Recommended)
+     · AMB-3: which metadata should the worker extract (ffprobe) and persist on 
+     the video row besides duration? → Core + codecs/bitrate
+
+● User answered Claude's questions:
+  ⎿  · OQ-1: TD-14 (Bucket and CORS Provisioning) is pending. Which option? 
+     Browser multipart uploads need CORS with `ETag` exposed. → B: init + bucket
+     CORS (Recommended)
+
+● I have all 5 answers. Before applying anything, I'm checking how the target
+  TDs end (Decision line and what follows) so each edit can be anchored exactly.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I'm updating the decisions doc with these edits: libraries and revision notes
+  on TD-01/TD-04 for IC-1, dated revision notes on TD-11/TD-05/TD-09 for
+  AMB-1/2/3 so they flow through context.md to /plan-build, and setting TD-14 to
+  option B for OQ-1.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project; python3 - <<'PY'
+      p='docs/decisions/technical-decisions-phase-03-video…)
+  ⎿  14
+     0
+  ⎿  Updated docs/decisions/technical-decisions-phase-03-videos.md (+20 -3)
+      1  ---
+      2  scope_type: phase
+      3  related_phases: [3]
+      4 -status: pending                                                 
+      4 +status: decided                                                 
+      5  date: 2026-10-24
+      6  scope_description: "Backend foundation for video upload and proc
+         essing: job queue technology, local S3-compatible storage, bucke
+         t/key layout and presigned-URL host, direct-to-storage multipart
+          upload (initiation, completion, abandoned uploads), worker topo
+         logy and FFmpeg/ffprobe extraction, unique public video ID, stre
+         aming/download delivery, and video status lifecycle with failure
+         /retry/idempotency."
+      7  ---
+     ...
+      48  **Recommendation:** **Option A (BullMQ + Redis, `@nestjs/bullmq
+          @^11`)** — it is the only option where retry/backoff, a kept fa
+          iled-job record, stalled-job recovery, deduplicated enqueue and
+           a periodic scheduler (needed by TD-07 and TD-13) all come out 
+          of the box with an official Nest integration that works on this
+           CommonJS Nest 11 project. The cost is one Redis container that
+           **must** be configured with `--appendonly yes --maxmemory-poli
+          cy noeviction` in `compose.yaml`, plus new env keys (`REDIS_HOS
+          T=redis`, `REDIS_PORT`) in the Joi schema. Option B is the cred
+          ible "no-Redis" alternative with the same code API; it is not r
+          ecommended yet because it is new and has no documented Nest wir
+          ing — re-evaluate when `@nestjs/bullmq` supports backends offic
+          ially.
+      49  
+      50  **Decision:** Option A: BullMQ + Redis via `@nestjs/bullmq` (11
+          .x)
+      51 +**Libraries:** @nestjs/bullmq@^11.0.5, bullmq                  
+      52  
+      53 +**Revisions:**                                                 
+      54 +- 2026-11-01 — Recorded the libraries implied by the decision: 
+         +`@nestjs/bullmq@^11.0.5` (the last CommonJS-compatible line for
+         + Nest 11; 12.x is ESM-only) and its peer `bullmq`. Resolves IC-
+         +1 of phase-03-videos validation. Rationale: libraries implied b
+         +y the decision were not recorded at decision time.             
+      55 +                                                               
+      56  ---
+      57  
+      58  ## TD-02: Local S3-Compatible Object Storage Server
+     ...
+      145  **Recommendation:** **Option A (internal + public endpoints)**
+            — it is the only option that works on a fresh clone with no h
+           ost-machine changes and keeps all server-to-server traffic on 
+           Compose service names, as `CLAUDE.md` requires. `S3_PUBLIC_END
+           POINT=http://localhost:9000` is an intended exception to the "
+           never `localhost`" rule because it is read by the host's brows
+           er, not by a container. It should be documented as such in `.e
+           nv.example`. Proposed canonical keys: `S3_ENDPOINT`, `S3_PUBLI
+           C_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCES
+           S_KEY`, `S3_BUCKET`, `S3_FORCE_PATH_STYLE` (true for the local
+            server). Implementation note from the SDK docs: set `requestC
+           hecksumCalculation: 'WHEN_REQUIRED'` on the S3 clients, becaus
+           e the SDK's default flexible checksums add `x-amz-checksum-*` 
+           headers that break presigned part uploads against non-AWS serv
+           ers.
+      146  
+      147  **Decision:** Option A: Two endpoints — internal for operation
+           s, public for browser-facing signatures
+      148 +**Libraries:** @aws-sdk/client-s3, @aws-sdk/s3-request-presign
+          +er                                                            
+      149  
+      150 +**Revisions:**                                                
+      151 +- 2026-11-01 — Recorded the S3 SDK packages implied by the two
+          +-client setup: `@aws-sdk/client-s3` (operations: multipart cre
+          +ate/complete/abort, `ListParts`, `HeadObject`, worker reads/wr
+          +ites) and `@aws-sdk/s3-request-presigner` (browser-facing pres
+          +igned URLs). TD-05, TD-06, TD-09 and TD-11 use the same packag
+          +es. Resolves IC-1 of phase-03-videos validation. Rationale: li
+          +braries implied by the decision were not recorded at decision 
+          +time.                                                         
+      152 +                                                              
+      153  ---
+      154  
+      155  ## TD-05: Large-File Upload Protocol (up to 10 GB, direct to s
+           torage)
+     ...
+      176  
+      177  **Decision:** Option A: Presigned S3 multipart, orchestrated b
+           y the API
+      178  
+      179 +**Revisions:**                                                
+      180 +- 2026-11-01 — Draft pre-registration contents fixed: the vide
+          +o belongs to the uploader's **channel** (`channel_id` FK, reso
+          +lved from the authenticated user; Phase 02 creates one channel
+          + per user). Initiation input: original filename, size in bytes
+          + and content type, all stored on the row. `title` defaults to 
+          +the filename without its extension, `description` is null, `st
+          +atus = draft` (TD-12). Phase 04 edits title/description. Ratio
+          +nale: clarification from AMB-2 of phase-03-videos validation (
+          +owner and initial fields were undefined).                     
+      181 +                                                              
+      182  ---
+      183  
+      184  ## TD-06: Upload Completion Detection
+     ...
+      298  
+     … 30 more lines (ctrl+o to expand)
+
+● All 14 TDs are now decided. I'll have the two decision readers re-read the doc
+  so I can rewrite context.md with the updated index rows and full details.
+
+● 2 background agents launched (↓ to manage)
+   ├ decisions-reader (decisions-reader post-resolve)
+   └ decisions-detail-reader (decisions-detail-reader post-resolve)
+
+● While the readers run, I'll resolve the Context7 IDs for the 4 newly recorded
+  libraries, since library-refs.md doesn't exist yet.
+
+  Called context7 3 times (ctrl+o to expand)
+
+● Context7 IDs found. Now fetching the docs for the parts of each library this
+  phase uses.
+
+  Called context7 3 times (ctrl+o to expand)
+
+● I have the library docs. Waiting on the two readers before patching context.md
+  and writing library-refs.md.
+
+✻ Brewed for 1m 33s · done 17:37
+
+› Message from decisions-reader
+  ## Decisions Index for Phase 3 / slice phase-03-videos
+
+  | Ref | Source | Scope | Topic | Status | Decision | Libraries |
+  |-----|--------|-------|-------|--------|----------|-----------|
+  | phase-03-videos/TD-01 | phase | Backend | Job Queue Technology | decided | A
+  — BullMQ + Redis via `@nestjs/bullmq` (11.x) | @nestjs/bullmq@^11.0.5, bullmq
+  |
+  |     └─ Last revision: 2026-11-01 — Recorded the libraries implied by the
+  decision: `@nestjs/bullmq@^11.0.5` (the l… | | | | | | |
+  | phase-03-videos/TD-02 | phase | Repo-wide | Local S3-Compatible Object
+  Storage Server | decided | A — RustFS | — |
+  | phase-03-videos/TD-03 | phase | Backend | Bucket and Object Key Layout |
+  decided | A — Single private bucket, prefix per video (internal UUID) | — |
+  | phase-03-videos/TD-04 | phase | Backend | Presigned URL Host (Internal vs
+  Public Storage Endpoint) | decided | A — Two endpoints (internal ops / public
+  browser-facing signatures) | @aws-sdk/client-s3, @aws-sdk/s3-request-presigner
+  |
+  |     └─ Last revision: 2026-11-01 — Recorded the S3 SDK packages implied by
+  the two-client setup: `@aws-sdk/client-… | | | | | | |
+  | phase-03-videos/TD-05 | phase | Cross-layer | Large-File Upload Protocol (up
+  to 10 GB, direct to storage) | decided | A — Presigned S3 multipart,
+  orchestrated by the API | — |
+  |     └─ Last revision: 2026-11-01 — Draft pre-registration contents fixed:
+  the video belongs to the uploader's **ch… | | | | | | |
+  | phase-03-videos/TD-06 | phase | Backend | Upload Completion Detection |
+  decided | A — Client signals, API completes using its own `ListParts` | — |
+  | phase-03-videos/TD-07 | phase | Backend | Abandoned Upload Cleanup | decided
+  | A — Application cleanup job (scheduled job on the queue) | — |
+  | phase-03-videos/TD-08 | phase | Backend | Video Worker Topology | decided |
+  A — Same codebase, second entrypoint, separate Compose service | — |
+  | phase-03-videos/TD-09 | phase | Backend | FFmpeg/ffprobe Invocation and
+  Input Access | decided | A — Spawn system binaries on a presigned URL | — |
+  |     └─ Last revision: 2026-11-01 — Metadata persisted on the video row after
+  processing: `duration_seconds`, `wid… | | | | | | |
+  | phase-03-videos/TD-10 | phase | Cross-layer | Unique Public Video ID (URL
+  strategy) | decided | B — Random 11-char base64url `public_id` | — |
+  | phase-03-videos/TD-11 | phase | Cross-layer | Streaming and Download
+  Delivery | decided | A — Access check + `302` to presigned GET | — |
+  |     └─ Last revision: 2026-11-01 — Phase 03 access rule for stream and
+  download: both require authentication **an… | | | | | | |
+  | phase-03-videos/TD-12 | phase | Backend | Video Status Lifecycle Model |
+  decided | A — Single `status` enum: `draft \| processing \| ready \| failed` |
+  — |
+  | phase-03-videos/TD-13 | phase | Backend | Processing Failure, Retry and
+  Idempotency Strategy | decided | A — Queue-native retries + idempotent `jobId
+  = videoId` | — |
+  | phase-03-videos/TD-14 | phase | Repo-wide | Bucket and CORS Provisioning |
+  decided | B — Init container creates bucket + applies versioned CORS policy
+  via S3 API | — |
+
+  _(The `Renders in` column is left out because no TD in scope has a `**Renders
+  in:**` field, so every value would be `—`.)_
+
+  ## Source Files
+
+  - phase-03-videos —
+  /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield
+  -project/docs/decisions/technical-decisions-phase-03-videos.md (scope_type:
+  phase, related_phases: [3])
+
+  ## Filter Trace
+
+  Globbed T=8 candidates from `docs/decisions/*.md`. Per-file decisions:
+
+  | File | scope_type | related_phases | Decision | Reason |
+  |------|-----------|----------------|----------|--------|
+  | technical-decisions-phase-03-videos.md | phase | [3] | kept | phase rule:
+  filename-slug == identifier |
+  | technical-decisions-next-frontend-config-base.md | ad-hoc | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN (NN=3) |
+  | technical-decisions-next-frontend-msw-foundation.md | ad-hoc | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN (NN=3) |
+  | technical-decisions-next-frontend-openapi-typing.md | ad-hoc | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN (NN=3) |
+  | technical-decisions-openapi-docs-nestjs.md | ad-hoc | ? | dropped | ad-hoc
+  rule: in S_adhoc but not in S_NN (NN=3) |
+  | technical-decisions-phase-02-auth-frontend.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-02-auth.md | ? | ? | dropped | phase rule:
+  filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-01-configuracao-base.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+
+  Note: ripgrep rejected the S_NN pattern because it does not support the
+  lookahead `(?=[,\s\]])`. I ran it again with a plain character class instead
+  (`^related_phases:\s*\[(?:[^\]]*[,\s])?3[,\s\]]`), which keeps and drops the
+  same files for NN=3. The S_NN result was only
+  `technical-decisions-phase-03-videos.md`, so no ad-hoc doc applies to phase 3.
+
+● The decisions index came back with all 14 TDs decided, plus the libraries and
+  revision annotations. Its check passed (8 files traced, only phase-03-videos
+  kept). Still waiting on the decisions detail reader.
+
+✻ Crunched for 1s · done 17:38
+
+● Agent "decisions-reader post-resolve" finished · 34s
+
+› Message from decisions-detail-reader
+  ## Decisions Detail for Phase 03 / slice phase-03-videos
+
+  ### phase-03-videos/TD-01
+
+  **Recommendation:** It is the only option where retry/backoff, a kept
+  failed-job record, stalled-job recovery, deduplicated enqueue and a periodic
+  scheduler (needed by TD-07 and TD-13) all come out of the box with an official
+  Nest integration that works on this CommonJS Nest 11 project. The cost is one
+  Redis container that **must** be configured with `--appendonly yes
+  --maxmemory-policy noeviction` in `compose.yaml`, plus new env keys
+  (`REDIS_HOST=redis`, `REDIS_PORT`) in the Joi schema. Option B is the credible
+  "no-Redis" alternative with the same code API; it is not recommended yet
+  because it is new and has no documented Nest wiring — re-evaluate when
+  `@nestjs/bullmq` supports backends officially.
+  **Libraries:** @nestjs/bullmq@^11.0.5, bullmq
+
+  **Revisions:**
+  - 2026-11-01 — Recorded the libraries implied by the decision:
+  `@nestjs/bullmq@^11.0.5` (the last CommonJS-compatible line for Nest 11; 12.x
+  is ESM-only) and its peer `bullmq`. Resolves IC-1 of phase-03-videos
+  validation. Rationale: libraries implied by the decision were not recorded at
+  decision time.
+
+  ### phase-03-videos/TD-02
+
+  **Recommendation:** It keeps the one-container developer experience the plan
+  assumed with MinIO, is actively maintained, and its documented features cover
+  everything this phase needs (multipart, presign, CORS, `Range`,
+  abandoned-upload cleanup). Because the code depends only on the S3 API, the
+  risk of its youth is limited: the first implementation step should be a short
+  spike that checks presigned `UploadPart` + `CompleteMultipartUpload`, CORS
+  with `ETag` exposed, and `Range` → `206` against RustFS. If the spike fails,
+  switch to Option B (Garage) with only Compose changes. Option C is not
+  recommended: dev environments should not depend on an archived server with no
+  official image. Separate task to note: update the diagram's "S3 or MinIO"
+  label.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-03
+
+  **Recommendation:** It is the smallest correct setup: one bucket to create and
+  protect, immutable keys based on the internal UUID (independent of TD-10's
+  public ID), and one-prefix deletion. Storage growth is tracked through a
+  `size_bytes` column in the DB rather than through key structure. If Phase 07
+  needs cacheable public thumbnails, a prefix policy or a move to Option B can
+  be decided then.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-04
+
+  **Recommendation:** It is the only option that works on a fresh clone with no
+  host-machine changes and keeps all server-to-server traffic on Compose service
+  names, as `CLAUDE.md` requires. `S3_PUBLIC_ENDPOINT=http://localhost:9000` is
+  an intended exception to the "never `localhost`" rule because it is read by
+  the host's browser, not by a container. It should be documented as such in
+  `.env.example`. Proposed canonical keys: `S3_ENDPOINT`, `S3_PUBLIC_ENDPOINT`,
+  `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET`,
+  `S3_FORCE_PATH_STYLE` (true for the local server). Implementation note from
+  the SDK docs: set `requestChecksumCalculation: 'WHEN_REQUIRED'` on the S3
+  clients, because the SDK's default flexible checksums add `x-amz-checksum-*`
+  headers that break presigned part uploads against non-AWS servers.
+  **Libraries:** @aws-sdk/client-s3, @aws-sdk/s3-request-presigner
+
+  **Revisions:**
+  - 2026-11-01 — Recorded the S3 SDK packages implied by the two-client setup:
+  `@aws-sdk/client-s3` (operations: multipart create/complete/abort,
+  `ListParts`, `HeadObject`, worker reads/writes) and
+  `@aws-sdk/s3-request-presigner` (browser-facing presigned URLs). TD-05, TD-06,
+  TD-09 and TD-11 use the same packages. Resolves IC-1 of phase-03-videos
+  validation. Rationale: libraries implied by the decision were not recorded at
+  decision time.
+
+  ### phase-03-videos/TD-05
+
+  **Recommendation:** It is the only option where the file never passes through
+  an application process (API, BFF or tus server), which matches both the
+  requirement and the diagram's direct frontend ↔ storage link. Resume uses
+  standard `ListParts`. Proposed parameters: fixed **64 MiB** part size (10 GiB
+  → 160 parts, well under 10,000 and above the 5 MiB minimum), presigned part
+  URLs valid for 1 h and issued in batches. Size enforcement without vendor
+  extensions: (1) reject `size > 10 GiB` at initiation, (2) sign only part
+  numbers `1..partCount` and include `Content-Length` in each part's signature,
+  (3) after completion, verify the object size with `HeadObject` before
+  accepting it. Pre-registration happens in the same initiation call that
+  creates the multipart upload.
+  **Libraries:** —
+
+  **Revisions:**
+  - 2026-11-01 — Draft pre-registration contents fixed: the video belongs to the
+  uploader's **channel** (`channel_id` FK, resolved from the authenticated
+  user; Phase 02 creates one channel per user). Initiation input: original
+  filename, size in bytes and content type, all stored on the row. `title`
+  defaults to the filename without its extension, `description` is null, `status
+  = draft` (TD-12). Phase 04 edits title/description. Rationale: clarification
+  from AMB-2 of phase-03-videos validation (owner and initial fields were
+  undefined).
+
+  ### phase-03-videos/TD-06
+
+  **Recommendation:** It gives a single, synchronous point where the API knows
+  for certain that the object exists. It does not depend on storage-specific
+  event setups, which differ between local and production environments. The only
+  gap (a client that never signals) is covered by the cleanup job in TD-07.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-07
+
+  **Recommendation:** The DB row is what users and later phases see, and only
+  application code can clean the DB and storage together. It reuses the TD-01
+  scheduler, so no new library is needed. A lifecycle rule (Option C) can be
+  added cheaply at deploy time (Phase 07) as defense in depth, and RustFS
+  already removes stale uploads after 24 h by default.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-08
+
+  **Recommendation:** It gives the process/container isolation the diagram and
+  the performance requirement call for, without duplicating the domain model or
+  creating a shared-package setup. FFmpeg runs as a child process, so the
+  worker's event loop stays free to renew BullMQ job locks during long jobs.
+  Responsibilities stay separate: the API's videos module only *produces* jobs,
+  and a processing module loaded only by `WorkerModule` *consumes* them.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-09
+
+  **Recommendation:** Metadata and a single frame only need a small part of the
+  file, so reading through HTTP `Range` avoids the disk space and download time
+  of Option B, which grow with file size. Install binaries with `apt-get install
+  ffmpeg` in the worker image (Debian package, versioned with the base image)
+  rather than `ffmpeg-static`, so the version is visible and patchable. Pick the
+  thumbnail frame relative to the duration (e.g. 10 % of the duration, with a
+  fallback to the first frame for very short clips). If ffprobe reports no video
+  stream, the file is treated as invalid media → permanent failure (TD-13).
+  **Libraries:** —
+
+  **Revisions:**
+  - 2026-11-01 — Metadata persisted on the video row after processing:
+  `duration_seconds`, `width`, `height`, `mime_type` (container/format),
+  `video_codec`, `audio_codec` (null when there is no audio stream), `bitrate`,
+  `frame_rate`. `size_bytes` is recorded at completion from `HeadObject`
+  (TD-05), not by ffprobe. All of these stay nullable until processing finishes.
+  Rationale: clarification from AMB-3 of phase-03-videos validation
+  ("metadados" was not enumerated); codecs/bitrate kept for a future
+  browser-playability check (TD-11 known limitation).
+
+  ### phase-03-videos/TD-10
+
+  **Recommendation:** It satisfies "short" and "never conflicts" (enforced by
+  the `UNIQUE` index, not by probability) and cannot be guessed, which Phase
+  04's unlisted visibility depends on. It uses the same
+  generate-and-retry-on-unique-violation pattern already used for channel
+  nicknames, and needs no new dependency. Storage keys keep using the internal
+  UUID (TD-03), so the public ID can change without moving any object.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-11
+
+  **Recommendation:** It is the only option that keeps video bytes off the API
+  and still has one place where access is checked for Phases 04/05. Streaming
+  and download become the same mechanism, and `Range`/`206` is handled by the
+  storage server instead of custom code. Proposed TTLs: about 6 h for stream
+  URLs (long enough for a viewing session with seeking), about 15 min for
+  download URLs. Known limitation to record: the original file is played as
+  uploaded, so formats the browser can't play (e.g. some MKV/HEVC files) will
+  download but not play. Transcoding is not in this phase.
+  **Libraries:** —
+
+  **Revisions:**
+  - 2026-11-01 — Phase 03 access rule for stream and download: both require
+  authentication **and** ownership (the video's channel belongs to the
+  requesting user). Unauthenticated → `401` (existing auth guard); authenticated
+  non-owner or unknown id → `404` (existence is not revealed); owner with
+  `status ≠ ready` → `409`. Nothing is public in Phase 03; Phase 04 opens
+  published videos to anonymous viewers through its visibility field. Rationale:
+  clarification from AMB-1 of phase-03-videos validation (the Phase 03 access
+  rule was undefined).
+
+  ### phase-03-videos/TD-12
+
+  **Recommendation:** The phase literally describes the cycle "rascunho →
+  processando → pronto/erro" and asks for "pré-cadastro como rascunho", so the
+  status column mirrors the requirement one-to-one. The main Option A con is
+  removed by fixing the meaning of `draft` and keeping publication out of this
+  enum:
+  - `draft` means only "video pre-registered, upload not yet completed". It is
+  set at upload initiation (TD-05) and left only by the `complete` call (TD-06),
+  which moves `draft → processing`.
+  - Publication/visibility (Phase 04) will be a **separate field** created in
+  Phase 04. It never adds values to this enum.
+  - TD-07 and TD-13 still get exact states: the cleanup job queries `draft` rows
+  older than the threshold, and every transition is a conditional update on the
+  current state (`WHERE status = 'draft'` on completion, `WHERE status =
+  'processing'` in the worker).
+
+  Why Option B was not chosen: its only advantage over A was separating the
+  file's state from publication. With the meaning of `draft` fixed as above and
+  publication kept in its own Phase 04 field, A provides the same separation and
+  uses the plan's own vocabulary. B would rename the requirement's "rascunho"
+  state to `uploading` and require API docs explaining that "rascunho" means
+  something other than the status column.
+
+  Known trade-off to carry into Phase 04: there, "rascunho → publicação" uses
+  "rascunho" in the *publication* sense, and a processed but unpublished video
+  has `status = ready`, not `draft`. Phase 04 must name its publication
+  field/values without reusing `draft`.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-13
+
+  **Recommendation:** Every step is safe to repeat (deduplicated enqueue,
+  conditional update, fixed keys), so retries and re-delivery cause no damage.
+  Separating permanent from temporary errors keeps bad uploads from using up
+  retries. The one gap (commit succeeded, enqueue failed) is closed by
+  re-enqueuing the same `jobId`, without an outbox. Revisit Option B if more job
+  types later need guaranteed delivery.
+  **Libraries:** —
+
+  ### phase-03-videos/TD-14
+
+  **Recommendation:** It is the only option where the CORS rule the upload flow
+  depends on (`ExposeHeaders: ETag`) is stated explicitly in the standard S3
+  form, so the same file serves RustFS in dev and S3 in production (Phase 07)
+  without drift. It also keeps admin operations out of the API/worker. Option
+  A's env var is simpler but RustFS-only and silent about exposed headers. If
+  the TD-02 spike shows it exposes `ETag`, it remains an acceptable fallback,
+  not a portable contract. Option C works but gives the application admin rights
+  and an infra responsibility it does not otherwise need. Integration tests run
+  inside the same Compose network, so they get the provisioned bucket from
+  `storage-init` and can isolate their data by key prefix.
+  **Libraries:** —
+
+  ## Filter Trace
+
+  Globbed T=8 candidates from `docs/decisions/*.md`. Per-file decisions:
+
+  | File | scope_type | related_phases | Decision | Reason |
+  |------|-----------|----------------|----------|--------|
+  | technical-decisions-phase-03-videos.md | phase | [3] | kept | phase rule:
+  filename-slug == identifier |
+  | technical-decisions-next-frontend-config-base.md | ? | ? | dropped | ad-hoc
+  rule: in S_adhoc but not in S_NN |
+  | technical-decisions-next-frontend-msw-foundation.md | ? | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-next-frontend-openapi-typing.md | ? | ? | dropped |
+  ad-hoc rule: in S_adhoc but not in S_NN |
+  | technical-decisions-openapi-docs-nestjs.md | ? | ? | dropped | ad-hoc rule:
+  in S_adhoc but not in S_NN |
+  | technical-decisions-phase-02-auth-frontend.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-02-auth.md | ? | ? | dropped | phase rule:
+  filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+  | technical-decisions-phase-01-configuracao-base.md | ? | ? | dropped | phase
+  rule: filename-slug != identifier; ad-hoc rule: not in S_adhoc |
+
+● Both readers passed every check: 8 files traced, the kept sets match, and 14
+  decided TDs were returned out of 14. Now applying the context.md changes:
+  index rows (TD-01, TD-04, TD-14 and the revision lines), the Decisions Detail
+  section (new libraries, revisions and TD-14), and the decisions-doc timestamp.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project; python3 - <<'PY'
+      import re…)
+  ⎿  6:  docs/decisions/technical-decisions-phase-03-videos.md: "2026-11-01
+     T17:37:27-03:00"
+     14
+     … +11 lines (ctrl+o to expand)
+  ⎿  Updated docs/phases/phase-03-videos/context.md (+31 -6)
+      3  name: phase-03-videos
+      4  sources_mtime:
+      5    docs/project-plan.md: "2026-10-17T19:41:40-03:00"
+      6 -  docs/decisions/technical-decisions-phase-03-videos.md: "2026-1
+        -1-01T17:23:17-03:00"                                            
+      6 +  docs/decisions/technical-decisions-phase-03-videos.md: "2026-1
+        +1-01T17:37:27-03:00"                                            
+      7    docs/decisions/technical-decisions-openapi-docs-nestjs.md: "20
+         26-10-17T19:41:40-03:00"
+      8    docs/decisions/technical-decisions-next-frontend-config-base.m
+         d: "2026-10-17T19:41:40-03:00"
+      9    docs/phases/phase-01-configuracao-base/context.md: "2026-10-17
+         T19:41:40-03:00"
+     ...
+      49  
+      50  | Ref | Source | Scope | Topic | Status | Decision | Libraries 
+          |
+      51  |-----|--------|-------|-------|--------|----------|-----------
+          |
+      52 -| phase-03-videos/TD-01 | phase | Backend | Job Queue Technolog
+         -y | decided | A: BullMQ + Redis via `@nestjs/bullmq` (11.x) | —
+         - |                                                             
+      52 +| phase-03-videos/TD-01 | phase | Backend | Job Queue Technolog
+         +y | decided | A: BullMQ + Redis via `@nestjs/bullmq` (11.x) | @
+         +nestjs/bullmq@^11.0.5, bullmq |                                
+      53 +|     └─ Last revision: 2026-11-01 — Recorded the libraries imp
+         +lied by the decision: `@nestjs/bullmq@^11.0.5` (the l… | | | | 
+         +| | |                                                          
+      54  | phase-03-videos/TD-02 | phase | Repo-wide | Local S3-Compatib
+          le Object Storage Server | decided | A: RustFS | — |
+      55  | phase-03-videos/TD-03 | phase | Backend | Bucket and Object K
+          ey Layout | decided | A: Single private bucket, prefix per vide
+          o (internal UUID) | — |
+      55 -| phase-03-videos/TD-04 | phase | Backend | Presigned URL Host 
+         -(Internal vs Public Storage Endpoint) | decided | A: Two endpoi
+         -nts (internal ops / public browser-facing signatures) | — |    
+      56 +| phase-03-videos/TD-04 | phase | Backend | Presigned URL Host 
+         +(Internal vs Public Storage Endpoint) | decided | A: Two endpoi
+         +nts (internal ops / public browser-facing signatures) | @aws-sd
+         +k/client-s3, @aws-sdk/s3-request-presigner |                   
+      57 +|     └─ Last revision: 2026-11-01 — Recorded the S3 SDK packag
+         +es implied by the two-client setup: `@aws-sdk/client-… | | | | 
+         +| | |                                                          
+      58  | phase-03-videos/TD-05 | phase | Cross-layer | Large-File Uplo
+          ad Protocol (up to 10 GB, direct to storage) | decided | A: Pre
+          signed S3 multipart, orchestrated by the API | — |
+      59 +|     └─ Last revision: 2026-11-01 — Draft pre-registration con
+         +tents fixed: the video belongs to the uploader's **ch… | | | | 
+         +| | |                                                          
+      60  | phase-03-videos/TD-06 | phase | Backend | Upload Completion D
+          etection | decided | A: Client signals, API completes using its
+           own `ListParts` | — |
+      61  | phase-03-videos/TD-07 | phase | Backend | Abandoned Upload Cl
+          eanup | decided | A: Application cleanup job (scheduled job on 
+          the queue) | — |
+      62  | phase-03-videos/TD-08 | phase | Backend | Video Worker Topolo
+          gy | decided | A: Same codebase, second entrypoint, separate Co
+          mpose service | — |
+      63  | phase-03-videos/TD-09 | phase | Backend | FFmpeg/ffprobe Invo
+          cation and Input Access | decided | A: Spawn system binaries on
+           a presigned URL | — |
+      64 +|     └─ Last revision: 2026-11-01 — Metadata persisted on the 
+         +video row after processing: `duration_seconds`, `wid… | | | | |
+         + | |                                                           
+      65  | phase-03-videos/TD-10 | phase | Cross-layer | Unique Public V
+          ideo ID (URL strategy) | decided | B: Random 11-char base64url 
+          `public_id` | — |
+      66  | phase-03-videos/TD-11 | phase | Cross-layer | Streaming and D
+          ownload Delivery | decided | A: Access check + `302` to presign
+          ed GET | — |
+      67 +|     └─ Last revision: 2026-11-01 — Phase 03 access rule for s
+         +tream and download: both require authentication **an… | | | | |
+         + | |                                                           
+      68  | phase-03-videos/TD-12 | phase | Backend | Video Status Lifecy
+          cle Model | decided | A: Single `status` enum `draft \| process
+          ing \| ready \| failed` | — |
+      69  | phase-03-videos/TD-13 | phase | Backend | Processing Failure,
+           Retry and Idempotency Strategy | decided | A: Queue-native ret
+          ries + idempotent `jobId = videoId` | — |
+      65 -| phase-03-videos/TD-14 | phase | Repo-wide | Bucket and CORS P
+         -rovisioning | pending | — | — |                                
+      70 +| phase-03-videos/TD-14 | phase | Repo-wide | Bucket and CORS P
+         +rovisioning | decided | B: Init container creates bucket + appl
+         +ies versioned CORS policy via S3 API | — |                     
+      71  
+      72  _Source files:_
+      73  
+     ...
+       92  ### phase-03-videos/TD-01
+       93  
+       94  **Recommendation:** It is the only option where retry/backoff,
+            a kept failed-job record, stalled-job recovery, deduplicated 
+           enqueue and a periodic scheduler (needed by TD-07 and TD-13) a
+           ll come out of the box with an official Nest integration that 
+           works on this CommonJS Nest 11 project. The cost is one Redis 
+           container that **must** be configured with `--appendonly yes -
+           -maxmemory-policy noeviction` in `compose.yaml`, plus new env 
+           keys (`REDIS_HOST=redis`, `REDIS_PORT`) in the Joi schema. Opt
+           ion B is the credible "no-Redis" alternative with the same cod
+           e API; it is not recommended yet because it is new and has no 
+           documented Nest wiring — re-evaluate when `@nestjs/bullmq` sup
+           ports backends officially.
+       90 -**Libraries:** —                                              
+     … 57 more lines (ctrl+o to expand)
+
+● Agent "decisions-detail-reader post-resolve" finished · 46s
+
+● Context.md is updated with all 14 decided TDs, including revision notes for 5
+  of them. Next I'll write library-refs.md for the 4 libraries and mark the 5
+  resolved issues in validation.md.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(docs/phases/phase-03-videos/library-refs.md)
+  ⎿  Wrote 74 lines to docs/phases/phase-03-videos/library-refs.md
+       1 ---
+       2 libs:
+       3   "@nestjs/bullmq":
+       4     version: "^11.0.5"
+       5     context7_id: "/nestjs/bull"
+       6     fetched_at: "2026-11-01T17:38:48-03:00"
+       7   "bullmq":
+       8     version: "peer range of @nestjs/bullmq@11.x (^3–^6) — exact 
+         version pinned at install"
+       9     context7_id: "/taskforcesh/bullmq"
+     … +65 lines (ctrl+o to expand)
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project; python3 - <<'PY'
+      p='docs/phases/phase-03-videos/validation.md'…)
+  ⎿        1 issue_count: 0
+           1 status: dirty
+           5     status: resolved
+  ⎿  Updated docs/phases/phase-03-videos/validation.md (+19 -14)
+       2  kind: phase
+       3  name: phase-03-videos
+       4  status: dirty
+       5 -issue_count: 5                                                 
+       5 +issue_count: 0                                                 
+       6  sources_mtime:
+       7    docs/phases/phase-03-videos/context.md: "2026-11-01T17:26:25-
+          03:00"
+       8    docs/decisions/technical-decisions-phase-03-videos.md: "2026-
+          11-01T17:23:17-03:00"
+       9  issues:
+      10    - id: IC-1
+      11 -    status: open                                               
+      11 +    status: resolved                                           
+      12      summary: "TDs introduce libraries (bullmq, S3 SDK) but ever
+          y Libraries field is —"
+      13 +    resolved_by: phase-03-videos/TD-01, phase-03-videos/TD-04  
+      14    - id: AMB-1
+      14 -    status: open                                               
+      15 +    status: resolved                                           
+      16      summary: "Who may stream/download a ready video in Phase 03
+           (before Phase 04 visibility)?"
+      17 +    resolved_by: phase-03-videos/TD-11                         
+      18    - id: AMB-2
+      17 -    status: open                                               
+      19 +    status: resolved                                           
+      20      summary: "Draft pre-registration: owner (user vs channel) a
+          nd initial fields undefined"
+      21 +    resolved_by: phase-03-videos/TD-05                         
+      22    - id: AMB-3
+      20 -    status: open                                               
+      23 +    status: resolved                                           
+      24      summary: "'metadados' to extract/persist are not enumerated
+           (beyond duration)"
+      25 +    resolved_by: phase-03-videos/TD-09                         
+      26    - id: OQ-1
+      23 -    status: open                                               
+      27 +    status: resolved                                           
+      28      summary: "TD-14 pending — Bucket and CORS Provisioning"
+      29 +    resolved_by: phase-03-videos/TD-14                         
+      30  advisories: []
+      31  ---
+      32  
+     ...
+      36  
+      37  ### Inconsistencies
+      38  
+     … 32 more lines (ctrl+o to expand)
+
+● All 5 issues are resolved and written to the planning files. Next, run
+  /plan-validate phase-03-videos; only validate can mark the phase clean, which
+  /plan-build needs.
+
+  Your answers, now in the decisions doc:
+
+  ┌───────┬───────────────────────────────────────────────────┬─────────────┐
+  │ Issue │                     Decision                      │ Recorded on │
+  ├───────┼───────────────────────────────────────────────────┼─────────────┤
+  │       │ Libraries added: @nestjs/bullmq@^11.0.5 and       │ Revision    │
+  │ IC-1  │ bullmq; @aws-sdk/client-s3 and                    │ notes on    │
+  │       │ @aws-sdk/s3-request-presigner                     │ TD-01 and   │
+  │       │                                                   │ TD-04       │
+  ├───────┼───────────────────────────────────────────────────┼─────────────┤
+  │       │ Stream and download are owner-only in Phase 03.   │ Revision    │
+  │ AMB-1 │ Not logged in → 401; not the owner or unknown     │ note on     │
+  │       │ video → 404; owner but video not ready → 409.     │ TD-11       │
+  │       │ Phase 04 opens published videos.                  │             │
+  ├───────┼───────────────────────────────────────────────────┼─────────────┤
+  │       │ The draft belongs to the uploader's channel. It   │ Revision    │
+  │ AMB-2 │ stores filename, size and content type; the title │ note on     │
+  │       │  defaults to the filename without extension.      │ TD-05       │
+  ├───────┼───────────────────────────────────────────────────┼─────────────┤
+  │       │ Stored metadata: duration, width, height, mime    │ Revision    │
+  │ AMB-3 │ type, video and audio codecs, bitrate, frame      │ note on     │
+  │       │ rate. size_bytes comes from the storage check     │ TD-09       │
+  │       │ after upload.                                     │             │
+  ├───────┼───────────────────────────────────────────────────┼─────────────┤
+  │       │ TD-14 set to option B: a one-shot container       │ TD-14       │
+  │ OQ-1  │ creates the bucket and applies a CORS policy      │ Decision    │
+  │       │ file.                                             │ field       │
+  └───────┴───────────────────────────────────────────────────┴─────────────┘
+
+  I recorded the three ambiguity answers as dated revision notes on the related
+  TDs, not only in validation.md. That way /plan-build sees them through
+  context.md.
+
+  Files changed:
+  - docs/decisions/technical-decisions-phase-03-videos.md: all 14 TDs are now
+    decided, and the doc's status is back to decided.
+  - docs/phases/phase-03-videos/context.md: Decisions Index and Decisions Detail
+    updated (libraries, revision notes, TD-14), and the decisions-doc timestamp
+    refreshed. Both readers passed their checks.
+  - docs/phases/phase-03-videos/library-refs.md (new): Context7 notes for the 4
+    libraries.
+  - docs/phases/phase-03-videos/validation.md: 5 issues marked resolved and
+    issue_count: 0. It still says dirty until /plan-validate runs again.
+
+  Version caveat: in library-refs.md, the exact bullmq version is not pinned.
+  It's left to install time, within the range @nestjs/bullmq 11 accepts. The AWS
+  SDK packages are recorded as 3.x only.
+
+✻ Baked for 9m 20s · done 17:39
+
+❯ /plan-validate phase-03-videos                                                
+
+● Running preflight: staleness, and confirming the 5 resolved issues are in the
+  frontmatter.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I re-checked the updated context—including the revisions on TD-05, TD-09,
+  TD-11, and the TD-14 decision—and found no new issues. Writing the clean
+  verdict now.
+
+● Write(docs/phases/phase-03-videos/validation.md)
+  ⎿  Added 3 lines, removed 3 lines
+       1  ---
+       2  kind: phase
+       3  name: phase-03-videos
+       4 -status: dirty                                                  
+       4 +status: clean                                                  
+       5  issue_count: 0
+       6  sources_mtime:
+       7 -  docs/phases/phase-03-videos/context.md: "2026-11-01T17:26:25-
+         -03:00"                                                         
+       8 -  docs/decisions/technical-decisions-phase-03-videos.md: "2026-
+         -11-01T17:23:17-03:00"                                          
+       7 +  docs/phases/phase-03-videos/context.md: "2026-11-01T17:38:44-
+         +03:00"                                                         
+       8 +  docs/decisions/technical-decisions-phase-03-videos.md: "2026-
+         +11-01T17:37:27-03:00"                                          
+       9  issues:
+      10    - id: IC-1
+      11      status: resolved
+
+● Phase 03 (phase-03-videos) passed validation: validation.md is now status: 
+  clean with 0 open issues. The next step is /plan-build phase-03-videos.
+
+  - No new issues: the checks found nothing new after your answers. All 14 TDs
+    are decided, every Phase 03 capability is covered, and nothing conflicts
+    with the decisions inherited from earlier phases.
+  - Audit trail: the 5 resolved issues are kept (IC-1, AMB-1, AMB-2, AMB-3,
+    OQ-1), each linked to the TD where its answer was written.
+  - Skipped checks: the UI coverage check is skipped because the UI inventory is
+    deferred, and the cross-slice check because Phase 03 has a single slice.
+
+  One open detail: I noticed but didn't raise a gap. TD-07 (cleanup of abandoned
+  uploads) never sets how long a draft can sit before cleanup. That limit
+  should comfortably exceed a slow, resumed 10 GB upload, and RustFS removes
+  incomplete uploads after 24 hours on its own. /plan-build can set it as a
+  parameter. If you'd rather settle it now, /decide can add it as a revision on
+  TD-07.
+
+  Nothing is committed yet. The changes are on feature/phase-03-videos:
+  - docs/decisions/technical-decisions-phase-03-videos.md (TD-14 plus the
+    revisions)
+  - docs/phases/phase-03-videos/context.md
+  - docs/phases/phase-03-videos/validation.md
+  - docs/phases/phase-03-videos/library-refs.md
+✻ Cogitated for 26s · done 17:41
