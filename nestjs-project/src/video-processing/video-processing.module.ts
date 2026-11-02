@@ -7,7 +7,11 @@ import {
 } from '../queue/queue.constants';
 import { StorageModule } from '../storage/storage.module';
 import { Video } from '../videos/entities/video.entity';
+import { AbandonedUploadsCleanupService } from './abandoned-uploads-cleanup.service';
+import { MaintenanceSchedulerService } from './maintenance-scheduler.service';
+import { MaintenanceProcessor } from './maintenance.processor';
 import { MediaProbeService } from './media-probe.service';
+import { StuckProcessingRecoveryService } from './stuck-processing-recovery.service';
 import { ThumbnailExtractorService } from './thumbnail-extractor.service';
 import { VideoProcessingProcessor } from './video-processing.processor';
 
@@ -25,6 +29,10 @@ import { VideoProcessingProcessor } from './video-processing.processor';
     VideoProcessingProcessor,
     MediaProbeService,
     ThumbnailExtractorService,
+    MaintenanceProcessor,
+    MaintenanceSchedulerService,
+    AbandonedUploadsCleanupService,
+    StuckProcessingRecoveryService,
   ],
 })
 export class VideoProcessingModule {}

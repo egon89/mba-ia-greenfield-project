@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 11/16 completed
+**SIs:** 12/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -126,9 +126,17 @@
   - The running `video-worker` (`nest start --watch`) picks up the new processor automatically and starts consuming `bull`-prefixed jobs.
 
 ### SI-03.12 — Job agendado de manutenção (rascunhos abandonados + vídeos presos em processing)
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 17 passing (`stuck-processing-recovery.service.spec.ts`, `stuck-processing-recovery.service.integration-spec.ts`, `abandoned-uploads-cleanup.service.integration-spec.ts`, `maintenance-scheduler.service.integration-spec.ts`, plus re-run of `video-processing.module.spec.ts` and `worker.module.spec.ts` — 6 suites). `tsc --noEmit` and eslint on the changed files clean
+- **Observations:**
+  - **Per-video error isolation (not in the plan):** both `cleanupAbandonedDrafts` and `recoverStuckProcessing` catch and log errors per video and move on to the next, so one bad video does not block the rest every hour (the rule for background jobs allows catch-and-log). Unit test covers this for the recovery service.
+  - Consequence of the plan's order for abandoned drafts (DB update first, so a concurrent `complete` wins): if the storage cleanup fails after the update, the row is already `failed` with `upload_id = null` and the next run will not retry it. Leftover multipart parts are still discarded by RustFS after 24 h; leftover objects under `videos/{id}/` are not.
+  - The scheduler id reuses `CLEANUP_ABANDONED_UPLOADS_JOB` (the plan uses the same literal for both the scheduler id and the job name). Added `MAINTENANCE_INTERVAL_MS = 3_600_000` to `video-processing.constants.ts`.
+  - `recoverStuckProcessing` returns `{ requeued, failed }` and `cleanupAbandonedDrafts` returns the count; `MaintenanceProcessor` logs both.
+  - `StuckProcessingRecoveryService` calls `processingQueue.add` directly with `PROCESS_VIDEO_JOB_OPTIONS` and `jobId`, as the plan says. It does not reuse `VideoProcessingProducer`, which lives in the API's `VideosModule`.
+  - `video-processing.module.spec.ts` now also loads `videosConfig`, which the new services inject.
+  - Tests backdate `created_at` / `updated_at` with raw SQL (`make_interval`), because `@UpdateDateColumn` always writes the current time. The stuck-recovery integration test creates a real failed job by running a throwaway BullMQ `Worker` (test prefix) that throws `UnrecoverableError`. The scheduler test boots the module three times with `init()` (real `onApplicationBootstrap`) and asserts a single scheduler with `every = 3600000`.
+  - Once the running `video-worker` reloads, it registers the hourly scheduler on the `bull`-prefixed `video-maintenance` queue.
 
 ### SI-03.13 — Endpoint GET /videos/:publicId (status e metadados para o dono)
 - **Status:** pending

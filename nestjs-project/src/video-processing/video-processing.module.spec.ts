@@ -9,6 +9,7 @@ import { Channel } from '../channels/entities/channel.entity';
 import queueConfig from '../config/queue.config';
 import redisConfig from '../config/redis.config';
 import storageConfig from '../config/storage.config';
+import videosConfig from '../config/videos.config';
 import {
   VIDEO_MAINTENANCE_QUEUE,
   VIDEO_PROCESSING_QUEUE,
@@ -28,7 +29,7 @@ describe('VideoProcessingModule', () => {
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
-          load: [storageConfig, redisConfig, queueConfig],
+          load: [storageConfig, redisConfig, queueConfig, videosConfig],
         }),
         TypeOrmModule.forRoot(createTestDataSource(ALL_ENTITIES).options),
         QueueModule,
