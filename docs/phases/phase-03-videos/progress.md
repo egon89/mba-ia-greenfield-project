@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 5/16 completed
+**SIs:** 6/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -49,9 +49,15 @@
   - `Video` was added to `ALL_ENTITIES` in all 10 existing specs, not just the entity tests the plan names (module and service specs too), because any data source that loads `Channel` now needs `Video`.
 
 ### SI-03.6 — Configurar a fila BullMQ e o produtor de process-video
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 5 passing (`queue.module.spec.ts` 1, `video-processing.producer.integration-spec.ts` 2, `queue-prefix.integration-spec.ts` 2). Full suite green at SI end: unit+integration 32 suites / 190 tests, e2e 3 suites / 52 tests, lint and `tsc --noEmit` clean
+- **Observations:**
+  - **Added dependency `ioredis@5.11.1` (exact; not in the plan):** in `bullmq@6` `ioredis` is an *optional* peer dependency, so SI-03.1 did not install it. The first test run failed with "BullMQ could not load the optional 'ioredis' package". The version is pinned to the one `bullmq@6.5.3` develops against (its devDependency), not `ioredis@6.0.0` (the current `latest`). `npm ls ioredis` shows a single deduped copy (shared with `typeorm`). Fix attempt 1/3.
+  - **BullMQ 6 API change:** `Queue.client` no longer exists. The raw Redis client is at `queue.getBackend().client` and is typed as BullMQ's own `IRedisClient` (no `exists`). The prefix test reads the job hashes with `hgetall` (`{}` when the key does not exist).
+  - The prefix test starts a raw `Worker` with the `bull` prefix on `video-processing`. It leaves the bookkeeping keys `bull:video-processing:meta` and `:stalled-check` in Redis (no job keys). They are not cleaned up on purpose: obliterating or deleting under the `bull` prefix could wipe real dev jobs, and the real `video-worker` (SI-03.10) creates the same keys.
+  - `QueueModule` is not yet imported by `AppModule`. The producer is not yet registered in `VideosModule` (with `BullModule.registerQueue`). Both are wired in SI-03.7, as the plan says ("storage, entidade e produtor no VideosModule"); the producer test builds its own module.
+  - `PROCESS_VIDEO_JOB_OPTIONS` uses `as const satisfies JobsOptions`, which type-checks it against BullMQ without widening the literals.
+  - `src/test/jest-env.setup.ts` is in the `setupFiles` of both Jest configs, after `dotenv/config`. It assigns `QUEUE_PREFIX = 'test'` unconditionally, so it overrides `.env`'s `bull`.
 
 ### SI-03.7 — Endpoint POST /videos (início do upload + pré-cadastro como rascunho)
 - **Status:** pending
