@@ -74,6 +74,36 @@ export class VideosController {
     };
   }
 
+  @Get(':publicId')
+  @ApiOperation({
+    summary: 'Get a video',
+    description:
+      'Owner reads the video in any status, including the extracted metadata or the failure reason. Used to poll processing.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Video found',
+    type: VideoResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Missing or invalid access token',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'VIDEO_NOT_FOUND — unknown video or owned by another user',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  async getVideo(
+    @CurrentUser() user: JwtPayload,
+    @Param('publicId') publicId: string,
+  ): Promise<VideoResponseDto> {
+    return toVideoResponse(
+      await this.videosService.getOwnedVideo(user.sub, publicId),
+    );
+  }
+
   @Post(':publicId/upload/part-urls')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

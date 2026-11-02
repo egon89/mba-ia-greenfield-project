@@ -254,4 +254,65 @@ describe('VideosService (integration)', () => {
       await expect(queue.getJob(video.id)).resolves.toBeUndefined();
     });
   });
+
+  describe('getOwnedVideo', () => {
+    async function ownedVideo(): Promise<{ user: User; video: Video }> {
+      const { user } = await createUserWithChannel();
+      const { video } = await service.initiateUpload(user.id, {
+        filename: 'clip.mp4',
+        size_bytes: 6 * MiB,
+        content_type: 'video/mp4',
+      });
+      openUploads.push({
+        key: videoOriginalKey(video.id),
+        uploadId: video.upload_id!,
+      });
+      return { user, video };
+    }
+
+    it("returns the owner's video with its current row state", async () => {
+      const { user, video } = await ownedVideo();
+      await dataSource.getRepository(Video).update(
+        { id: video.id },
+        {
+          status: VideoStatus.FAILED,
+          failure_reason: 'invalid_media',
+          upload_id: null,
+        },
+      );
+
+      const found = await service.getOwnedVideo(user.id, video.public_id);
+
+      expect(found).toMatchObject({
+        id: video.id,
+        public_id: video.public_id,
+        status: VideoStatus.FAILED,
+        failure_reason: 'invalid_media',
+      });
+    });
+
+    it("rejects another user's video with VIDEO_NOT_FOUND", async () => {
+      const { video } = await ownedVideo();
+      const other = await dataSource
+        .getRepository(User)
+        .save({ email: 'other@example.com', password: 'hashed' });
+      await dataSource.getRepository(Channel).save({
+        name: 'Other',
+        nickname: 'other',
+        user_id: other.id,
+      });
+
+      await expect(
+        service.getOwnedVideo(other.id, video.public_id),
+      ).rejects.toMatchObject({ errorCode: 'VIDEO_NOT_FOUND' });
+    });
+
+    it('rejects an unknown publicId with VIDEO_NOT_FOUND', async () => {
+      const { user } = await createUserWithChannel();
+
+      await expect(
+        service.getOwnedVideo(user.id, 'AAAAAAAAAAA'),
+      ).rejects.toMatchObject({ errorCode: 'VIDEO_NOT_FOUND' });
+    });
+  });
 });

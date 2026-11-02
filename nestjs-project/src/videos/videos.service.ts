@@ -126,6 +126,11 @@ export class VideosService {
     return video;
   }
 
+  // The owner reads the video in any status (used to poll processing).
+  async getOwnedVideo(userId: string, publicId: string): Promise<Video> {
+    return this.findOwnedByPublicId(userId, publicId);
+  }
+
   async issuePartUrls(
     userId: string,
     publicId: string,

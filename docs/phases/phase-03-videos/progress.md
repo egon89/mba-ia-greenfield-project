@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 12/16 completed
+**SIs:** 13/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -139,9 +139,12 @@
   - Once the running `video-worker` reloads, it registers the hourly scheduler on the `bull`-prefixed `video-maintenance` queue.
 
 ### SI-03.13 — Endpoint GET /videos/:publicId (status e metadados para o dono)
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 10 passing (`videos.service.integration-spec.ts` 7 — 3 new for `getOwnedVideo`; `test/videos-get.e2e-spec.ts` 3 — spec-derived from `specs/videos-get.plan.md`). `tsc --noEmit` and eslint on the changed files clean
+- **Observations:**
+  - `getOwnedVideo` is a thin wrapper over `findOwnedByPublicId`, as the plan specifies; it gives the read endpoint its own named service method.
+  - `openapi.json` regenerated; it now has `GET /videos/{publicId}` with responses 200, 401, 404.
+  - The e2e suite opens one multipart upload per test through `POST /videos` and does not abort it, like the other video e2e suites (RustFS discards stale uploads after 24 h).
 
 ### SI-03.14 — Endpoints de streaming e download (302 para GET pré-assinado)
 - **Status:** pending
