@@ -1,23 +1,31 @@
 import { randomUUID } from 'crypto';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChannelsService } from '../channels/channels.service';
 import { isPgUniqueViolationOnColumn } from '../common/database/pg-errors';
 import videosConfig from '../config/videos.config';
-import { StorageService } from '../storage/storage.service';
+import { isNoSuchUploadError } from '../storage/storage-errors';
+import {
+  type CompletedPart,
+  StorageService,
+  type UploadedPart,
+} from '../storage/storage.service';
 import type { InitiateUploadDto } from './dto/initiate-upload.dto';
 import { Video, VideoStatus } from './entities/video.entity';
 import { generatePublicId, isValidPublicId } from './public-id.util';
-import { videoOriginalKey } from '../storage/storage-keys';
+import { videoOriginalKey, videoPrefix } from '../storage/storage-keys';
 import { partContentLength, partCount } from './upload-parts.util';
 import {
   PART_URL_EXPIRES_IN_SECONDS,
   PUBLIC_ID_MAX_RETRIES,
 } from './videos.constants';
+import { VideoProcessingProducer } from './video-processing.producer';
 import {
   InvalidPartNumberException,
+  UploadIncompleteException,
+  UploadSizeMismatchException,
   VideoNotFoundException,
   VideoUploadNotActiveException,
 } from './videos.exceptions';
@@ -55,11 +63,14 @@ export function titleFromFilename(filename: string): string {
 
 @Injectable()
 export class VideosService {
+  private readonly logger = new Logger(VideosService.name);
+
   constructor(
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
     private readonly channelsService: ChannelsService,
     private readonly storageService: StorageService,
+    private readonly producer: VideoProcessingProducer,
     @Inject(videosConfig.KEY)
     private readonly config: ConfigType<typeof videosConfig>,
   ) {}
@@ -163,6 +174,115 @@ export class VideosService {
         size,
       })),
     };
+  }
+
+  // Idempotent: a video already in processing is re-enqueued (TD-06, TD-13).
+  async completeUpload(userId: string, publicId: string): Promise<Video> {
+    const video = await this.findOwnedByPublicId(userId, publicId);
+    switch (video.status) {
+      case VideoStatus.PROCESSING:
+        await this.enqueueProcessing(video.id);
+        return video;
+      case VideoStatus.DRAFT:
+        return this.completeDraft(userId, publicId, video);
+      default:
+        throw new VideoUploadNotActiveException();
+    }
+  }
+
+  private async completeDraft(
+    userId: string,
+    publicId: string,
+    video: Video,
+  ): Promise<Video> {
+    if (!video.upload_id) throw new VideoUploadNotActiveException();
+    const key = videoOriginalKey(video.id);
+    await this.completeMultipart(video, key, video.upload_id);
+
+    const head = await this.storageService.headObject(key);
+    if (head.contentLength !== video.declared_size_bytes) {
+      await this.failSizeMismatch(video);
+    }
+
+    const result = await this.videoRepository.update(
+      { id: video.id, status: VideoStatus.DRAFT },
+      {
+        status: VideoStatus.PROCESSING,
+        size_bytes: head.contentLength,
+        upload_id: null,
+      },
+    );
+    if (!result.affected) {
+      // A concurrent complete won the transition — answer like a repeat.
+      const current = await this.findOwnedByPublicId(userId, publicId);
+      if (current.status !== VideoStatus.PROCESSING) {
+        throw new VideoUploadNotActiveException();
+      }
+      await this.enqueueProcessing(current.id);
+      return current;
+    }
+
+    await this.enqueueProcessing(video.id);
+    return this.videoRepository.findOneByOrFail({ id: video.id });
+  }
+
+  // Parts and ETags come from the API's own ListParts, never from the client.
+  // NoSuchUpload means a previous complete may have finished in storage but
+  // not in the database — the caller's HeadObject then proves the object
+  // exists (and fails if it does not).
+  private async completeMultipart(
+    video: Video,
+    key: string,
+    uploadId: string,
+  ): Promise<void> {
+    let parts: UploadedPart[];
+    try {
+      parts = await this.storageService.listParts(key, uploadId);
+    } catch (err) {
+      if (!isNoSuchUploadError(err)) throw err;
+      return;
+    }
+
+    const count = partCount(
+      video.declared_size_bytes,
+      this.config.uploadPartSizeBytes,
+    );
+    const byNumber = new Map(parts.map((part) => [part.partNumber, part]));
+    const completed: CompletedPart[] = [];
+    for (let partNumber = 1; partNumber <= count; partNumber++) {
+      const part = byNumber.get(partNumber);
+      if (!part) throw new UploadIncompleteException();
+      completed.push({ partNumber, etag: part.etag });
+    }
+
+    await this.storageService.completeMultipartUpload(key, uploadId, completed);
+  }
+
+  // The row is kept as failed; its objects are removed (TD-05 step 3).
+  private async failSizeMismatch(video: Video): Promise<never> {
+    await this.videoRepository.update(
+      { id: video.id, status: VideoStatus.DRAFT },
+      {
+        status: VideoStatus.FAILED,
+        failure_reason: 'upload_size_mismatch',
+        upload_id: null,
+      },
+    );
+    await this.storageService.deletePrefix(videoPrefix(video.id));
+    throw new UploadSizeMismatchException();
+  }
+
+  // The maintenance job re-enqueues videos stuck in processing, so a failed
+  // enqueue does not fail the request (TD-12, TD-13).
+  private async enqueueProcessing(videoId: string): Promise<void> {
+    try {
+      await this.producer.enqueue(videoId);
+    } catch (err) {
+      this.logger.error(
+        `Failed to enqueue processing for video ${videoId}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   // A draft always has an open multipart upload (initiateUpload sets both).

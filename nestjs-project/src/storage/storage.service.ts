@@ -16,6 +16,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable, type OnModuleDestroy } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import storageConfig from '../config/storage.config';
+import { isNoSuchUploadError } from './storage-errors';
 import { S3_CLIENT, S3_PUBLIC_CLIENT } from './storage.constants';
 
 export interface UploadedPart {
@@ -136,7 +137,7 @@ export class StorageService implements OnModuleDestroy {
         }),
       );
     } catch (error) {
-      if (error instanceof Error && error.name === 'NoSuchUpload') return;
+      if (isNoSuchUploadError(error)) return;
       throw error;
     }
   }

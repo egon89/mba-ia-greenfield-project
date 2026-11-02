@@ -29,7 +29,7 @@ import {
   toUploadedPartsResponse,
   UploadedPartsResponseDto,
 } from './dto/uploaded-parts-response.dto';
-import { toVideoResponse } from './dto/video-response.dto';
+import { toVideoResponse, VideoResponseDto } from './dto/video-response.dto';
 import { VideosService } from './videos.service';
 
 // The auth throttler (10 req/min) would break batched part-URL requests and
@@ -153,6 +153,49 @@ export class VideosController {
   ): Promise<UploadedPartsResponseDto> {
     return toUploadedPartsResponse(
       await this.videosService.listUploadedParts(user.sub, publicId),
+    );
+  }
+
+  @Post(':publicId/upload/complete')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Complete a video upload',
+    description:
+      'Completes the multipart upload from the stored parts, checks the final size, moves the video to processing and enqueues its processing. Idempotent while the video is processing.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Upload completed; video is processing',
+    type: VideoResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Missing or invalid access token',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'VIDEO_NOT_FOUND — unknown video or owned by another user',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 409,
+    description:
+      'UPLOAD_INCOMPLETE (missing parts) or VIDEO_UPLOAD_NOT_ACTIVE (video is ready or failed)',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 422,
+    description:
+      'UPLOAD_SIZE_MISMATCH — the video is marked failed and its objects are deleted',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  async completeUpload(
+    @CurrentUser() user: JwtPayload,
+    @Param('publicId') publicId: string,
+  ): Promise<VideoResponseDto> {
+    return toVideoResponse(
+      await this.videosService.completeUpload(user.sub, publicId),
     );
   }
 }

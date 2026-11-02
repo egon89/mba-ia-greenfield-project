@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 8/16 completed
+**SIs:** 9/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -86,9 +86,15 @@
   - The integration run prints a non-failing `pg` DeprecationWarning ("Calling client.query() when the client is already executing a query"). Not investigated; out of scope.
 
 ### SI-03.9 — Endpoint POST /videos/:publicId/upload/complete (conclusão + enfileiramento)
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 50 passing (`videos.service.spec.ts`, `videos.service.integration-spec.ts`, `videos.module.spec.ts`, `storage.service.integration-spec.ts` — 45 across the 4 suites; `test/videos-upload-complete.e2e-spec.ts` 5 — spec-derived from `specs/videos-upload-complete.plan.md`). `tsc --noEmit` and eslint on the changed files clean
+- **Observations:**
+  - Created `src/storage/storage-errors.ts` (`isNoSuchUploadError`) so S3 error-name checks stay in the storage module. `StorageService.abortMultipartUpload` (SI-03.4) now uses it too; its behavior is unchanged and its integration spec was re-run and passes.
+  - `NoSuchUpload` path: when `ListParts` says the upload no longer exists, the flow skips the complete step and goes straight to `HeadObject`. If the object is missing too, the S3 `NotFound` error propagates (→ 500). That state means storage and database disagree; the Error Catalog has no code for it.
+  - The "0 rows updated" branch reloads the video. If it is `processing`, it re-enqueues and returns it (same as a repeated call). Any other status → `VIDEO_UPLOAD_NOT_ACTIVE`.
+  - An enqueue failure is logged (`Logger.error`) and swallowed in both the fresh-complete and the repeat path, as the plan specifies for the fresh path. The maintenance job (SI-03.12) re-enqueues stuck videos.
+  - A `draft` row without an `upload_id` (should not happen) is treated as `VIDEO_UPLOAD_NOT_ACTIVE`.
+  - The integration spec now also imports `QueueModule` + `BullModule.registerQueue` (producer dependency). It obliterates the `test`-prefixed queue around each test and deletes `videos/` in `afterAll`.
 
 ### SI-03.10 — Infra: Entrypoint do worker, WorkerModule e serviço video-worker no Compose
 - **Status:** pending

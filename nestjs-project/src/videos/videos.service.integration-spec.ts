@@ -1,13 +1,21 @@
+import { ListObjectsV2Command, type S3Client } from '@aws-sdk/client-s3';
+import { BullModule, getQueueToken } from '@nestjs/bullmq';
 import { ConfigModule } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import type { Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 import { RefreshToken } from '../auth/entities/refresh-token.entity';
 import { VerificationToken } from '../auth/entities/verification-token.entity';
 import { ChannelsModule } from '../channels/channels.module';
 import { Channel } from '../channels/entities/channel.entity';
+import queueConfig from '../config/queue.config';
+import redisConfig from '../config/redis.config';
 import storageConfig from '../config/storage.config';
 import videosConfig from '../config/videos.config';
+import { VIDEO_PROCESSING_QUEUE } from '../queue/queue.constants';
+import { QueueModule } from '../queue/queue.module';
+import { S3_CLIENT } from '../storage/storage.constants';
 import { StorageModule } from '../storage/storage.module';
 import { StorageService } from '../storage/storage.service';
 import {
@@ -16,7 +24,8 @@ import {
 } from '../test/create-test-data-source';
 import { User } from '../users/entities/user.entity';
 import { Video, VideoStatus } from './entities/video.entity';
-import { videoOriginalKey } from '../storage/storage-keys';
+import { videoOriginalKey, videoPrefix } from '../storage/storage-keys';
+import { VideoProcessingProducer } from './video-processing.producer';
 import { VideosService } from './videos.service';
 
 const ALL_ENTITIES = [User, Channel, RefreshToken, VerificationToken, Video];
@@ -34,6 +43,8 @@ describe('VideosService (integration)', () => {
   let dataSource: DataSource;
   let service: VideosService;
   let storage: StorageService;
+  let queue: Queue;
+  let s3: S3Client;
   const openUploads: { key: string; uploadId: string }[] = [];
   const originalEnv: Record<string, string | undefined> = {};
 
@@ -46,19 +57,23 @@ describe('VideosService (integration)', () => {
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
-          load: [storageConfig, videosConfig],
+          load: [storageConfig, videosConfig, redisConfig, queueConfig],
         }),
+        QueueModule,
+        BullModule.registerQueue({ name: VIDEO_PROCESSING_QUEUE }),
         TypeOrmModule.forRoot(createTestDataSource(ALL_ENTITIES).options),
         TypeOrmModule.forFeature([Video]),
         StorageModule,
         ChannelsModule,
       ],
-      providers: [VideosService],
+      providers: [VideosService, VideoProcessingProducer],
     }).compile();
 
     dataSource = module.get(DataSource);
     service = module.get(VideosService);
     storage = module.get(StorageService);
+    queue = module.get<Queue>(getQueueToken(VIDEO_PROCESSING_QUEUE));
+    s3 = module.get<S3Client>(S3_CLIENT);
   });
 
   afterAll(async () => {
@@ -66,6 +81,8 @@ describe('VideosService (integration)', () => {
       for (const { key, uploadId } of openUploads) {
         await storage.abortMultipartUpload(key, uploadId);
       }
+      await queue.obliterate({ force: true });
+      await storage.deletePrefix('videos/');
     } finally {
       await module.close();
       for (const [name, value] of Object.entries(originalEnv)) {
@@ -77,6 +94,7 @@ describe('VideosService (integration)', () => {
 
   beforeEach(async () => {
     await cleanAllTables(dataSource);
+    await queue.obliterate({ force: true });
   });
 
   async function createUserWithChannel(): Promise<{
@@ -148,6 +166,92 @@ describe('VideosService (integration)', () => {
       partSize: 5 * MiB,
       partCount: 2,
       uploadedParts: [{ partNumber: 1, size: 5 * MiB }],
+    });
+  });
+
+  describe('completeUpload', () => {
+    // 5 MiB + 1 MiB → 2 parts, both uploaded through the issued URLs.
+    async function uploadedDraft(): Promise<{ user: User; video: Video }> {
+      const { user } = await createUserWithChannel();
+      const { video } = await service.initiateUpload(user.id, {
+        filename: 'clip.mp4',
+        size_bytes: 6 * MiB,
+        content_type: 'video/mp4',
+      });
+      openUploads.push({
+        key: videoOriginalKey(video.id),
+        uploadId: video.upload_id!,
+      });
+      const { parts } = await service.issuePartUrls(
+        user.id,
+        video.public_id,
+        [1, 2],
+      );
+      for (const part of parts) {
+        const put = await fetch(part.url, {
+          method: 'PUT',
+          body: Buffer.alloc(part.contentLength, part.partNumber),
+        });
+        expect(put.status).toBe(200);
+      }
+      return { user, video };
+    }
+
+    async function keysUnder(prefix: string): Promise<string[]> {
+      const page = await s3.send(
+        new ListObjectsV2Command({
+          Bucket: process.env.S3_BUCKET,
+          Prefix: prefix,
+        }),
+      );
+      return (page.Contents ?? []).map((object) => object.Key!);
+    }
+
+    it('assembles the object, moves the row to processing and enqueues process-video', async () => {
+      const { user, video } = await uploadedDraft();
+
+      const result = await service.completeUpload(user.id, video.public_id);
+
+      expect(result).toMatchObject({
+        status: VideoStatus.PROCESSING,
+        size_bytes: 6 * MiB,
+        upload_id: null,
+      });
+      const row = await dataSource
+        .getRepository(Video)
+        .findOneByOrFail({ id: video.id });
+      expect(row).toMatchObject({
+        status: VideoStatus.PROCESSING,
+        size_bytes: 6 * MiB,
+        upload_id: null,
+      });
+      await expect(
+        storage.headObject(videoOriginalKey(video.id)),
+      ).resolves.toMatchObject({ contentLength: 6 * MiB });
+      const job = await queue.getJob(video.id);
+      expect(job?.data).toEqual({ videoId: video.id });
+    });
+
+    it('keeps the row as failed / upload_size_mismatch and empties the prefix when the size differs', async () => {
+      const { user, video } = await uploadedDraft();
+      await dataSource
+        .getRepository(Video)
+        .update({ id: video.id }, { declared_size_bytes: 6 * MiB + 1 });
+
+      await expect(
+        service.completeUpload(user.id, video.public_id),
+      ).rejects.toMatchObject({ errorCode: 'UPLOAD_SIZE_MISMATCH' });
+
+      const row = await dataSource
+        .getRepository(Video)
+        .findOneByOrFail({ id: video.id });
+      expect(row).toMatchObject({
+        status: VideoStatus.FAILED,
+        failure_reason: 'upload_size_mismatch',
+        upload_id: null,
+      });
+      await expect(keysUnder(videoPrefix(video.id))).resolves.toEqual([]);
+      await expect(queue.getJob(video.id)).resolves.toBeUndefined();
     });
   });
 });
