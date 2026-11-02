@@ -16,6 +16,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Inject, Injectable, type OnModuleDestroy } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import storageConfig from '../config/storage.config';
+import { attachmentContentDisposition } from './content-disposition';
 import { isNoSuchUploadError } from './storage-errors';
 import { S3_CLIENT, S3_PUBLIC_CLIENT } from './storage.constants';
 
@@ -228,7 +229,7 @@ export class StorageService implements OnModuleDestroy {
         Bucket: this.bucket,
         Key: key,
         ResponseContentDisposition: options.downloadFilename
-          ? `attachment; filename="${options.downloadFilename.replace(/"/g, '')}"`
+          ? attachmentContentDisposition(options.downloadFilename)
           : undefined,
       }),
       { expiresIn: options.expiresIn },

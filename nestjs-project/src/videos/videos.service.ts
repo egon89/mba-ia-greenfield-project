@@ -18,8 +18,10 @@ import { generatePublicId, isValidPublicId } from './public-id.util';
 import { videoOriginalKey, videoPrefix } from '../storage/storage-keys';
 import { partContentLength, partCount } from './upload-parts.util';
 import {
+  DOWNLOAD_URL_EXPIRES_IN_SECONDS,
   PART_URL_EXPIRES_IN_SECONDS,
   PUBLIC_ID_MAX_RETRIES,
+  STREAM_URL_EXPIRES_IN_SECONDS,
 } from './videos.constants';
 import { VideoProcessingProducer } from './video-processing.producer';
 import {
@@ -27,8 +29,11 @@ import {
   UploadIncompleteException,
   UploadSizeMismatchException,
   VideoNotFoundException,
+  VideoNotReadyException,
   VideoUploadNotActiveException,
 } from './videos.exceptions';
+
+export type PlaybackMode = 'stream' | 'download';
 
 const PUBLIC_ID_COLUMN = 'public_id';
 
@@ -129,6 +134,27 @@ export class VideosService {
   // The owner reads the video in any status (used to poll processing).
   async getOwnedVideo(userId: string, publicId: string): Promise<Video> {
     return this.findOwnedByPublicId(userId, publicId);
+  }
+
+  // Presigned GET on the public endpoint; storage serves Range / 206 itself,
+  // so no video bytes go through the API (TD-04, TD-11).
+  async getPlaybackUrl(
+    userId: string,
+    publicId: string,
+    mode: PlaybackMode,
+  ): Promise<string> {
+    const video = await this.findOwnedByPublicId(userId, publicId);
+    if (video.status !== VideoStatus.READY) throw new VideoNotReadyException();
+    const key = videoOriginalKey(video.id);
+    if (mode === 'stream') {
+      return this.storageService.presignGetObject(key, {
+        expiresIn: STREAM_URL_EXPIRES_IN_SECONDS,
+      });
+    }
+    return this.storageService.presignGetObject(key, {
+      expiresIn: DOWNLOAD_URL_EXPIRES_IN_SECONDS,
+      downloadFilename: video.original_filename,
+    });
   }
 
   async issuePartUrls(

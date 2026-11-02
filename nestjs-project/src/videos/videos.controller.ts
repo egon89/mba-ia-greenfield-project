@@ -2,10 +2,13 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
+  type HttpRedirectResponse,
   HttpStatus,
   Param,
   Post,
+  Redirect,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -102,6 +105,98 @@ export class VideosController {
     return toVideoResponse(
       await this.videosService.getOwnedVideo(user.sub, publicId),
     );
+  }
+
+  @Get(':publicId/stream')
+  @Redirect(undefined, HttpStatus.FOUND)
+  @Header('Cache-Control', 'no-store')
+  @ApiOperation({
+    summary: 'Stream a video',
+    description:
+      'Redirects to a presigned GET URL of the original file on the storage, valid for 6 hours. The storage serves Range requests (206) directly.',
+  })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirect to the presigned stream URL',
+    headers: {
+      Location: {
+        description: 'Presigned GET URL (expires in 21600 s)',
+        schema: { type: 'string', format: 'uri' },
+      },
+      'Cache-Control': { schema: { type: 'string', example: 'no-store' } },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Missing or invalid access token',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'VIDEO_NOT_FOUND — unknown video or owned by another user',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'VIDEO_NOT_READY — the video is not ready yet',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  async streamVideo(
+    @CurrentUser() user: JwtPayload,
+    @Param('publicId') publicId: string,
+  ): Promise<HttpRedirectResponse> {
+    const url = await this.videosService.getPlaybackUrl(
+      user.sub,
+      publicId,
+      'stream',
+    );
+    return { url, statusCode: HttpStatus.FOUND };
+  }
+
+  @Get(':publicId/download')
+  @Redirect(undefined, HttpStatus.FOUND)
+  @Header('Cache-Control', 'no-store')
+  @ApiOperation({
+    summary: 'Download a video',
+    description:
+      'Redirects to a presigned GET URL of the original file, valid for 15 minutes, that answers with Content-Disposition: attachment and the original filename.',
+  })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirect to the presigned download URL',
+    headers: {
+      Location: {
+        description: 'Presigned GET URL (expires in 900 s)',
+        schema: { type: 'string', format: 'uri' },
+      },
+      'Cache-Control': { schema: { type: 'string', example: 'no-store' } },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Missing or invalid access token',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'VIDEO_NOT_FOUND — unknown video or owned by another user',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'VIDEO_NOT_READY — the video is not ready yet',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  async downloadVideo(
+    @CurrentUser() user: JwtPayload,
+    @Param('publicId') publicId: string,
+  ): Promise<HttpRedirectResponse> {
+    const url = await this.videosService.getPlaybackUrl(
+      user.sub,
+      publicId,
+      'download',
+    );
+    return { url, statusCode: HttpStatus.FOUND };
   }
 
   @Post(':publicId/upload/part-urls')

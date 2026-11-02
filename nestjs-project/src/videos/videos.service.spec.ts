@@ -14,6 +14,7 @@ import {
   UploadIncompleteException,
   UploadSizeMismatchException,
   VideoNotFoundException,
+  VideoNotReadyException,
   VideoUploadNotActiveException,
 } from './videos.exceptions';
 import { titleFromFilename, VideosService } from './videos.service';
@@ -47,6 +48,7 @@ describe('VideosService', () => {
     completeMultipartUpload: jest.fn(),
     headObject: jest.fn(),
     deletePrefix: jest.fn(),
+    presignGetObject: jest.fn(),
   };
   const producer = { enqueue: jest.fn() };
 
@@ -483,6 +485,73 @@ describe('VideosService', () => {
         expect.any(String),
       );
       logError.mockRestore();
+    });
+  });
+
+  describe('getPlaybackUrl', () => {
+    const ORIGINAL_FILENAME = 'Férias "2026".mp4';
+    const ORIGINAL_KEY = `videos/${VIDEO_ID}/original`;
+
+    const ready = () =>
+      draft({
+        status: VideoStatus.READY,
+        upload_id: null,
+        original_filename: ORIGINAL_FILENAME,
+      });
+
+    beforeEach(() => {
+      storageService.presignGetObject.mockResolvedValue(
+        'https://storage.example/signed',
+      );
+    });
+
+    it.each([VideoStatus.DRAFT, VideoStatus.PROCESSING, VideoStatus.FAILED])(
+      'throws VIDEO_NOT_READY for a %s video without signing a URL',
+      async (status) => {
+        videoRepository.findOne.mockResolvedValue(draft({ status }));
+
+        await expect(
+          service.getPlaybackUrl(USER_ID, PUBLIC_ID, 'stream'),
+        ).rejects.toBeInstanceOf(VideoNotReadyException);
+        await expect(
+          service.getPlaybackUrl(USER_ID, PUBLIC_ID, 'download'),
+        ).rejects.toBeInstanceOf(VideoNotReadyException);
+        expect(storageService.presignGetObject).not.toHaveBeenCalled();
+      },
+    );
+
+    it('signs the stream URL for 6 hours without a download filename', async () => {
+      videoRepository.findOne.mockResolvedValue(ready());
+
+      await expect(
+        service.getPlaybackUrl(USER_ID, PUBLIC_ID, 'stream'),
+      ).resolves.toBe('https://storage.example/signed');
+      expect(storageService.presignGetObject).toHaveBeenCalledWith(
+        ORIGINAL_KEY,
+        { expiresIn: 21_600 },
+      );
+    });
+
+    it('signs the download URL for 15 minutes with the original filename as stored', async () => {
+      videoRepository.findOne.mockResolvedValue(ready());
+
+      await service.getPlaybackUrl(USER_ID, PUBLIC_ID, 'download');
+
+      // Escaping for Content-Disposition happens in StorageService, which
+      // builds the header (see content-disposition.spec.ts).
+      expect(storageService.presignGetObject).toHaveBeenCalledWith(
+        ORIGINAL_KEY,
+        { expiresIn: 900, downloadFilename: ORIGINAL_FILENAME },
+      );
+    });
+
+    it("throws VIDEO_NOT_FOUND for another user's or an unknown video", async () => {
+      videoRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.getPlaybackUrl(USER_ID, PUBLIC_ID, 'stream'),
+      ).rejects.toBeInstanceOf(VideoNotFoundException);
+      expect(storageService.presignGetObject).not.toHaveBeenCalled();
     });
   });
 });

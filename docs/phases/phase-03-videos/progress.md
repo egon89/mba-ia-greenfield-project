@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 13/16 completed
+**SIs:** 14/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -147,9 +147,15 @@
   - The e2e suite opens one multipart upload per test through `POST /videos` and does not abort it, like the other video e2e suites (RustFS discards stale uploads after 24 h).
 
 ### SI-03.14 — Endpoints de streaming e download (302 para GET pré-assinado)
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 75 passing (`content-disposition.spec.ts`, `videos.service.spec.ts`, `videos.service.integration-spec.ts`, `storage.service.integration-spec.ts` — 61 across the 4 suites, after 1 fix attempt; `test/videos-playback.e2e-spec.ts` 5 — spec-derived from `specs/videos-playback.plan.md`). `tsc --noEmit` and eslint on the changed files clean
+- **Observations:**
+  - **Content-Disposition escaping lives in `StorageService` (user decision), not in `VideosService`:** `StorageService` is where the header is built. The plan's interface is kept: `presignGetObject(key, { expiresIn, downloadFilename? })` is unchanged and `getPlaybackUrl` passes `original_filename` as is. The new pure helper `src/storage/content-disposition.ts` (`attachmentContentDisposition`) returns `attachment; filename="<ASCII fallback>"; filename*=UTF-8''<RFC 5987>`. The fallback is NFKD with diacritics removed, any character outside 0x20–0x7E replaced by `_`, `"` and `\` removed, and `video` when nothing is left. `filename*` is `encodeURIComponent` plus `' ( ) *`. It replaces the earlier `replace(/"/g, '')`. Unit-tested in `src/storage/content-disposition.spec.ts`. The plan's "escape de nome com aspas e acentos" unit row in `videos.service.spec.ts` therefore checks only that the raw name is passed. The integration test checks the `filename*` that RustFS returns for `Férias em família "2024".mp4`.
+  - Fix attempt 1/3: the SI-03.4 assertion in `storage.service.integration-spec.ts` expected the old header exactly (`attachment; filename="my-video.mp4"`). It now expects the new format. The test is otherwise unchanged.
+  - The routes use `@Redirect(undefined, 302)` with a dynamic `HttpRedirectResponse` plus `@Header('Cache-Control', 'no-store')` (no `@Res()`). `@Header` applies only on success, so the 401/404/409 error responses carry neither `Location` nor `Cache-Control: no-store`.
+  - Added `STREAM_URL_EXPIRES_IN_SECONDS = 21_600` and `DOWNLOAD_URL_EXPIRES_IN_SECONDS = 900` to `videos.constants.ts`, and exported `PlaybackMode` from `videos.service.ts`.
+  - The integration and e2e tests abort the multipart upload that `POST /videos` / `initiateUpload` opens, then write the original with `putObject` (4096 known bytes).
+  - `openapi.json` regenerated: `/videos/{publicId}/stream` and `/download` document 302 (`Location`, `Cache-Control` headers), 401, 404 and 409.
 
 ### SI-03.15 — Teste de fluxo completo: upload multipart direto ao storage até o vídeo pronto
 - **Status:** pending

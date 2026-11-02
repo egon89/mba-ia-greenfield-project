@@ -202,7 +202,7 @@ describe('StorageService (integration)', () => {
 
       expect(url.host).toBe(new URL(config.publicEndpoint).host);
       expect(url.searchParams.get('response-content-disposition')).toBe(
-        'attachment; filename="my-video.mp4"',
+        `attachment; filename="my-video.mp4"; filename*=UTF-8''my-video.mp4`,
       );
     });
 

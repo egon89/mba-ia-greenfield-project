@@ -315,4 +315,75 @@ describe('VideosService (integration)', () => {
       ).rejects.toMatchObject({ errorCode: 'VIDEO_NOT_FOUND' });
     });
   });
+
+  describe('getPlaybackUrl', () => {
+    const ORIGINAL_FILENAME = 'Férias em família "2024".mp4';
+    const CONTENT = Buffer.from(
+      Array.from({ length: 4096 }, (_, i) => i % 251),
+    );
+
+    // A ready video whose original object holds CONTENT.
+    async function readyVideo(): Promise<{ user: User; video: Video }> {
+      const { user } = await createUserWithChannel();
+      const { video } = await service.initiateUpload(user.id, {
+        filename: ORIGINAL_FILENAME,
+        size_bytes: CONTENT.length,
+        content_type: 'video/mp4',
+      });
+      await storage.abortMultipartUpload(
+        videoOriginalKey(video.id),
+        video.upload_id!,
+      );
+      await storage.putObject(videoOriginalKey(video.id), CONTENT, 'video/mp4');
+      await dataSource.getRepository(Video).update(
+        { id: video.id },
+        {
+          status: VideoStatus.READY,
+          upload_id: null,
+          size_bytes: CONTENT.length,
+        },
+      );
+      return { user, video };
+    }
+
+    it('signs a stream URL the storage answers with 206 for a Range request', async () => {
+      const { user, video } = await readyVideo();
+
+      const url = await service.getPlaybackUrl(
+        user.id,
+        video.public_id,
+        'stream',
+      );
+      const res = await fetch(url, { headers: { Range: 'bytes=0-1023' } });
+
+      expect(res.status).toBe(206);
+      expect(res.headers.get('content-range')).toBe(
+        `bytes 0-1023/${CONTENT.length}`,
+      );
+      const body = Buffer.from(await res.arrayBuffer());
+      expect(body.equals(CONTENT.subarray(0, 1024))).toBe(true);
+    });
+
+    it('signs a download URL the storage answers with an attachment carrying the original name', async () => {
+      const { user, video } = await readyVideo();
+
+      const url = await service.getPlaybackUrl(
+        user.id,
+        video.public_id,
+        'download',
+      );
+      const res = await fetch(url);
+
+      expect(res.status).toBe(200);
+      const disposition = res.headers.get('content-disposition') ?? '';
+      expect(disposition).toMatch(/^attachment; filename="/);
+      expect(disposition).toContain(
+        "filename*=UTF-8''F%C3%A9rias%20em%20fam%C3%ADlia%20%222024%22.mp4",
+      );
+      const encoded = /filename\*=UTF-8''(\S+)$/.exec(disposition)?.[1] ?? '';
+      expect(decodeURIComponent(encoded)).toBe(ORIGINAL_FILENAME);
+      const body = Buffer.from(await res.arrayBuffer());
+      expect(body.equals(CONTENT)).toBe(true);
+    });
+  });
 });
