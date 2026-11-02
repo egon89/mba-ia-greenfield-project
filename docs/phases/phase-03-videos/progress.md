@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 2/16 completed
+**SIs:** 3/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -23,9 +23,12 @@
   - Exposed Redis on host port `6379` for local debugging; not required by the plan.
 
 ### SI-03.3 — Spike de compatibilidade S3 do RustFS (multipart pré-assinado, CORS com ETag, Range → 206)
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 5 passing (`src/storage/rustfs-compat.integration-spec.ts`)
+- **Observations:**
+  - **Spike result (for the PR description, action 5):** RustFS `1.0.3` passed every item — presigned `UploadPart` PUT → 200 + `ETag`; `ListParts` → `CompleteMultipartUpload` → `HeadObject` `ContentLength` = 5 MiB + 1 KiB; part body larger than the signed `ContentLength` → 4xx; `PUT` with allowed `Origin` → `Access-Control-Allow-Origin` + `Access-Control-Expose-Headers` containing `ETag`; `OPTIONS` preflight → 2xx; presigned `GET` with `Range: bytes=0-99` → 206 + `Content-Range: bytes 0-99/{total}` + 100 bytes. No switch to Garage needed.
+  - Test cleans up after itself: aborts any open multipart upload and deletes completed objects under `test/spike/{uuid}/`.
+  - The test also asserts `Access-Control-Allow-Origin` on the preflight response (beyond the plan's 2xx requirement) and byte-equality of the ranged body.
 
 ### SI-03.4 — Criar StorageModule com clients S3 interno e público
 - **Status:** pending
