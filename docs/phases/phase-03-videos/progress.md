@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 10/16 completed
+**SIs:** 11/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -113,9 +113,17 @@
   - The existing `queue-prefix.integration-spec.ts` (SI-03.6) already covers that `test`-prefixed jobs are invisible to a `bull`-prefixed worker. No processor is registered yet, so nothing is consumed.
 
 ### SI-03.11 — Processar vídeo no worker (ffprobe, thumbnail, status e falhas)
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 26 passing (`media-probe.service.spec.ts`, `video-processing.processor.spec.ts`, `media-tools.integration-spec.ts`, `video-processing.processor.integration-spec.ts`, plus re-run of `video-processing.module.spec.ts` and `worker.module.spec.ts` — 6 suites). `tsc --noEmit` and eslint on the changed files clean
+- **Observations:**
+  - **Invalid-media detection beyond the plan:** for a text file renamed to `.mp4`, `ffprobe` does not return JSON without a video stream. It exits 1 with `Invalid data found when processing input`. `MediaProbeService` maps that stderr message to `InvalidMediaError` (→ `UnrecoverableError`, no retries). Any other non-zero exit (404, network) throws a plain `Error`, so BullMQ retries it. The integration spec covers both cases.
+  - Verified in the installed `bullmq@6.5.3` source that the worker emits `failed` after every attempt and that `job.attemptsMade` already counts the current attempt when it fires. So `attemptsMade >= opts.attempts` means "last attempt".
+  - Created `src/video-processing/run-process.ts` (`runProcess`: `spawn` without a shell, collects stdout/stderr), shared by both services. Also created `src/video-processing/video-processing.constants.ts` (`INTERNAL_READ_URL_EXPIRES_IN_SECONDS = 3600`, `THUMBNAIL_POSITION_RATIO = 0.1`, `THUMBNAIL_CONTENT_TYPE`).
+  - If `ffmpeg` produces no frame even at second 0, the processor throws a plain `Error` (retried, then `processing_failed`), not `invalid_media`. The plan does not cover this case.
+  - `process()` returns without doing anything when the row no longer exists (e.g. wiped by a test cleanup), as well as when `status ≠ 'processing'`.
+  - The processor integration spec registers the processor as a plain provider (no `BullModule`), so no real worker starts. It calls `process()` / `onFailed()` directly, simulating the retry sequence with `attemptsMade`. The module and worker compilation specs do start a real `test`-prefixed worker during their run.
+  - Fixtures are encoded with `-movflags +faststart` (moov atom first), so `ffprobe` needs fewer `Range` requests.
+  - The running `video-worker` (`nest start --watch`) picks up the new processor automatically and starts consuming `bull`-prefixed jobs.
 
 ### SI-03.12 — Job agendado de manutenção (rascunhos abandonados + vídeos presos em processing)
 - **Status:** pending

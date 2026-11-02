@@ -7,6 +7,9 @@ import {
 } from '../queue/queue.constants';
 import { StorageModule } from '../storage/storage.module';
 import { Video } from '../videos/entities/video.entity';
+import { MediaProbeService } from './media-probe.service';
+import { ThumbnailExtractorService } from './thumbnail-extractor.service';
+import { VideoProcessingProcessor } from './video-processing.processor';
 
 // Queue consumers; loaded only by WorkerModule, never by AppModule (TD-08).
 @Module({
@@ -17,6 +20,11 @@ import { Video } from '../videos/entities/video.entity';
       { name: VIDEO_MAINTENANCE_QUEUE },
     ),
     StorageModule,
+  ],
+  providers: [
+    VideoProcessingProcessor,
+    MediaProbeService,
+    ThumbnailExtractorService,
   ],
 })
 export class VideoProcessingModule {}
