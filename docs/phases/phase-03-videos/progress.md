@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 7/16 completed
+**SIs:** 8/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -75,9 +75,15 @@
   - Multipart uploads opened by e2e runs are not aborted (`deletePrefix` only removes objects); RustFS discards stale multipart uploads after 24 h. The service integration test aborts the one it opens.
 
 ### SI-03.8 — Endpoints de URLs de parte e retomada (POST part-urls, GET upload/parts)
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 35 passing (`upload-parts.util.spec.ts` + `videos.service.spec.ts` + `videos.service.integration-spec.ts` — 30 across the 3 suites; `test/videos-upload-parts.e2e-spec.ts` 5 — spec-derived from `specs/videos-upload-parts.plan.md`). `tsc --noEmit` and eslint on the changed files clean
+- **Observations:**
+  - The `videos` table has no `part_count` column. `part_count` is recomputed from `declared_size_bytes` and the current `UPLOAD_PART_SIZE_BYTES`, as `initiateUpload` already did. If that env value changes while uploads are open, the part layout of those drafts changes too. Not handled; the plan does not persist the part size.
+  - `findActiveDraft` (private) requires `status = 'draft'` **and** a non-null `upload_id`, and returns both. That avoids non-null assertions on `upload_id` in `issuePartUrls` / `listUploadedParts`.
+  - Added `PART_URL_EXPIRES_IN_SECONDS = 3600` and `MAX_PART_NUMBERS_PER_REQUEST = 100` to `videos.constants.ts`. The response mappers (`toPartUrlsResponse`, `toUploadedPartsResponse`) live next to their DTOs, the same pattern as `toVideoResponse`.
+  - `PartUrlsDto` has an explicit `@ApiProperty` (min/max items, unique), so `openapi.json` documents its request schema. This sidesteps, for this DTO only, the empty request-schema gap noted in SI-03.7.
+  - The integration and e2e tests set `S3_PUBLIC_ENDPOINT=http://storage:9000` and `UPLOAD_PART_SIZE_BYTES=5242880` in `beforeAll` before compiling, and restore them in `afterAll`. This is the strategy anticipated in SI-03.4 for PUTs to presigned URLs from inside the container.
+  - The integration run prints a non-failing `pg` DeprecationWarning ("Calling client.query() when the client is already executing a query"). Not investigated; out of scope.
 
 ### SI-03.9 — Endpoint POST /videos/:publicId/upload/complete (conclusão + enfileiramento)
 - **Status:** pending

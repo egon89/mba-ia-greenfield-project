@@ -1,4 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -12,6 +20,15 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ApiErrorEnvelope } from '../common/openapi/api-error-envelope.dto';
 import { InitiateUploadResponseDto } from './dto/initiate-upload-response.dto';
 import { InitiateUploadDto } from './dto/initiate-upload.dto';
+import { PartUrlsDto } from './dto/part-urls.dto';
+import {
+  PartUrlsResponseDto,
+  toPartUrlsResponse,
+} from './dto/part-urls-response.dto';
+import {
+  toUploadedPartsResponse,
+  UploadedPartsResponseDto,
+} from './dto/uploaded-parts-response.dto';
 import { toVideoResponse } from './dto/video-response.dto';
 import { VideosService } from './videos.service';
 
@@ -55,5 +72,87 @@ export class VideosController {
       ...toVideoResponse(video),
       upload: { part_size: partSize, part_count: partCount },
     };
+  }
+
+  @Post(':publicId/upload/part-urls')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Issue presigned part upload URLs',
+    description:
+      'Returns presigned UploadPart URLs on the public storage endpoint, each bound to the exact Content-Length of its part and valid for 1 hour.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Presigned URLs issued',
+    type: PartUrlsResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'VALIDATION_ERROR or INVALID_PART_NUMBER (part number greater than part_count)',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Missing or invalid access token',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'VIDEO_NOT_FOUND — unknown video or owned by another user',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'VIDEO_UPLOAD_NOT_ACTIVE — the video is no longer a draft',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  async issuePartUrls(
+    @CurrentUser() user: JwtPayload,
+    @Param('publicId') publicId: string,
+    @Body() dto: PartUrlsDto,
+  ): Promise<PartUrlsResponseDto> {
+    return toPartUrlsResponse(
+      await this.videosService.issuePartUrls(
+        user.sub,
+        publicId,
+        dto.part_numbers,
+      ),
+    );
+  }
+
+  @Get(':publicId/upload/parts')
+  @ApiOperation({
+    summary: 'List uploaded parts',
+    description:
+      'Resume support: lists the parts already stored for the open multipart upload.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Uploaded parts listed',
+    type: UploadedPartsResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Missing or invalid access token',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'VIDEO_NOT_FOUND — unknown video or owned by another user',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'VIDEO_UPLOAD_NOT_ACTIVE — the video is no longer a draft',
+    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },
+  })
+  async listUploadedParts(
+    @CurrentUser() user: JwtPayload,
+    @Param('publicId') publicId: string,
+  ): Promise<UploadedPartsResponseDto> {
+    return toUploadedPartsResponse(
+      await this.videosService.listUploadedParts(user.sub, publicId),
+    );
   }
 }
