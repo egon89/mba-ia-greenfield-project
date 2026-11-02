@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 14/16 completed
+**SIs:** 15/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -158,9 +158,15 @@
   - `openapi.json` regenerated: `/videos/{publicId}/stream` and `/download` document 302 (`Location`, `Cache-Control` headers), 401, 404 and 409.
 
 ### SI-03.15 — Teste de fluxo completo: upload multipart direto ao storage até o vídeo pronto
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 1 passing (`test/videos-upload-flow.e2e-spec.ts`, ~1.4 s for the test itself; the suite takes ~4 s including fixture generation). `tsc --noEmit` and eslint on the changed files clean
+- **Observations:**
+  - `generateMp4OfAtLeast(bytes)` encodes `testsrc2` at 1280x720 / 25 fps **lossless** (`libx264 -preset ultrafast -qp 0`). The plan said "high bitrate"; lossless is the fastest reliable way to get large frames. The duration starts at 1 s and doubles until the file reaches the requested size (6 attempts max). It returns `{ path, sizeBytes, durationSeconds, width, height, cleanup }`, and the test asserts `duration_seconds` / `width` / `height` against it.
+  - **`testTimeout: 120000` in `test/jest-e2e.json` applies to every e2e suite**, not only the flow test, as the plan's action 5 says (the file is shared). `--runInBand` is unchanged (it stays in the npm script).
+  - The byte counter is an `app.use` middleware registered before `app.init()`, so it runs ahead of Nest's body parsers. It sums `data` chunks of every request body, including register/login. It is reset right before the flow starts.
+  - Each part is sent as `new Uint8Array(slice)` (a copy). `fetch`'s `BodyInit` type does not accept a `Buffer` slice from `readFile` (`Buffer<ArrayBufferLike>`), so `tsc` failed even though the test passed at runtime. Fix attempt 1/3.
+  - The second upload (unique `public_id`) runs the full flow with the small `withAudio` fixture (1 part) and waits for `ready`, so the worker is idle when `afterAll` closes it.
+  - The in-process worker is `NestFactory.createApplicationContext(WorkerModule, { logger: ['error', 'warn'] })` and uses the `test` queue prefix (`jest-env.setup.ts`). On bootstrap it also registers the hourly maintenance scheduler on the `test`-prefixed `video-maintenance` queue; the drafts in the test are fresh, so the job leaves them alone.
 
 ### SI-03.16 — Documentação e Definition of Done da fase
 - **Status:** pending

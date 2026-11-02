@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -71,4 +71,62 @@ export async function createVideoFixtures(): Promise<VideoFixtures> {
     invalid,
     cleanup: () => rm(dir, { recursive: true, force: true }),
   };
+}
+
+export const LARGE_FIXTURE_WIDTH = 1280;
+export const LARGE_FIXTURE_HEIGHT = 720;
+const LARGE_FIXTURE_RATE = 25;
+const MAX_SIZE_ATTEMPTS = 6;
+
+export interface GeneratedMp4 {
+  path: string;
+  sizeBytes: number;
+  durationSeconds: number;
+  width: number;
+  height: number;
+  cleanup: () => Promise<void>;
+}
+
+// A valid H.264 MP4 of at least `bytes`: testsrc2 encoded lossless (qp 0), so
+// every frame is large; the duration doubles until the file is big enough.
+export async function generateMp4OfAtLeast(
+  bytes: number,
+): Promise<GeneratedMp4> {
+  const dir = await mkdtemp(join(tmpdir(), 'video-large-'));
+  const path = join(dir, 'large.mp4');
+  let durationSeconds = 1;
+
+  for (let attempt = 0; attempt < MAX_SIZE_ATTEMPTS; attempt++) {
+    await execFileAsync('ffmpeg', [
+      '-v',
+      'error',
+      '-y',
+      '-f',
+      'lavfi',
+      '-i',
+      `testsrc2=duration=${durationSeconds}:size=${LARGE_FIXTURE_WIDTH}x${LARGE_FIXTURE_HEIGHT}:rate=${LARGE_FIXTURE_RATE}`,
+      ...VIDEO_ARGS,
+      '-preset',
+      'ultrafast',
+      '-qp',
+      '0',
+      ...MP4_ARGS,
+      path,
+    ]);
+    const { size } = await stat(path);
+    if (size >= bytes) {
+      return {
+        path,
+        sizeBytes: size,
+        durationSeconds,
+        width: LARGE_FIXTURE_WIDTH,
+        height: LARGE_FIXTURE_HEIGHT,
+        cleanup: () => rm(dir, { recursive: true, force: true }),
+      };
+    }
+    durationSeconds *= 2;
+  }
+
+  await rm(dir, { recursive: true, force: true });
+  throw new Error(`Could not generate an MP4 of at least ${bytes} bytes`);
 }
