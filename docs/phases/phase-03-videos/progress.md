@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 6/16 completed
+**SIs:** 7/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -60,9 +60,19 @@
   - `src/test/jest-env.setup.ts` is in the `setupFiles` of both Jest configs, after `dotenv/config`. It assigns `QUEUE_PREFIX = 'test'` unconditionally, so it overrides `.env`'s `bull`.
 
 ### SI-03.7 — Endpoint POST /videos (início do upload + pré-cadastro como rascunho)
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 23 passing (`videos.service.spec.ts` 12, `videos.service.integration-spec.ts` 1, `channels.service.integration-spec.ts` +2 `findByUserId`, `videos.module.spec.ts` 1, `test/videos-create.e2e-spec.ts` 4 — spec-derived from `specs/videos-create.plan.md`). Full suite green at SI end: unit+integration 34 suites / 205 tests, e2e 4 suites / 56 tests (twice in a row), lint and `tsc --noEmit` clean
+- **Observations:**
+  - **Fixed `test:e2e` to run in band (`package.json`):** with a second database-backed e2e suite (`videos-create`), Jest ran `auth` and `videos-create` in parallel. Each suite's `cleanAllTables` wiped the other's rows, causing flaky FK violations, 401s and 500s. `nestjs-project/CLAUDE.md` already says `test:e2e` is "already configured" for `--runInBand`, but the script never had the flag; added it. Fix attempt 1/3 of the full-suite check.
+  - `VideosModule` from SI-03.5 completed as planned: `BullModule.registerQueue(video-processing)`, `StorageModule`, `ChannelsModule`, `VideosService`, `VideoProcessingProducer`, `VideosController`. `QueueModule` is now imported in `AppModule`. The app now opens a Redis connection on boot; e2e and `openapi-export` close it via `app.close()`.
+  - Extracted `isPgUniqueViolationOnColumn` to `src/common/database/pg-errors.ts`. Both the `public_id` retry (`VideosService`) and the `nickname` retry (`ChannelsService`) use it now, and the private copy (with its `PG_UNIQUE_VIOLATION` constant) was removed from `channels.service.ts` in the same SI, per the CLAUDE.md single-responsibility rule.
+  - Storage keys come from `src/storage/storage-keys.ts` (`videoOriginalKey`, `videoThumbnailKey`, `videoPrefix`), created in SI-03.4. A duplicate `src/videos/video-storage-keys.ts` was created by mistake (a failed shell search hid the existing file) and was removed before closing the SI; every import points to `storage-keys`. Also created `src/videos/videos.constants.ts` (`MAX_VIDEO_SIZE_BYTES`, `PUBLIC_ID_MAX_RETRIES`).
+  - `initiateUpload` inserts with `repository.insert` (avoids `save()`'s SELECT-before-insert on a preset `id`) and then reloads the row, so every nullable column comes back as `null` in the response. If no row is created (insert error or `public_id` retries exhausted), the multipart upload is aborted.
+  - A user without a channel makes `initiateUpload` throw a plain `Error` (→ 500): every user gets a channel at registration, and the Error Catalog has no code for this case.
+  - `title` derivation treats a leading dot as "no extension" (`.hidden` → `.hidden`, not an empty title).
+  - Response DTOs (`VideoResponseDto`, `InitiateUploadResponseDto`) use explicit `@ApiProperty`, so `openapi.json` documents the response. **Pre-existing gap (out of scope):** `openapi:export` runs through `ts-node` without the `@nestjs/swagger` CLI plugin, so request DTO schemas (`InitiateUploadDto` and all the Phase 02 auth DTOs) are exported as empty `{ properties: {} }`.
+  - Created `test/helpers/auth.helper.ts` (`registerConfirmAndLogin(app, email)`), the same flow as the private helper in `test/auth.e2e-spec.ts`, so the upcoming video e2e suites can share it. `auth.e2e-spec.ts` was not touched.
+  - Multipart uploads opened by e2e runs are not aborted (`deletePrefix` only removes objects); RustFS discards stale multipart uploads after 24 h. The service integration test aborts the one it opens.
 
 ### SI-03.8 — Endpoints de URLs de parte e retomada (POST part-urls, GET upload/parts)
 - **Status:** pending

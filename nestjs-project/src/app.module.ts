@@ -14,6 +14,7 @@ import queueConfig from './config/queue.config';
 import storageConfig from './config/storage.config';
 import videosConfig from './config/videos.config';
 import { envValidationSchema } from './config/env.validation';
+import { QueueModule } from './queue/queue.module';
 import { VideosModule } from './videos/videos.module';
 
 @Module({
@@ -49,6 +50,7 @@ import { VideosModule } from './videos/videos.module';
       }),
     }),
     AuthModule,
+    QueueModule,
     VideosModule,
   ],
   controllers: [AppController],

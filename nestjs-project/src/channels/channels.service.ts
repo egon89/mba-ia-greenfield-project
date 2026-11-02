@@ -1,30 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, QueryFailedError } from 'typeorm';
+import { DataSource } from 'typeorm';
+import { isPgUniqueViolationOnColumn } from '../common/database/pg-errors';
 import { appendRandomSuffix, sanitizeNickname } from './nickname.util';
 import { Channel } from './entities/channel.entity';
 
-const PG_UNIQUE_VIOLATION = '23505';
 const NICKNAME_COLUMN = 'nickname';
 const MAX_RETRIES = 5;
-
-function isPgUniqueViolationOnColumn(err: unknown, column: string): boolean {
-  if (!(err instanceof QueryFailedError)) return false;
-  // QueryFailedError copies the pg driver error's props (`code`, `detail`)
-  // onto itself; typed as `unknown` so they are narrowed at runtime.
-  const { code, detail } = err as QueryFailedError & {
-    code?: unknown;
-    detail?: unknown;
-  };
-  return (
-    code === PG_UNIQUE_VIOLATION &&
-    typeof detail === 'string' &&
-    detail.includes(column)
-  );
-}
 
 @Injectable()
 export class ChannelsService {
   constructor(private readonly dataSource: DataSource) {}
+
+  async findByUserId(userId: string): Promise<Channel | null> {
+    return this.dataSource
+      .getRepository(Channel)
+      .findOneBy({ user_id: userId });
+  }
 
   async createChannel(userId: string, email: string): Promise<Channel> {
     const baseNickname = sanitizeNickname(email.split('@')[0]);
