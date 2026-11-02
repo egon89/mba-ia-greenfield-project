@@ -13,6 +13,10 @@ docker compose ps   # all services must show status "running"
 Then verify each infrastructure service is actually ready to accept connections — not just running:
 
 - **PostgreSQL:** `docker compose exec db pg_isready -U streamtube` — expect `accepting connections`
+- **Redis:** `docker compose exec redis redis-cli ping` — expect `PONG`
+- **Storage bucket:** `docker compose ps -a storage-init` — the one-shot `storage-init` must have exited with code `0`
+
+**Exception — `video-worker`:** the video worker (`src/worker.ts`, script `start:worker:dev`) is part of the infrastructure and **does** start on `docker compose up`, so videos are processed after upload with no manual step. Check it with `docker compose logs video-worker` (expect `Video worker started`); it opens no HTTP port. Dependencies must be installed (`docker compose exec nestjs-api npm install`) before the first `up`, otherwise `video-worker` restarts in a loop (`restart: unless-stopped`).
 
 Only start the NestJS dev server (`npm run start:dev`) when the user **explicitly** asks to run the application — never as part of "start the environment".
 
@@ -32,7 +36,8 @@ docker compose exec nestjs-api npm run start:dev
 ```
 
 Services:
-- `nestjs-api` — NestJS API, port `3000`
+- `nestjs-api` — NestJS API, port `3000` (idle container; the API starts only on `npm run start:dev`)
+- `video-worker` — same image and code, running the worker entrypoint (`npm run start:worker:dev`); starts with `up`, no port
 - `db` — PostgreSQL 17, port `5432`, database `streamtube`, user/password `streamtube`
 
 All verification and teardown commands run on the **host machine**:

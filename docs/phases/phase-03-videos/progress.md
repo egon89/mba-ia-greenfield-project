@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 9/16 completed
+**SIs:** 10/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -97,9 +97,20 @@
   - The integration spec now also imports `QueueModule` + `BullModule.registerQueue` (producer dependency). It obliterates the `test`-prefixed queue around each test and deletes `videos/` in `afterAll`.
 
 ### SI-03.10 — Infra: Entrypoint do worker, WorkerModule e serviço video-worker no Compose
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 2 passing (`worker.module.spec.ts` 1, `video-processing.module.spec.ts` 1). Sanity after the `AppModule` refactor: `openapi-export.integration-spec.ts` 9 and `test/videos-create.e2e-spec.ts` 4 passing. `tsc --noEmit` and eslint on the changed files clean
+- **Observations:**
+  - **Manual infra checks:**
+    - `ffprobe`/`ffmpeg` 5.1.9 (Debian 12) are present in both `nestjs-api` and `video-worker`.
+    - `docker compose up -d` starts `video-worker`; the log ends with `Video worker started`, and no port is published.
+    - `nestjs-api` runs only `tail -f /dev/null`.
+    - `kill -9` of the Nest CLI process in `video-worker` → the container restarts on its own (RestartCount 0→1) and the worker comes back up.
+  - **`docker compose stop video-worker` is not fully clean:** it stops in about 1 s (no SIGKILL timeout) and prints no Node stack trace. But npm, which wraps `nest start --watch` (`command: npm run start:worker:dev`), logs `npm error command failed … signal SIGTERM`, and the container exits with code 1. This comes from npm reporting a child killed by a signal, not from the worker. Possible fix (not applied, the plan fixes the command): run the Nest CLI directly with `init: true` in Compose. Graceful BullMQ worker close can only be observed once a processor exists (SI-03.11).
+  - **`WorkerModule` also registers `TypeOrmModule.forFeature([Channel, User])`** (not in the plan). With `autoLoadEntities`, TypeORM needs the metadata of `Video`'s relation targets (`Video → Channel → User`), even though the worker never queries them. This is the same issue SI-03.5 hit from the API side. `worker.module.spec.ts` asserts that the `DataSource` initializes and that `Video`'s relation resolves.
+  - Shared options are exported as objects: `configModuleOptions` (`ConfigModuleOptions`) and `typeOrmModuleOptions` (`TypeOrmModuleAsyncOptions`), so both roots call `forRoot(configModuleOptions)` / `forRootAsync(typeOrmModuleOptions)`. `AppModule`'s behavior is unchanged.
+  - `src/worker.ts` logs `Video worker started` after `createApplicationContext`. This is the marker documented in `nestjs-project/CLAUDE.md`.
+  - **Shared `dist/`:** `video-worker` (`nest start --watch`) and any `npm run build` / `start:dev` in `nestjs-api` write to the same `dist/` through the shared volume, and `deleteOutDir: true` wipes it on each build. A build in `nestjs-api` can make the worker restart once. Not addressed (out of scope).
+  - The existing `queue-prefix.integration-spec.ts` (SI-03.6) already covers that `test`-prefixed jobs are invisible to a `bull`-prefixed worker. No processor is registered yet, so nothing is consumed.
 
 ### SI-03.11 — Processar vídeo no worker (ffprobe, thumbnail, status e falhas)
 - **Status:** pending
