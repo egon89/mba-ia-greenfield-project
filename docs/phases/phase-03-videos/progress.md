@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 3/16 completed
+**SIs:** 4/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -31,9 +31,13 @@
   - The test also asserts `Access-Control-Allow-Origin` on the preflight response (beyond the plan's 2xx requirement) and byte-equality of the ranged body.
 
 ### SI-03.4 — Criar StorageModule com clients S3 interno e público
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** 10 passing (`storage.module.spec.ts` 1, `storage.service.integration-spec.ts` 9)
+- **Observations:**
+  - Added `src/storage/storage.constants.ts` holding the `S3_CLIENT` / `S3_PUBLIC_CLIENT` symbol tokens (project rule: constants in `<module>.constants.ts`). `StorageService` destroys both clients in `onModuleDestroy`.
+  - `abortMultipartUpload` swallows only `NoSuchUpload` (idempotent per plan AC); every other error is re-thrown, matching the service error rule's "valid domain result" exception.
+  - **Test-environment constraint (affects SI-03.15):** URLs signed by the public client point at `S3_PUBLIC_ENDPOINT` (`localhost:9000`), which is unreachable from inside the `nestjs-api` container — and the host cannot be rewritten without breaking SigV4. The integration test therefore uploads setup parts via the internal client and asserts the public host only on the URL string. The full-flow test in SI-03.15 (PUT to presigned part URLs from the test process) will need a strategy for this, e.g. a test-only `S3_PUBLIC_ENDPOINT=http://storage:9000` override for the test run.
+  - Fix attempt 1/1: the first run failed with `ECONNREFUSED 127.0.0.1:9000` for that reason; fixed in the test helper only (no service change).
 
 ### SI-03.5 — Criar entidade Video, migration e gerador de public_id
 - **Status:** pending
