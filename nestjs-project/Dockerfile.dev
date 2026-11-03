@@ -1,6 +1,8 @@
 FROM node:25.6.0-slim
 
-RUN apt update && apt install -y procps curl
+# ffmpeg/ffprobe for the video worker (TD-09); same image for nestjs-api,
+# so integration tests run there have the binaries too.
+RUN apt update && apt install -y procps curl ffmpeg
 
 WORKDIR /home/node/app
 
