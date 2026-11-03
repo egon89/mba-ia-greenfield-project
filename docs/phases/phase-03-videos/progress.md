@@ -1,6 +1,6 @@
 # phase-03-videos — Progress
 
-**Status:** in_progress
+**Status:** completed
 **SIs:** 16/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
