@@ -8,22 +8,22 @@ More info in the project overview: [docs/project-plan.md](docs/project-plan.md)
 
 ## Repository Structure
 
-This is a monorepo with two main areas:
+This is a monorepo with three main areas:
 
-- `nestjs-project/` — Backend API (NestJS 11, TypeScript, Express). Contains modules for users, channels, videos, comments, etc.
+- `nestjs-project/` — Backend API (NestJS 11, TypeScript, Express) and the video worker entrypoint. Contains modules for users, channels, videos, comments, etc.
+- `next-frontend/` — Frontend (Next.js 16, App Router, React 19). BFF model: the browser calls same-origin Route Handlers in `app/api/**`, which proxy to the API. Auth screens delivered in Phase 02.
 - `docs/` — Project documentation, architecture diagrams, and planning.
-- `next-frontend/` (Next.js) — not yet initialized
 
 ## Architecture (C4 Container Diagram)
 
 See `docs/diagrams/software-arch.mermaid` for the full diagram. Key containers:
 
-- **Frontend** (Next.js) → calls API via REST, streams from Object Storage
-- **API** (Nest.js) → business rules, auth, reads/writes DB, uploads to storage, publishes jobs to queue, sends emails
-- **Video Worker** (FFmpeg) → consumes jobs from queue, processes videos, updates DB and storage
+- **Frontend** (Next.js) → calls API via REST, uploads video parts and streams directly from Object Storage through presigned URLs
+- **API** (Nest.js) → business rules, auth, reads/writes DB, signs storage URLs (multipart upload, stream, download), publishes jobs to queue, sends emails
+- **Video Worker** (FFmpeg/ffprobe) → second entrypoint of `nestjs-project` (`src/worker.ts`, `WorkerModule`), run by the `video-worker` Compose service; consumes jobs from the queue, extracts metadata and the thumbnail, updates DB and storage
 - **Database** (PostgreSQL) → users, channels, videos, comments, likes
-- **Object Storage** (S3/MinIO) → video files and thumbnails
-- **Message Queue** (TBD) → video processing job queue
+- **Object Storage** (RustFS in dev, S3 in production) → single private bucket with video files and thumbnails, accessed through presigned URLs
+- **Message Queue** (BullMQ + Redis) → queues `video-processing` (video processing jobs) and `video-maintenance` (scheduled cleanup)
 - **Email Service** (SMTP) → account confirmation and password recovery
 
 ## Docker Networking
@@ -36,6 +36,8 @@ Inside a container, `localhost` refers to the container itself, not the host mac
 - **Wrong:** `DB_HOST=localhost`
 
 This applies to all environment variables, configuration files, and code that references service hosts.
+
+The only exception is `S3_PUBLIC_ENDPOINT`: it signs presigned URLs handed to the browser on the host, so it uses `localhost` (see `nestjs-project/CLAUDE.md` → Videos → Storage).
 
 ## Working Principles
 

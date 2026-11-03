@@ -13,6 +13,10 @@ docker compose ps   # all services must show status "running"
 Then verify each infrastructure service is actually ready to accept connections — not just running:
 
 - **PostgreSQL:** `docker compose exec db pg_isready -U streamtube` — expect `accepting connections`
+- **Redis:** `docker compose exec redis redis-cli ping` — expect `PONG`
+- **Storage bucket:** `docker compose ps -a storage-init` — the one-shot `storage-init` must have exited with code `0`
+
+**Exception — `video-worker`:** the video worker (`src/worker.ts`, script `start:worker:dev`) is part of the infrastructure and **does** start on `docker compose up`, so videos are processed after upload with no manual step. Check it with `docker compose logs video-worker` (expect `Video worker started`); it opens no HTTP port. Dependencies must be installed (`docker compose exec nestjs-api npm install`) before the first `up`, otherwise `video-worker` restarts in a loop (`restart: unless-stopped`).
 
 Only start the NestJS dev server (`npm run start:dev`) when the user **explicitly** asks to run the application — never as part of "start the environment".
 
@@ -32,8 +36,13 @@ docker compose exec nestjs-api npm run start:dev
 ```
 
 Services:
-- `nestjs-api` — NestJS API, port `3000`
+- `nestjs-api` — NestJS API, port `3000` (idle container; the API starts only on `npm run start:dev`)
+- `video-worker` — same image and code, running the worker entrypoint (`npm run start:worker:dev`); starts with `up`, no port
 - `db` — PostgreSQL 17, port `5432`, database `streamtube`, user/password `streamtube`
+- `mailpit` — SMTP capture for transactional emails: SMTP on port `1025`, web UI on `8025`
+- `redis` — Redis 7 (BullMQ backend), port `6379`, AOF on and `maxmemory-policy noeviction`; ready when `docker compose exec redis redis-cli ping` returns `PONG`
+- `storage` — RustFS (S3-compatible object storage), port `9000`; healthcheck on `/health`
+- `storage-init` — one-shot AWS CLI container: creates the `S3_BUCKET` bucket (idempotent) and applies `docker/storage/cors.json`; must exit with code `0` (`docker compose ps -a storage-init`)
 
 All verification and teardown commands run on the **host machine**:
 
@@ -148,6 +157,42 @@ NestJS with standard module structure. Source lives in `src/`, compiled output i
 
 - Each domain feature gets its own module (e.g., `UsersModule`, `VideosModule`) registered in `AppModule`
 - Controllers handle HTTP routing; Services hold business logic; both are scoped to their module
+
+## Videos
+
+### Endpoints (`VideosController`, all owner-only)
+
+Every `/videos` route requires a valid access token (global `JwtAuthGuard`), and the controller is exempt from the auth throttler (`@SkipThrottle()`). `:publicId` is the 11-character `public_id`; the internal `id` never appears in a URL. Another user's video, an unknown `publicId` and a malformed one all return the same `404 VIDEO_NOT_FOUND`.
+
+| Route | Effect | Main errors |
+|-------|--------|-------------|
+| `POST /videos` | Creates the draft on the caller's channel and opens the multipart upload | `400 VALIDATION_ERROR` |
+| `POST /videos/:publicId/upload/part-urls` | Presigned `UploadPart` URLs (public endpoint, 1 h) | `400 INVALID_PART_NUMBER`, `409 VIDEO_UPLOAD_NOT_ACTIVE` |
+| `GET /videos/:publicId/upload/parts` | Parts already stored (resume) | `409 VIDEO_UPLOAD_NOT_ACTIVE` |
+| `POST /videos/:publicId/upload/complete` | Completes the upload, checks the size, `draft → processing`, enqueues `process-video` (idempotent while `processing`) | `409 UPLOAD_INCOMPLETE`, `409 VIDEO_UPLOAD_NOT_ACTIVE`, `422 UPLOAD_SIZE_MISMATCH` |
+| `GET /videos/:publicId` | Status and extracted metadata (used to poll processing) | — |
+| `GET /videos/:publicId/stream` | `302` to a presigned GET (6 h), `Cache-Control: no-store`; storage serves `Range` → `206` | `409 VIDEO_NOT_READY` |
+| `GET /videos/:publicId/download` | Same as stream (15 min), with `Content-Disposition: attachment` and the original filename | `409 VIDEO_NOT_READY` |
+
+### Queue (BullMQ + Redis)
+
+- Queues: `video-processing` (job `process-video`, enqueued by the API on upload complete) and `video-maintenance` (job `cleanup-abandoned-uploads`, an hourly job scheduler registered by the worker).
+- `process-video` uses `jobId` = the video `id`, so a repeated enqueue is a no-op; 3 attempts with exponential backoff (`PROCESS_VIDEO_JOB_OPTIONS` in `src/queue/queue.constants.ts`); failed jobs are kept for 7 days.
+- The maintenance job marks drafts older than `UPLOAD_ABANDON_AFTER_HOURS` as failed (`upload_abandoned`) and re-enqueues or fails videos stuck in `processing` for more than `PROCESSING_STUCK_AFTER_MINUTES`.
+- `QUEUE_PREFIX` sets the Redis key prefix (`bull` in `.env`). Jest sets it to `test` in `src/test/jest-env.setup.ts`, so test jobs never reach the running `video-worker`.
+
+### Worker
+
+- Entrypoint `src/worker.ts` → `WorkerModule` (no HTTP server). Started by the `video-worker` service with `npm run start:worker:dev`; `npm run build` emits `dist/worker.js` (`npm run start:worker:prod`).
+- Runs on `docker compose up`; logs `Video worker started` (`docker compose logs video-worker`).
+- Uses `ffprobe` (metadata) and `ffmpeg` (thumbnail), both installed in the image (`Dockerfile.dev`). The video ends as `ready`, or `failed` with `invalid_media` / `processing_failed`.
+
+### Storage (RustFS in dev, S3 in production)
+
+- One private bucket, `S3_BUCKET`. Keys: `videos/{id}/original` (uploaded file) and `videos/{id}/thumbnail.jpg`.
+- `storage-init` creates the bucket and applies `docker/storage/cors.json`, which must keep `ExposeHeaders: ["ETag"]` (the browser reads each part's `ETag`).
+- Two S3 clients: `S3_ENDPOINT` (`http://storage:9000`) for the API and worker inside the Compose network, and `S3_PUBLIC_ENDPOINT` for URLs handed to the browser.
+- **Exception to "never `localhost`":** `S3_PUBLIC_ENDPOINT=http://localhost:9000` is correct, because the browser on the host follows those URLs. The SigV4 signature binds the host, so tests that call presigned URLs from inside the container override it with `http://storage:9000`.
 
 ## Code Conventions
 

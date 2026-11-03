@@ -5,6 +5,8 @@ import { RefreshToken } from '../auth/entities/refresh-token.entity';
 import { VerificationToken } from '../auth/entities/verification-token.entity';
 import { CreateUsersAndChannels1775687773260 } from './migrations/1775687773260-CreateUsersAndChannels';
 import { CreateAuthTokens1777579850478 } from './migrations/1777579850478-CreateAuthTokens';
+import { CreateVideos1793645223755 } from './migrations/1793645223755-CreateVideos';
+import { Video } from '../videos/entities/video.entity';
 import { createTestDataSource } from '../test/create-test-data-source';
 
 const MANAGED_TABLES = [
@@ -12,6 +14,12 @@ const MANAGED_TABLES = [
   'channels',
   'refresh_tokens',
   'verification_tokens',
+  'videos',
+];
+
+const MANAGED_ENUM_TYPES = [
+  'verification_tokens_type_enum',
+  'videos_status_enum',
 ];
 
 describe('Database migrations (integration)', () => {
@@ -19,37 +27,45 @@ describe('Database migrations (integration)', () => {
 
   beforeAll(async () => {
     dataSource = createTestDataSource(
-      [User, Channel, RefreshToken, VerificationToken],
+      [User, Channel, RefreshToken, VerificationToken, Video],
       {
         synchronize: false,
         migrations: [
           CreateUsersAndChannels1775687773260,
           CreateAuthTokens1777579850478,
+          CreateVideos1793645223755,
         ],
       },
     );
 
     await dataSource.initialize();
 
-    await Promise.all([
-      ...MANAGED_TABLES.map((table) =>
-        dataSource.query(`DROP TABLE IF EXISTS "${table}" CASCADE`),
-      ),
-      dataSource.query(`DROP TABLE IF EXISTS "migrations" CASCADE`),
-    ]);
+    // Drop everything the migrations create (tables AND enum types) so they
+    // can run from scratch; dropping only tables leaves the enum behind and
+    // the next run fails with "type ... already exists".
+    for (const table of [...MANAGED_TABLES, 'migrations']) {
+      await dataSource.query(`DROP TABLE IF EXISTS "${table}" CASCADE`);
+    }
+    for (const type of MANAGED_ENUM_TYPES) {
+      await dataSource.query(`DROP TYPE IF EXISTS "public"."${type}" CASCADE`);
+    }
   });
 
   afterAll(async () => {
-    // The second test undoes the last migration, leaving token tables missing.
-    // Re-apply so the shared DB is fully migrated when subsequent suites run.
-    await dataSource.runMigrations();
-    await dataSource.destroy();
+    try {
+      // The second test undoes the last migration, leaving the videos table missing.
+      // Re-apply so the shared DB is fully migrated when subsequent suites run.
+      await dataSource.runMigrations();
+    } finally {
+      // Always close the connection, otherwise Jest hangs on the open handle.
+      if (dataSource.isInitialized) await dataSource.destroy();
+    }
   });
 
-  it('should apply all migrations and create all four tables', async () => {
+  it('should apply all migrations and create all managed tables', async () => {
     const ranMigrations = await dataSource.runMigrations();
 
-    expect(ranMigrations).toHaveLength(2);
+    expect(ranMigrations).toHaveLength(3);
 
     const result = await dataSource.query<{ table_name: string }[]>(
       `SELECT table_name FROM information_schema.tables
@@ -64,18 +80,31 @@ describe('Database migrations (integration)', () => {
       'refresh_tokens',
       'users',
       'verification_tokens',
+      'videos',
     ]);
   });
 
-  it('should revert the last migration and remove token tables', async () => {
+  it('should revert the last migration and remove the videos table and its enum type', async () => {
     await dataSource.undoLastMigration();
 
-    const result = await dataSource.query<{ table_name: string }[]>(
+    const tables = await dataSource.query<{ table_name: string }[]>(
+      `SELECT table_name FROM information_schema.tables
+       WHERE table_schema = 'public' AND table_name = 'videos'`,
+    );
+    expect(tables).toHaveLength(0);
+
+    const types = await dataSource.query<{ typname: string }[]>(
+      `SELECT typname FROM pg_type WHERE typname = 'videos_status_enum'`,
+    );
+    expect(types).toHaveLength(0);
+
+    // Earlier migrations stay applied.
+    const remaining = await dataSource.query<{ table_name: string }[]>(
       `SELECT table_name FROM information_schema.tables
        WHERE table_schema = 'public'
          AND table_name = ANY($1::text[])`,
-      [['refresh_tokens', 'verification_tokens']],
+      [['users', 'channels', 'refresh_tokens', 'verification_tokens']],
     );
-    expect(result).toHaveLength(0);
+    expect(remaining).toHaveLength(4);
   });
 });

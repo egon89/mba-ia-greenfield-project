@@ -1,0 +1,1066 @@
+ ▐▛███▛█   Claude Code v2.1.316
+▝▜██████▀  Opus 5.5 · Claude Pro
+ ▝▝   ▝▝   ~/…/mba-ia-greenfield-project/docs/phases/phase-03-videos
+
+
+❯ /implement phase-03-videos                                                    
+
+● I'll start with preflight: find the plan, check the branch, and look for an
+  existing progress file.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Found a progress file with 10/16 SIs complete, so I'm resuming from SI-03.11.
+  Next I'll read the dependency map, deliverables, and the error/authorization
+  tables, and check the test specs.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Now the test-spec preflight check.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Preflight checks pass—correct branch, clean working tree, and all test specs
+  present. Since TaskCreate isn't available, I'll track progress via the
+  progress file alone; now loading the testing guide and NestJS skills.
+
+● Skill(testing-guide-nestjs-project)
+  ⎿  Successfully loaded skill
+
+● Skill(nestjs-best-practices)
+  ⎿  Successfully loaded skill
+
+● Starting SI-03.11 (the video processing worker). First I'll look at the
+  existing worker module, the storage service methods, and the library notes for
+  BullMQ.
+
+  Ran 4 shell commands (ctrl+o to expand)
+
+● I'll check the installed BullMQ type definitions directly (they match the
+  exact installed version), and look at how existing integration specs are set
+  up.
+
+  Ran 3 shell commands (ctrl+o to expand)
+
+● I'll confirm two BullMQ 6 behaviors in the installed source before writing the
+  failure handler: whether failed fires on every attempt, and when attemptsMade
+  is incremented.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Confirmed BullMQ fires failed on every attempt, with attemptsMade already
+  reflecting the current attempt count. Next, I'll test how ffprobe and ffmpeg
+  handle the three fixture types, including a text file disguised as MP4, inside
+  the container.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Found that a text file causes ffprobe to fail with exit 1 (invalid media, no
+  retry needed), while seeking past the end returns an empty frame with exit 0
+  (triggers fallback to frame 0). Now writing the code to handle both cases.
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/run-process.ts)
+  ⎿  Wrote 30 lines to
+     ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-pro
+     ject/nestjs-project/src/video-processing/run-process.ts
+       1 import { spawn } from 'node:child_process';
+       2 
+       3 export interface ProcessResult {
+       4   code: number | null;
+       5   stdout: Buffer;
+       6   stderr: string;
+       7 }
+       8 
+       9 // Runs a binary without a shell (arguments are never interpolat
+         ed) and
+     … +21 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/media-probe.service.ts)
+  ⎿  Wrote 98 lines to
+     ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-pro
+     ject/nestjs-project/src/video-processing/media-probe.service.ts
+       1 import { Injectable } from '@nestjs/common';
+       2 import { runProcess } from './run-process';
+       3 
+       4 // The file is not a playable video: retrying will not help (TD-
+         09, TD-13).
+       5 export class InvalidMediaError extends Error {
+       6   constructor(message: string) {
+       7     super(message);
+       8     this.name = 'InvalidMediaError';
+       9   }
+     … +89 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/thumbnail-extractor.service.ts)
+  ⎿  Wrote 29 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba
+     -ia-greenfield-project/nestjs-project/src/video-processing/thumbnail-e
+     xtractor.service.ts
+       1 import { Injectable } from '@nestjs/common';
+       2 import { runProcess } from './run-process';
+       3 
+       4 @Injectable()
+       5 export class ThumbnailExtractorService {
+       6   // Returns one JPEG frame at `atSeconds`. The buffer is empty 
+         when the
+       7   // position is past the last frame (very short clips); the cal
+         ler retries at 0.
+       8   async extractFrame(url: string, atSeconds: number): Promise<Bu
+     … +22 lines (ctrl+o to expand)
+  ⎿  Loaded CLAUDE.md
+  ⎿  Loaded ../.claude/rules/nestjs-common-conventions.md
+  ⎿  Loaded ../.claude/rules/typescript-strict.md
+  ⎿  Loaded ../.claude/rules/nestjs-services.md
+  ⎿  Loaded ../.claude/rules/typeorm-queries.md
+
+● Now the processor and a constants file for its values.
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/video-processing.constants.ts)
+  ⎿  Wrote 7 lines to
+     ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-pro
+     ject/nestjs-project/src/video-processing/video-processing.constants.ts
+      1 // Lifetime of the internal GET URL that ffprobe/ffmpeg read (TD-
+        04).
+      2 export const INTERNAL_READ_URL_EXPIRES_IN_SECONDS = 3600;
+      3 
+      4 // Thumbnail frame position as a fraction of the duration (TD-09)
+        .
+      5 export const THUMBNAIL_POSITION_RATIO = 0.1;
+      6 
+      7 export const THUMBNAIL_CONTENT_TYPE = 'image/jpeg';
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/video-processing.processor.ts)
+  ⎿  Wrote 130 lines to
+     ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-pro
+     ject/nestjs-project/src/video-processing/video-processing.processor.ts
+       1 import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bu
+         llmq';
+       2 import { Logger } from '@nestjs/common';
+       3 import { InjectRepository } from '@nestjs/typeorm';
+       4 import { type Job, UnrecoverableError } from 'bullmq';
+       5 import type { Repository } from 'typeorm';
+       6 import { VIDEO_PROCESSING_QUEUE } from '../queue/queue.constants
+         ';
+       7 import { videoOriginalKey, videoThumbnailKey } from '../storage/
+         storage-keys';
+     … +123 lines (ctrl+o to expand)
+
+● Tidying the thumbnail fallback and the metadata type.
+● Update(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proj
+        ect/nestjs-project/src/video-processing/video-processing.processor.ts)
+  ⎿  Added 3 lines, removed 7 lines
+      116      durationSeconds: number | null,
+      117    ): Promise<Buffer> {
+      118      const at = (durationSeconds ?? 0) * THUMBNAIL_POSITION_RAT
+           IO;
+      119 -    const frame = await this.thumbnailExtractor.extractFrame(u
+          -rl, at);                                                      
+      120 -    if (frame.length > 0 || at === 0) {                       
+      121 -      return this.requireFrame(frame);                        
+      119 +    let frame = await this.thumbnailExtractor.extractFrame(url
+          +, at);                                                        
+      120 +    if (frame.length === 0 && at > 0) {                       
+      121 +      frame = await this.thumbnailExtractor.extractFrame(url, 
+          +0);                                                           
+      122      }
+      123 -    return this.requireFrame(await this.thumbnailExtractor.ext
+          -ractFrame(url, 0));                                           
+      124 -  }                                                           
+      125 -                                                              
+      126 -  private requireFrame(frame: Buffer): Buffer {               
+      123      if (frame.length === 0) throw new Error('ffmpeg produced n
+           o frame');
+      124      return frame;
+      125    }
+
+● Update(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proj
+        ect/nestjs-project/src/video-processing/video-processing.processor.ts)
+  ⎿  Added 1 line, removed 1 line
+      47        INTERNAL_READ_URL_EXPIRES_IN_SECONDS,
+      48      );
+      49  
+      50 -    let metadata: Awaited<ReturnType<MediaProbeService['probe']
+         ->>;                                                            
+      50 +    let metadata: MediaMetadata;                               
+      51      try {
+      52        metadata = await this.mediaProbe.probe(url);
+      53      } catch (error) {
+
+● Update(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proj
+        ect/nestjs-project/src/video-processing/video-processing.processor.ts)
+  ⎿  Added 5 lines, removed 1 line
+      12    VideoStatus,
+      13  } from '../videos/entities/video.entity';
+      14  import type { ProcessVideoJobData } from '../videos/video-proce
+          ssing.producer';
+      15 -import { InvalidMediaError, MediaProbeService } from './media-p
+         -robe.service';                                                 
+      15 +import {                                                       
+      16 +  InvalidMediaError,                                           
+      17 +  type MediaMetadata,                                          
+      18 +  MediaProbeService,                                           
+      19 +} from './media-probe.service';                                
+      20  import { ThumbnailExtractorService } from './thumbnail-extracto
+          r.service';
+      21  import {
+      22    INTERNAL_READ_URL_EXPIRES_IN_SECONDS,
+
+● Update(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proj
+        ect/nestjs-project/src/video-processing/video-processing.module.ts)
+  ⎿  Added 5 lines
+      18      ),
+      19      StorageModule,
+      20    ],
+      21 +  providers: [                                                 
+      22 +    VideoProcessingProcessor,                                  
+      23 +    MediaProbeService,                                         
+      24 +    ThumbnailExtractorService,                                 
+      25 +  ],                                                           
+      26  })
+      27  export class VideoProcessingModule {}
+
+● Update(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proj
+        ect/nestjs-project/src/video-processing/video-processing.module.ts)
+  ⎿  Added 3 lines
+       7  } from '../queue/queue.constants';
+       8  import { StorageModule } from '../storage/storage.module';
+       9  import { Video } from '../videos/entities/video.entity';
+      10 +import { MediaProbeService } from './media-probe.service';     
+      11 +import { ThumbnailExtractorService } from './thumbnail-extracto
+         +r.service';                                                    
+      12 +import { VideoProcessingProcessor } from './video-processing.pr
+         +ocessor';                                                      
+      13  
+      14  // Queue consumers; loaded only by WorkerModule, never by AppMo
+          dule (TD-08).
+      15  @Module({
+  ⎿  Loaded ../.claude/rules/nestjs-modules.md
+
+● Now the test fixture generator (2 s MP4 with audio, 0.2 s MP4 without audio,
+  and a text file named .mp4).
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/test/video-fixtures.ts)
+  ⎿  Wrote 74 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba
+     -ia-greenfield-project/nestjs-project/src/test/video-fixtures.ts
+       1 import { execFile } from 'node:child_process';
+       2 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+       3 import { tmpdir } from 'node:os';
+       4 import { join } from 'node:path';
+       5 import { promisify } from 'node:util';
+       6 
+       7 const execFileAsync = promisify(execFile);
+       8 
+       9 export const FIXTURE_WIDTH = 320;
+      10 export const FIXTURE_HEIGHT = 240;
+     … +64 lines (ctrl+o to expand)
+
+● Now the tests. I'll check the existing unit spec style briefly, then write all
+  four test files.
+
+  Read 1 file, ran 1 shell command (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/media-probe.service.spec.ts)
+  ⎿  Wrote 87 lines to
+     ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-pro
+     ject/nestjs-project/src/video-processing/media-probe.service.spec.ts
+       1 import { InvalidMediaError, parseProbeOutput } from './media-pro
+         be.service';
+       2 
+       3 const videoStream = (overrides: Record<string, unknown> = {}) =>
+          ({
+       4   codec_type: 'video',
+       5   codec_name: 'h264',
+       6   width: 1920,
+       7   height: 1080,
+       8   avg_frame_rate: '25/1',
+     … +79 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/video-processing.processor.spec.ts
+       )
+  ⎿  Wrote 77 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba
+     -ia-greenfield-project/nestjs-project/src/video-processing/video-proce
+     ssing.processor.spec.ts
+      1 import { Test } from '@nestjs/testing';
+      2 import { getRepositoryToken } from '@nestjs/typeorm';
+      3 import { type Job, UnrecoverableError } from 'bullmq';
+      4 import { StorageService } from '../storage/storage.service';
+      5 import { Video, VideoStatus } from '../videos/entities/video.enti
+        ty';
+      6 import type { ProcessVideoJobData } from '../videos/video-process
+        ing.producer';
+      7 import { MediaProbeService } from './media-probe.service';
+      8 import { ThumbnailExtractorService } from './thumbnail-extractor.
+     … +70 lines (~2 KB) (ctrl+o to expand)
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/nestjs-project; grep -n "Logger"
+      src/videos/videos.service.spec.ts | h…)
+  ⎿  1:import { Logger } from '@nestjs/common';
+     475:        .spyOn(Logger.prototype, 'error')
+  ⎿  Updated ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenf
+     ield-project/nestjs-project/src/video-processing/video-processing.proc
+     essor.spec.ts (+2 -1)
+      1 +import { Logger } from '@nestjs/common';                        
+      2  import { Test } from '@nestjs/testing';
+      3  import { getRepositoryToken } from '@nestjs/typeorm';
+      4  import { type Job, UnrecoverableError } from 'bullmq';
+     ...
+      26    beforeEach(async () => {
+      27      jest.resetAllMocks();
+      28      videoRepository.update.mockResolvedValue({ affected: 1 });
+      29 +    jest.spyOn(Logger.prototype, 'error').mockImplementation(()
+         + => undefined);                                                
+      30  
+      31      const module = await Test.createTestingModule({
+      32        providers: [
+     ...
+      37          { provide: ThumbnailExtractorService, useValue: {} },
+      38        ],
+      39      }).compile();
+      38 -    module.useLogger(false);                                   
+      40  
+      41      processor = module.get(VideoProcessingProcessor);
+      42    });
+
+● Now the two integration specs. I'll check how existing specs seed a user,
+  channel, and video row.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/media-tools.integration-spec.ts)
+  ⎿  Wrote 114 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mb
+     a-ia-greenfield-project/nestjs-project/src/video-processing/media-tool
+     s.integration-spec.ts
+       1 import { randomUUID } from 'node:crypto';
+       2 import { readFile } from 'node:fs/promises';
+       3 import { ConfigModule } from '@nestjs/config';
+       4 import { Test, type TestingModule } from '@nestjs/testing';
+       5 import storageConfig from '../config/storage.config';
+       6 import { StorageModule } from '../storage/storage.module';
+       7 import { StorageService } from '../storage/storage.service';
+       8 import {
+       9   createVideoFixtures,
+      10   FIXTURE_HEIGHT,
+     … +104 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/video-processing.processor.integra
+       tion-spec.ts)
+  ⎿  Wrote 251 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mb
+     a-ia-greenfield-project/nestjs-project/src/video-processing/video-proc
+     essing.processor.integration-spec.ts
+       1 import { readFile } from 'node:fs/promises';
+       2 import { GetObjectCommand, type S3Client } from '@aws-sdk/client
+         -s3';
+       3 import { ConfigModule } from '@nestjs/config';
+       4 import { Logger } from '@nestjs/common';
+       5 import { Test, type TestingModule } from '@nestjs/testing';
+       6 import { TypeOrmModule } from '@nestjs/typeorm';
+       7 import { type Job, UnrecoverableError } from 'bullmq';
+       8 import { DataSource, type Repository } from 'typeorm';
+       9 import { RefreshToken } from '../auth/entities/refresh-token.ent
+     … +243 lines (~9 KB) (ctrl+o to expand)
+
+● Running the type-check before handing the tests to a subagent.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/nestjs-project; docker compose exec -T nestjs-api npx
+      eslint --fix src…)
+  ⎿  lint=0
+  ⎿  Updated ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenf
+     ield-project/nestjs-project/src/video-processing/video-processing.proc
+     essor.integration-spec.ts (+1 -3)
+      218  
+      219    it('should end as processing_failed when all 3 attempts hit 
+           a temporary error', async () => {
+      220      const video = await processingVideo(fixtures.shortNoAudio)
+           ;
+      221 -    jest                                                      
+      222 -      .spyOn(probe, 'probe')                                  
+      223 -      .mockRejectedValue(new Error('connection reset'));      
+      221 +    jest.spyOn(probe, 'probe').mockRejectedValue(new Error('co
+          +nnection reset'));                                            
+      222  
+      223      for (let attempt = 0; attempt < 3; attempt++) {
+      224        const error = await processor
+
+● Type-check and lint are clean. Handing the SI's test run to a subagent.
+
+● Agent(Run SI-03.11 tests)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● SI-03.11's code and tests are written, and the type-check and lint pass. A
+  subagent is running the SI's tests now. I'll report the results and update the
+  progress file once it finishes.
+
+✻ Baked for 4m 40s · done 18:22
+
+› Message from general-purpose
+  All 26 tests pass (6/6 suites, 3.655 s, run with --runInBand). No open-handle
+  messages. Jest printed these warnings verbatim:
+  - `(node:7934) DeprecationWarning: Calling client.query() when the client is
+  already executing a query is deprecated and will be removed in pg@9.0. Use
+  async/await or an external async flow control mechanism instead.` (printed
+  twice, the second time just before video-processing.module.spec.ts)
+  - `(node:7934) Warning: \`--localstorage-file\` was provided without a valid
+  path`
+
+● All 26 tests pass. Updating the progress file.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/docs/phases/phase-03-videos; python3 - <<'EOF'
+      p='progress.md'…)  ⎿  Updated progress.md (+12 -4)
+      1  # phase-03-videos — Progress
+      2  
+      3  **Status:** in_progress
+      4 -**SIs:** 10/16 completed                                        
+      4 +**SIs:** 11/16 completed                                        
+      5  
+      6  ### SI-03.1 — Infra: Instalar dependências de fila e storage com
+          versões fixadas
+      7  - **Status:** completed
+     ...
+      113    - The existing `queue-prefix.integration-spec.ts` (SI-03.6) 
+           already covers that `test`-prefixed jobs are invisible to a `b
+           ull`-prefixed worker. No processor is registered yet, so nothi
+           ng is consumed.
+      114  
+      115  ### SI-03.11 — Processar vídeo no worker (ffprobe, thumbnail, 
+           status e falhas)
+      116 -- **Status:** pending                                         
+      117 -- **Tests:** _pending_                                        
+      118 -- **Observations:** _pending_                                 
+      116 +- **Status:** completed                                       
+      117 +- **Tests:** 26 passing (`media-probe.service.spec.ts`, `video
+          +-processing.processor.spec.ts`, `media-tools.integration-spec.
+          +ts`, `video-processing.processor.integration-spec.ts`, plus re
+          +-run of `video-processing.module.spec.ts` and `worker.module.s
+          +pec.ts` — 6 suites). `tsc --noEmit` and eslint on the changed 
+          +files clean                                                   
+      118 +- **Observations:**                                           
+      119 +  - **Invalid-media detection beyond the plan:** for a text fi
+          +le renamed to `.mp4`, `ffprobe` does not return JSON without a
+          + video stream. It exits 1 with `Invalid data found when proces
+          +sing input`. `MediaProbeService` maps that stderr message to `
+          +InvalidMediaError` (→ `UnrecoverableError`, no retries). Any o
+          +ther non-zero exit (404, network) throws a plain `Error`, so B
+          +ullMQ retries it. The integration spec covers both cases.     
+      120 +  - Verified in the installed `bullmq@6.5.3` source that the w
+          +orker emits `failed` after every attempt and that `job.attempt
+          +sMade` already counts the current attempt when it fires. So `a
+          +ttemptsMade >= opts.attempts` means "last attempt".           
+      121 +  - Created `src/video-processing/run-process.ts` (`runProcess
+          +`: `spawn` without a shell, collects stdout/stderr), shared by
+          + both services. Also created `src/video-processing/video-proce
+          +ssing.constants.ts` (`INTERNAL_READ_URL_EXPIRES_IN_SECONDS = 3
+          +600`, `THUMBNAIL_POSITION_RATIO = 0.1`, `THUMBNAIL_CONTENT_TYP
+          +E`).                                                          
+      122 +  - If `ffmpeg` produces no frame even at second 0, the proces
+          +sor throws a plain `Error` (retried, then `processing_failed`)
+          +, not `invalid_media`. The plan does not cover this case.     
+      123 +  - `process()` returns without doing anything when the row no
+          + longer exists (e.g. wiped by a test cleanup), as well as when
+          + `status ≠ 'processing'`.                                     
+      124 +  - The processor integration spec registers the processor as 
+          +a plain provider (no `BullModule`), so no real worker starts. 
+          +It calls `process()` / `onFailed()` directly, simulating the r
+          +etry sequence with `attemptsMade`. The module and worker compi
+          +lation specs do start a real `test`-prefixed worker during the
+          +ir run.                                                       
+      125 +  - Fixtures are encoded with `-movflags +faststart` (moov ato
+          +m first), so `ffprobe` needs fewer `Range` requests.          
+      126 +  - The running `video-worker` (`nest start --watch`) picks up
+          + the new processor automatically and starts consuming `bull`-p
+          +refixed jobs.                                                 
+      127  
+      128  ### SI-03.12 — Job agendado de manutenção (rascunhos abandonad
+           os + vídeos presos em processing)
+      129  - **Status:** pending
+
+● Agent "Run SI-03.11 tests" finished · 11s
+
+● SI-03.11 is done: the worker now processes uploaded videos and all 26 tests
+  for this step pass. It reads the duration and other metadata, saves a
+  thumbnail, and moves each video to ready or failed. The type-check and lint
+  are clean.
+
+  What changed in behaviour:
+  - Valid video: the worker fills in the metadata columns and stores
+    videos/{id}/thumbnail.jpg. For very short clips it falls back to the first
+    frame.
+  - Not a video (e.g. a text file renamed to .mp4): the video goes to failed
+    with reason invalid_media, and BullMQ (the job queue) doesn't retry. One
+    addition to the plan: ffprobe (the tool that reads the metadata) doesn't
+    report "no video stream" for these files. It exits with an "Invalid data
+    found" error instead, so I treat that message as invalid media too.
+  - Temporary errors (network, storage): the job is retried. The video only goes
+    to processing_failed if the 3rd attempt also fails. I checked in the
+    installed BullMQ source that its attempt counter already includes the
+    current attempt when the failure event fires.
+  - A job arriving again for a video that is already ready: nothing changes.
+
+  One case the plan doesn't cover: if ffmpeg can't produce any frame, even at
+  second 0, the job is retried and ends as processing_failed, not invalid_media.
+
+  The running video-worker container reloads code changes automatically, so it
+  already has the new processor. All notes are recorded in
+  docs/phases/phase-03-videos/progress.md.
+
+  SI-03.11 done.
+    Created: src/video-processing/run-process.ts,
+  src/video-processing/media-probe.service.ts,
+  src/video-processing/thumbnail-extractor.service.ts,
+  src/video-processing/video-processing.processor.ts,
+  src/video-processing/video-processing.constants.ts,
+  src/test/video-fixtures.ts, src/video-processing/media-probe.service.spec.ts,
+  src/video-processing/video-processing.processor.spec.ts,
+  src/video-processing/media-tools.integration-spec.ts,
+  src/video-processing/video-processing.processor.integration-spec.ts
+    Updated: src/video-processing/video-processing.module.ts
+    Tests: 26 passing. Seguir para SI-03.12?
+
+✻ Cooked for 5m 10s · done 18:22
+
+※ recap: You're implementing phase 03 (video upload and processing) step by step, and SI-03.11, the worker that processes uploaded videos, is done with all 26 tests passing. Next is SI-03.12, the scheduled cleanup job, once you say go. (disable recaps in /config)
+
+❯ encerre o http.server da porta 8765 se não precisar mais dele                 
+
+● Vou verificar se o servidor ainda está rodando no container nestjs-api.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Ele ainda está rodando (o kill %1 do teste anterior falhou). Encerrando e
+  limpando os arquivos temporários do teste.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● A linha que apareceu é o próprio comando de verificação (o texto dele contém
+  "http.server"), não o servidor. Vou confirmar de forma limpa.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Encerrei o http.server da porta 8765. Ele ainda estava rodando dentro do
+  container nestjs-api, porque o kill do meu teste anterior tinha falhado. Agora
+  nenhum processo responde nessa porta. Também apaguei a pasta temporária
+  /tmp/fx dentro do container, onde ficavam os arquivos de vídeo desse teste
+  manual.
+
+  Os testes do SI-03.11 não dependem desse servidor: eles leem os vídeos de
+  teste direto do storage (RustFS).
+
+  Seguir para SI-03.12?
+
+✻ Sautéed for 23s · done 18:35
+
+❯ continue                                                                      
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Starting SI-03.12 (the hourly maintenance job). I'll check where the two
+  time-limit settings are configured and how the queue is injected today.
+
+  Ran 4 shell commands (ctrl+o to expand)
+
+● Writing the three services, the maintenance processor, and the constants.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/nestjs-project; cat >>
+      src/video-processing/video-processing.constants…)
+  ⎿  Updated
+     ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-pro
+     ject/nestjs-project/src/video-processing/video-processing.constants.ts
+     (+3 -0)
+       5  export const THUMBNAIL_POSITION_RATIO = 0.1;
+       6  
+       7  export const THUMBNAIL_CONTENT_TYPE = 'image/jpeg';
+       8 +                                                               
+       9 +// The cleanup-abandoned-uploads scheduler runs every hour (TD-
+         +07).                                                           
+      10 +export const MAINTENANCE_INTERVAL_MS = 3_600_000;              
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/maintenance-scheduler.service.ts)
+  ⎿  Wrote 26 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba
+     -ia-greenfield-project/nestjs-project/src/video-processing/maintenance
+     -scheduler.service.ts
+       1 import { InjectQueue } from '@nestjs/bullmq';
+       2 import { Injectable, type OnApplicationBootstrap } from '@nestjs
+         /common';
+       3 import type { Queue } from 'bullmq';
+       4 import {
+       5   CLEANUP_ABANDONED_UPLOADS_JOB,
+       6   VIDEO_MAINTENANCE_QUEUE,
+       7 } from '../queue/queue.constants';
+       8 import { MAINTENANCE_INTERVAL_MS } from './video-processing.cons
+         tants';
+     … +18 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/abandoned-uploads-cleanup.service.
+       ts)
+  ⎿  Wrote 71 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba
+     -ia-greenfield-project/nestjs-project/src/video-processing/abandoned-u
+     ploads-cleanup.service.ts
+       1 import { Inject, Injectable, Logger } from '@nestjs/common';
+       2 import type { ConfigType } from '@nestjs/config';
+       3 import { InjectRepository } from '@nestjs/typeorm';
+       4 import { LessThan, type Repository } from 'typeorm';
+       5 import videosConfig from '../config/videos.config';
+       6 import { videoOriginalKey, videoPrefix } from '../storage/storag
+         e-keys';
+       7 import { StorageService } from '../storage/storage.service';
+       8 import { Video, VideoStatus } from '../videos/entities/video.ent
+         ity';
+     … +63 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/stuck-processing-recovery.service.
+       ts)
+  ⎿  Wrote 68 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba
+     -ia-greenfield-project/nestjs-project/src/video-processing/stuck-proce
+     ssing-recovery.service.ts
+       1 import { InjectQueue } from '@nestjs/bullmq';
+       2 import { Inject, Injectable } from '@nestjs/common';
+       3 import type { ConfigType } from '@nestjs/config';
+       4 import { InjectRepository } from '@nestjs/typeorm';
+       5 import type { Queue } from 'bullmq';
+       6 import { LessThan, type Repository } from 'typeorm';
+       7 import videosConfig from '../config/videos.config';
+       8 import {
+       9   PROCESS_VIDEO_JOB,
+      10   PROCESS_VIDEO_JOB_OPTIONS,
+     … +58 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/maintenance.processor.ts)
+  ⎿  Wrote 29 lines to
+     ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-pro
+     ject/nestjs-project/src/video-processing/maintenance.processor.ts
+       1 import { Processor, WorkerHost } from '@nestjs/bullmq';
+       2 import { Logger } from '@nestjs/common';
+       3 import { VIDEO_MAINTENANCE_QUEUE } from '../queue/queue.constant
+         s';
+       4 import { AbandonedUploadsCleanupService } from './abandoned-uplo
+         ads-cleanup.service';
+       5 import { StuckProcessingRecoveryService } from './stuck-processi
+         ng-recovery.service';
+       6 
+       7 // Consumes the hourly cleanup-abandoned-uploads job (TD-07, TD-
+     … +23 lines (ctrl+o to expand)
+
+● For consistency, the stuck-video recovery should also log and continue when
+  one video fails, like the cleanup does. Updating it and registering everything
+  in the module.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/nestjs-project; python3 - <<'EOF'
+      p='src/video-processing/stuck-proces…)
+  ⎿    ) {}
+
+       async recoverStuckProcessing(now: Date): Promise<StuckProcessingResu
+     … +60 lines (ctrl+o to expand)
+  ⎿  Updated ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenf
+     ield-project/nestjs-project/src/video-processing/stuck-processing-reco
+     very.service.ts (+37 -18)
+      1  import { InjectQueue } from '@nestjs/bullmq';
+      2 -import { Inject, Injectable } from '@nestjs/common';            
+      2 +import { Inject, Injectable, Logger } from '@nestjs/common';    
+      3  import type { ConfigType } from '@nestjs/config';
+      4  import { InjectRepository } from '@nestjs/typeorm';
+      5  import type { Queue } from 'bullmq';
+     ...
+      24  // job is gone, fail the ones whose job already failed, leave t
+          he rest alone.
+      25  @Injectable()
+      26  export class StuckProcessingRecoveryService {
+      27 +  private readonly logger = new Logger(StuckProcessingRecoveryS
+         +ervice.name);                                                  
+      28 +                                                               
+      29    constructor(
+      30      @InjectRepository(Video)
+      31      private readonly videoRepository: Repository<Video>,
+     ...
+      45  
+      46      const result: StuckProcessingResult = { requeued: 0, failed
+          : 0 };
+      47      for (const video of stuck) {
+      46 -      const job = await this.processingQueue.getJob(video.id); 
+      47 -      if (!job) {                                              
+      48 -        // The commit succeeded but the enqueue was lost.      
+      49 -        await this.processingQueue.add(                        
+      50 -          PROCESS_VIDEO_JOB,                                   
+      51 -          { videoId: video.id },                               
+      52 -          { ...PROCESS_VIDEO_JOB_OPTIONS, jobId: video.id },   
+      48 +      try {                                                    
+      49 +        const outcome = await this.recover(video.id);          
+      50 +        if (outcome) result[outcome]++;                        
+      51 +      } catch (error) {                                        
+      52 +        // Background job: log and move on to the next video.  
+      53 +        this.logger.error(                                     
+      54 +          `Failed to recover stuck video ${video.id}`,         
+      55 +          error instanceof Error ? error.stack : String(error),
+      56          );
+      54 -        result.requeued++;                                     
+      55 -      } else if ((await job.getState()) === 'failed') {        
+      56 -        // removeOnFail keeps the failed job under the same id 
+         -for 7 days, so                                                 
+      57 -        // a new add would be ignored: close the video instead.
+      58 -        const update = await this.videoRepository.update(      
+      59 -          { id: video.id, status: VideoStatus.PROCESSING },    
+      60 -          { status: VideoStatus.FAILED, failure_reason: 'proces
+         -sing_failed' },                                                
+     … 34 more lines (ctrl+o to expand)
+  ⎿  Updated
+     ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-pro
+     ject/nestjs-project/src/video-processing/video-processing.module.ts
+     (+8 -0)
+       7  } from '../queue/queue.constants';
+       8  import { StorageModule } from '../storage/storage.module';
+       9  import { Video } from '../videos/entities/video.entity';
+      10 +import { AbandonedUploadsCleanupService } from './abandoned-upl
+         +oads-cleanup.service';                                         
+      11 +import { MaintenanceSchedulerService } from './maintenance-sche
+         +duler.service';                                                
+      12 +import { MaintenanceProcessor } from './maintenance.processor';
+      13  import { MediaProbeService } from './media-probe.service';
+      14 +import { StuckProcessingRecoveryService } from './stuck-process
+         +ing-recovery.service';                                         
+      15  import { ThumbnailExtractorService } from './thumbnail-extracto
+          r.service';
+      16  import { VideoProcessingProcessor } from './video-processing.pr
+          ocessor';
+      17  
+     ...
+      29      VideoProcessingProcessor,
+      30      MediaProbeService,
+      31      ThumbnailExtractorService,
+      32 +    MaintenanceProcessor,                                      
+      33 +    MaintenanceSchedulerService,                               
+      34 +    AbandonedUploadsCleanupService,                            
+      35 +    StuckProcessingRecoveryService,                            
+      36    ],
+      37  })
+      38  export class VideoProcessingModule {}
+
+● The module compilation spec doesn't load videosConfig, which the new services
+  inject, so I'll fix that. Next I'll check the storage signatures I need for
+  the cleanup test.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Writing the four test files and fixing the module spec's config.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/nestjs-project; python3 - <<'EOF'
+      p='src/video-processing/video-proces…)
+  ⎿  12:import videosConfig from '../config/videos.config';
+     32:          load: [storageConfig, redisConfig, queueConfig, videosCon
+     fig],
+  ⎿  Updated ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenf
+     ield-project/nestjs-project/src/video-processing/video-processing.modu
+     le.spec.ts (+2 -1)
+       9  import queueConfig from '../config/queue.config';
+      10  import redisConfig from '../config/redis.config';
+      11  import storageConfig from '../config/storage.config';
+      12 +import videosConfig from '../config/videos.config';            
+      13  import {
+      14    VIDEO_MAINTENANCE_QUEUE,
+      15    VIDEO_PROCESSING_QUEUE,
+     ...
+      29        imports: [
+      30          ConfigModule.forRoot({
+      31            isGlobal: true,
+      31 -          load: [storageConfig, redisConfig, queueConfig],     
+      32 +          load: [storageConfig, redisConfig, queueConfig, video
+         +sConfig],                                                      
+      33          }),
+      34          TypeOrmModule.forRoot(createTestDataSource(ALL_ENTITIES
+          ).options),
+      35          QueueModule,
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/stuck-processing-recovery.service.
+       spec.ts)
+  ⎿  Wrote 124 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mb
+     a-ia-greenfield-project/nestjs-project/src/video-processing/stuck-proc
+     essing-recovery.service.spec.ts
+       1 import { getQueueToken } from '@nestjs/bullmq';
+       2 import { Logger } from '@nestjs/common';
+       3 import { Test } from '@nestjs/testing';
+       4 import { getRepositoryToken } from '@nestjs/typeorm';
+       5 import videosConfig from '../config/videos.config';
+       6 import {
+       7   PROCESS_VIDEO_JOB,
+       8   PROCESS_VIDEO_JOB_OPTIONS,
+       9   VIDEO_PROCESSING_QUEUE,
+      10 } from '../queue/queue.constants';
+     … +114 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/stuck-processing-recovery.service.
+       integration-spec.ts)  ⎿  Wrote 172 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mb
+     a-ia-greenfield-project/nestjs-project/src/video-processing/stuck-proc
+     essing-recovery.service.integration-spec.ts
+       1 import { BullModule, getQueueToken } from '@nestjs/bullmq';
+       2 import { ConfigModule, type ConfigType } from '@nestjs/config';
+       3 import { Test, type TestingModule } from '@nestjs/testing';
+       4 import { TypeOrmModule } from '@nestjs/typeorm';
+       5 import { type Queue, UnrecoverableError, Worker } from 'bullmq';
+       6 import { DataSource, type Repository } from 'typeorm';
+       7 import { RefreshToken } from '../auth/entities/refresh-token.ent
+         ity';
+       8 import { VerificationToken } from '../auth/entities/verification
+         -token.entity';
+     … +164 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/abandoned-uploads-cleanup.service.
+       integration-spec.ts)
+  ⎿  Wrote 185 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mb
+     a-ia-greenfield-project/nestjs-project/src/video-processing/abandoned-
+     uploads-cleanup.service.integration-spec.ts
+       1 import { randomBytes } from 'node:crypto';
+       2 import {
+       3   ListObjectsV2Command,
+       4   type S3Client,
+       5   UploadPartCommand,
+       6 } from '@aws-sdk/client-s3';
+       7 import { ConfigModule, type ConfigType } from '@nestjs/config';
+       8 import { Test, type TestingModule } from '@nestjs/testing';
+       9 import { TypeOrmModule } from '@nestjs/typeorm';
+      10 import { DataSource, type Repository } from 'typeorm';
+     … +175 lines (ctrl+o to expand)
+
+● Write(~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenfield-proje
+       ct/nestjs-project/src/video-processing/maintenance-scheduler.service.inte
+       gration-spec.ts)
+  ⎿  Wrote 62 lines to ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba
+     -ia-greenfield-project/nestjs-project/src/video-processing/maintenance
+     -scheduler.service.integration-spec.ts
+       1 import { BullModule, getQueueToken } from '@nestjs/bullmq';
+       2 import { ConfigModule } from '@nestjs/config';
+       3 import { Test, type TestingModule } from '@nestjs/testing';
+       4 import type { Queue } from 'bullmq';
+       5 import queueConfig from '../config/queue.config';
+       6 import redisConfig from '../config/redis.config';
+       7 import {
+       8   CLEANUP_ABANDONED_UPLOADS_JOB,
+       9   VIDEO_MAINTENANCE_QUEUE,
+      10 } from '../queue/queue.constants';
+     … +52 lines (ctrl+o to expand)
+
+● Checking the scheduler JSON field names, then type-check and lint.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/nestjs-project; cat
+      node_modules/bullmq/dist/esm/interfaces/job-schedu…)
+  ⎿  import { JobSchedulerTemplateOptions } from '../types';
+     export interface JobSchedulerTemplateJson<D = any> {
+         data?: D;
+     … +19 lines (ctrl+o to expand)
+  ⎿  Updated ~/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-greenf
+     ield-project/nestjs-project/src/video-processing/stuck-processing-reco
+     very.service.integration-spec.ts (+6 -3)
+      57    // Runs a throwaway worker until the job lands in the failed 
+          set.
+      58    async function failJob(videoId: string): Promise<void> {
+      59      const redis = module.get<ConfigType<typeof redisConfig>>(re
+          disConfig.KEY);
+      60 -    const prefix =                                             
+      61 -      module.get<ConfigType<typeof queueConfig>>(queueConfig.KE
+         -Y).prefix;                                                     
+      60 +    const prefix = module.get<ConfigType<typeof queueConfig>>( 
+      61 +      queueConfig.KEY,                                         
+      62 +    ).prefix;                                                  
+      63      await queue.add(
+      64        PROCESS_VIDEO_JOB,
+      65        { videoId },
+     ...
+      71        { connection: { host: redis.host, port: redis.port }, pre
+          fix },
+      72      );
+      73      try {
+      73 -      await new Promise<void>((resolve) => worker.once('failed'
+         -, () => resolve()));                                           
+      74 +      await new Promise<void>((resolve) =>                     
+      75 +        worker.once('failed', () => resolve()),                
+      76 +      );                                                       
+      77      } finally {
+      78        await worker.close();
+      79      }
+  ⎿  (timeout 5m)
+
+● Type-check and lint are clean (eslint only reformatted one spec). Handing the
+  SI's tests to a subagent.
+
+● Agent(Run SI-03.12 tests)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● SI-03.12's code and tests are written, and the type-check and lint pass. A
+  subagent is running the SI's tests now. I'll report the results and update the
+  progress file when it finishes.
+
+✻ Baked for 2m 53s · done 18:39
+
+› Message from general-purpose
+  All 17 tests in the 6 suites passed, run in one `--runInBand` invocation (2.0
+  s). I didn't change any files.
+
+  | File | Result |
+  |---|---|
+  | `src/video-processing/abandoned-uploads-cleanup.service.integration-spec.ts`
+  | PASS |
+  | `src/video-processing/stuck-processing-recovery.service.integration-spec.ts`
+  | PASS |
+  | `src/video-processing/stuck-processing-recovery.service.spec.ts` | PASS |
+  | `src/video-processing/maintenance-scheduler.service.integration-spec.ts` |
+  PASS |
+  | `src/worker/worker.module.spec.ts` | PASS |
+  | `src/video-processing/video-processing.module.spec.ts` | PASS |
+
+  Jest's summary didn't break the 17 tests down by file.
+
+  Jest printed no open-handle messages. It did print these warnings, verbatim:
+  ```
+  (node:18167) DeprecationWarning: Calling client.query() when the client is
+  already executing a query is deprecated and will be removed in pg@9.0. Use
+  async/await or an external async flow control mechanism instead.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:18167) Warning: `--localstorage-file` was provided without a valid path
+  ```
+  The `pg` DeprecationWarning appeared 3 times: before the
+  `abandoned-uploads-cleanup` suite, before the `stuck-processing-recovery`
+  integration suite, and before the `video-processing.module` suite.
+
+● All 17 tests pass. Updating the progress file.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/docs/phases/phase-03-videos; python3 - <<'EOF'
+      p='progress.md'…)
+  ⎿  Updated progress.md (+12 -4)
+      1  # phase-03-videos — Progress
+      2  
+      3  **Status:** in_progress
+      4 -**SIs:** 11/16 completed                                        
+      4 +**SIs:** 12/16 completed                                        
+      5  
+      6  ### SI-03.1 — Infra: Instalar dependências de fila e storage com
+          versões fixadas
+      7  - **Status:** completed
+     ...
+      126    - The running `video-worker` (`nest start --watch`) picks up
+            the new processor automatically and starts consuming `bull`-p
+           refixed jobs.
+      127  
+      128  ### SI-03.12 — Job agendado de manutenção (rascunhos abandonad
+           os + vídeos presos em processing)
+      129 -- **Status:** pending                                         
+      130 -- **Tests:** _pending_                                        
+      131 -- **Observations:** _pending_                                 
+      129 +- **Status:** completed                                       
+      130 +- **Tests:** 17 passing (`stuck-processing-recovery.service.sp
+          +ec.ts`, `stuck-processing-recovery.service.integration-spec.ts
+          +`, `abandoned-uploads-cleanup.service.integration-spec.ts`, `m
+          +aintenance-scheduler.service.integration-spec.ts`, plus re-run
+          + of `video-processing.module.spec.ts` and `worker.module.spec.
+          +ts` — 6 suites). `tsc --noEmit` and eslint on the changed file
+          +s clean                                                       
+      131 +- **Observations:**                                           
+      132 +  - **Per-video error isolation (not in the plan):** both `cle
+          +anupAbandonedDrafts` and `recoverStuckProcessing` catch and lo
+          +g errors per video and move on to the next, so one bad video d
+          +oes not block the rest every hour (the rule for background job
+          +s allows catch-and-log). Unit test covers this for the recover
+          +y service.                                                    
+      133 +  - Consequence of the plan's order for abandoned drafts (DB u
+          +pdate first, so a concurrent `complete` wins): if the storage 
+          +cleanup fails after the update, the row is already `failed` wi
+          +th `upload_id = null` and the next run will not retry it. Left
+          +over multipart parts are still discarded by RustFS after 24 h;
+          + leftover objects under `videos/{id}/` are not.               
+      134 +  - The scheduler id reuses `CLEANUP_ABANDONED_UPLOADS_JOB` (t
+          +he plan uses the same literal for both the scheduler id and th
+          +e job name). Added `MAINTENANCE_INTERVAL_MS = 3_600_000` to `v
+          +ideo-processing.constants.ts`.                                
+      135 +  - `recoverStuckProcessing` returns `{ requeued, failed }` an
+          +d `cleanupAbandonedDrafts` returns the count; `MaintenanceProc
+          +essor` logs both.                                             
+      136 +  - `StuckProcessingRecoveryService` calls `processingQueue.ad
+          +d` directly with `PROCESS_VIDEO_JOB_OPTIONS` and `jobId`, as t
+          +he plan says. It does not reuse `VideoProcessingProducer`, whi
+          +ch lives in the API's `VideosModule`.                         
+      137 +  - `video-processing.module.spec.ts` now also loads `videosCo
+          +nfig`, which the new services inject.                         
+      138 +  - Tests backdate `created_at` / `updated_at` with raw SQL (`
+          +make_interval`), because `@UpdateDateColumn` always writes the
+          + current time. The stuck-recovery integration test creates a r
+          +eal failed job by running a throwaway BullMQ `Worker` (test pr
+          +efix) that throws `UnrecoverableError`. The scheduler test boo
+          +ts the module three times with `init()` (real `onApplicationBo
+          +otstrap`) and asserts a single scheduler with `every = 3600000
+          +`.                                                            
+      139 +  - Once the running `video-worker` reloads, it registers the 
+          +hourly scheduler on the `bull`-prefixed `video-maintenance` qu
+          +eue.                                                          
+      140  
+      141  ### SI-03.13 — Endpoint GET /videos/:publicId (status e metada
+           dos para o dono)
+      142  - **Status:** pending
+
+● Agent "Run SI-03.12 tests" finished · 13s
+
+● SI-03.12 is done: the worker now runs a maintenance job every hour, and all 17
+  tests for this step pass. The type-check and lint are clean.
+
+  What the job does:
+  - Abandoned drafts (older than UPLOAD_ABANDON_AFTER_HOURS, default 24 h): the
+    video goes to failed with reason upload_abandoned. The unfinished upload is
+    cancelled, its files in storage are deleted, and the row is kept. If an
+    upload completes at the same moment, the completion wins.
+  - Videos stuck in processing (longer than PROCESSING_STUCK_AFTER_MINUTES,
+    default 120 min):
+    - no job in the queue → it is queued again;
+    - its job already failed → the video goes to failed with reason
+      processing_failed;
+    - its job is still waiting or running → nothing changes.
+  - Restarting the worker keeps a single hourly schedule; it doesn't create
+    duplicates.
+
+  Two choices of mine you may want to review:
+  - If cleaning up one video throws an error, the job logs it and moves on to
+    the next video. Otherwise one bad video would block the rest every hour.
+  - The plan marks a draft as failed before deleting its files. If the deletion
+    then fails, the next run won't retry it, because the draft is no longer a
+    draft. Leftover upload parts are discarded by the storage server after 24 h.
+    Files already saved under videos/{id}/ stay.
+
+  Once the running video-worker reloads, it creates the hourly schedule on its
+  own. All notes are in docs/phases/phase-03-videos/progress.md.
+
+  SI-03.12 done.
+    Created: src/video-processing/maintenance-scheduler.service.ts,
+  src/video-processing/abandoned-uploads-cleanup.service.ts,
+  src/video-processing/stuck-processing-recovery.service.ts,
+  src/video-processing/maintenance.processor.ts,
+  src/video-processing/stuck-processing-recovery.service.spec.ts,
+  src/video-processing/stuck-processing-recovery.service.integration-spec.ts,
+  src/video-processing/abandoned-uploads-cleanup.service.integration-spec.ts,
+  src/video-processing/maintenance-scheduler.service.integration-spec.ts
+    Updated: src/video-processing/video-processing.module.ts,
+  src/video-processing/video-processing.constants.ts,
+  src/video-processing/video-processing.module.spec.ts
+    Tests: 17 passing. Seguir para SI-03.13?
+
+✻ Cogitated for 3m 25s · done 18:39
+
+※ recap: We're implementing phase 03 (video upload and processing) step by step, and 12 of 16 steps are done; the latest added the hourly cleanup job, with all tests passing. Next is SI-03.13, the endpoint that shows a video's status to its owner, once you approve. (disable recaps in /config)

@@ -12,6 +12,28 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_started
+      redis:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
+
+  # Same image and code as nestjs-api, running the worker entrypoint
+  # (src/worker.ts): consumes the video queues, no HTTP port (TD-08).
+  video-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: npm run start:worker:dev
+    restart: unless-stopped
+    volumes:
+      - .:/home/node/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      storage-init:
+        condition: service_completed_successfully
 
   db:
     image: postgres:17
@@ -33,4 +55,62 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  redis:
+    image: redis:7
+    command: redis-server --appendonly yes --maxmemory-policy noeviction
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  storage:
+    image: rustfs/rustfs:1.0.3
+    ports:
+      - "9000:9000"
+    environment:
+      - RUSTFS_ACCESS_KEY=${S3_ACCESS_KEY_ID}
+      - RUSTFS_SECRET_KEY=${S3_SECRET_ACCESS_KEY}
+      - RUSTFS_VOLUMES=/data
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+    volumes:
+      - storage-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9000/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # One-shot: creates the bucket (idempotent) and applies the versioned CORS policy.
+  storage-init:
+    image: amazon/aws-cli:2.39.3
+    depends_on:
+      storage:
+        condition: service_healthy
+    environment:
+      - AWS_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${S3_REGION}
+      - AWS_REQUEST_CHECKSUM_CALCULATION=when_required
+      - AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
+      - S3_BUCKET=${S3_BUCKET}
+    volumes:
+      - ./docker/storage:/cors:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        ENDPOINT=http://storage:9000
+        aws --endpoint-url "$$ENDPOINT" s3api head-bucket --bucket "$$S3_BUCKET" 2>/dev/null \
+          || aws --endpoint-url "$$ENDPOINT" s3api create-bucket --bucket "$$S3_BUCKET"
+        aws --endpoint-url "$$ENDPOINT" s3api put-bucket-cors --bucket "$$S3_BUCKET" \
+          --cors-configuration file:///cors/cors.json
+        echo "storage-init: bucket $$S3_BUCKET ready"
+
+volumes:
+  redis-data:
+  storage-data:
