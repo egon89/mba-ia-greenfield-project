@@ -1,0 +1,2004 @@
+ ▐▛███▛█   Claude Code v2.1.316
+▝▜██████▀  Opus 5.5 · Claude Pro
+ ▝▝   ▝▝   ~/…/mba-ia-greenfield-project/mba-ia-greenfield-project
+
+
+❯ /context 
+  ⎿  Context Usage
+     ⛁ ⛁ ⛁ ⛁ ⛀ ⛀ ⛀ ⛀ ⛁ ⛀ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   Opus 5.5
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   claude-opus-5-5
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   34.3k/1m tokens (3%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ 
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   Estimated usage by category
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ System prompt: 5.7k tokens (0.6%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ System tools: 17.2k tokens (1.7%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ MCP tools: 635 tokens (0.1%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶   ⛁ MCP server instructions: 945 tokens (0.1%)
+     ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛶ ⛝ ⛝ ⛝ ⛝ ⛝ ⛝ ⛝   ⛁ Custom agents: 1.1k tokens (0.1%)
+                                               ⛁ Memory files: 1.9k tokens (0.2%)
+                                               ⛁ Skills: 6.7k tokens (0.7%)
+                                               ⛁ Messages: 10 tokens (0.0%)
+                                               ⛶ Free space: 932.7k (93.3%)
+                                               ⛝ Autocompact buffer: 33k tokens (3.3%)
+
+     Auto-compact window: 1m tokens
+
+     MCP tools · /mcp (loaded on-demand)
+     └ 13 tools · 635 tokens
+
+     Custom agents · .claude/agents/
+     └ 6 agents · 1.1k tokens
+
+     Memory files · /memory
+     └ 1 file · 1.9k tokens
+
+     Skills · /skills
+     └ 37 skills · 6.7k tokens
+
+     /context all to expand
+
+❯ /implement phase-03-videos                                                    
+
+● I'll start the preflight: find the plan, check the branch, and look for
+  existing progress.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● Progress file found: 12/16 SIs completed. Resuming from SI-03.13. Next I'll
+  run the test-spec check and read the SI.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Preflight checks passed: correct branch, clean tree, and test specs up to
+  date. Since the task-list tool isn't available, I'll track progress in
+  progress.md, and now I'll load the testing guide and NestJS skill.
+
+● Skill(testing-guide-nestjs-project)
+  ⎿  Successfully loaded skill
+
+● Skill(nestjs-best-practices)
+  ⎿  Successfully loaded skill
+
+● Starting SI-03.13. Reading the current controller, the service methods it
+  relies on, and the test spec.
+
+  Ran 3 shell commands (ctrl+o to expand)
+  ⎿  Loaded CLAUDE.md
+  ⎿  Loaded ../.claude/rules/nestjs-common-conventions.md
+  ⎿  Loaded ../.claude/rules/typescript-strict.md
+  ⎿  Loaded ../.claude/rules/nestjs-testing.md
+
+● Now implementing: the service method, then the route.
+
+● Update(nestjs-project/src/videos/videos.service.ts)
+  ⎿  Added 5 lines
+      126      return video;
+      127    }
+      128  
+      129 +  // The owner reads the video in any status (used to poll pro
+          +cessing).                                                     
+      130 +  async getOwnedVideo(userId: string, publicId: string): Promi
+          +se<Video> {                                                   
+      131 +    return this.findOwnedByPublicId(userId, publicId);        
+      132 +  }                                                           
+      133 +                                                              
+      134    async issuePartUrls(
+      135      userId: string,
+      136      publicId: string,
+
+● Update(nestjs-project/src/videos/videos.controller.ts)
+  ⎿  Added 30 lines
+       74      };
+       75    }
+       76  
+       77 +  @Get(':publicId')                                           
+       78 +  @ApiOperation({                                             
+       79 +    summary: 'Get a video',                                   
+       80 +    description:                                              
+       81 +      'Owner reads the video in any status, including the extr
+          +acted metadata or the failure reason. Used to poll processing.
+          +',                                                            
+       82 +  })                                                          
+       83 +  @ApiResponse({                                              
+       84 +    status: 200,                                              
+       85 +    description: 'Video found',                               
+       86 +    type: VideoResponseDto,                                   
+       87 +  })                                                          
+       88 +  @ApiResponse({                                              
+       89 +    status: 401,                                              
+       90 +    description: 'Missing or invalid access token',           
+       91 +    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },        
+       92 +  })                                                          
+       93 +  @ApiResponse({                                              
+       94 +    status: 404,                                              
+       95 +    description: 'VIDEO_NOT_FOUND — unknown video or owned by 
+          +another user',                                                
+       96 +    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },        
+       97 +  })                                                          
+       98 +  async getVideo(                                             
+       99 +    @CurrentUser() user: JwtPayload,                          
+      100 +    @Param('publicId') publicId: string,                      
+      101 +  ): Promise<VideoResponseDto> {                              
+      102 +    return toVideoResponse(                                   
+      103 +      await this.videosService.getOwnedVideo(user.sub, publicI
+          +d),                                                           
+      104 +    );                                                        
+      105 +  }                                                           
+      106 +                                                              
+      107    @Post(':publicId/upload/part-urls')
+      108    @HttpCode(HttpStatus.OK)
+      109    @ApiOperation({
+  ⎿  Loaded ../.claude/rules/nestjs-services.md
+  ⎿  Loaded ../.claude/rules/typeorm-queries.md
+  ⎿  Loaded ../.claude/rules/nestjs-layer-separation.md
+  ⎿  Loaded ../.claude/rules/nestjs-controllers.md
+
+● Service and route are in. Next, the integration test and the e2e test from the
+  spec. First I'll check how an existing e2e creates a draft.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Writing the integration test block and the e2e file.
+
+● Bash(python3 - <<'EOF'
+      p='src/videos/videos.service.integration-spec.ts'…)
+  ⎿  src/common/exceptions/domain.exception.ts:3:    public readonly errorC
+     ode: string,
+     src/common/filters/domain-exception.filter.ts:12:      error: exceptio
+     n.errorCode,
+  ⎿  Updated nestjs-project/src/videos/videos.service.integration-spec.ts
+     (+61 -0)
+      254        await expect(queue.getJob(video.id)).resolves.toBeUndefi
+           ned();
+      255      });
+      256    });
+      257 +                                                              
+      258 +  describe('getOwnedVideo', () => {                           
+      259 +    async function ownedVideo(): Promise<{ user: User; video: 
+          +Video }> {                                                    
+      260 +      const { user } = await createUserWithChannel();         
+      261 +      const { video } = await service.initiateUpload(user.id, 
+          +{                                                             
+      262 +        filename: 'clip.mp4',                                 
+      263 +        size_bytes: 6 * MiB,                                  
+      264 +        content_type: 'video/mp4',                            
+      265 +      });                                                     
+      266 +      openUploads.push({                                      
+      267 +        key: videoOriginalKey(video.id),                      
+      268 +        uploadId: video.upload_id!,                           
+      269 +      });                                                     
+      270 +      return { user, video };                                 
+      271 +    }                                                         
+      272 +                                                              
+      273 +    it("returns the owner's video with its current row state",
+          + async () => {                                                
+      274 +      const { user, video } = await ownedVideo();             
+      275 +      await dataSource.getRepository(Video).update(           
+      276 +        { id: video.id },                                     
+      277 +        {                                                     
+      278 +          status: VideoStatus.FAILED,                         
+      279 +          failure_reason: 'invalid_media',                    
+      280 +          upload_id: null,                                    
+      281 +        },                                                    
+      282 +      );                                                      
+      283 +                                                              
+      284 +      const found = await service.getOwnedVideo(user.id, video
+          +.public_id);                                                  
+      285 +                                                              
+      286 +      expect(found).toMatchObject({                           
+      287 +        id: video.id,                                         
+      288 +        public_id: video.public_id,                           
+      289 +        status: VideoStatus.FAILED,                           
+      290 +        failure_reason: 'invalid_media',                      
+      291 +      });                                                     
+      292 +    });                                                       
+      293 +                                                              
+     … 25 more lines (ctrl+o to expand)
+
+● Write(nestjs-project/test/videos-get.e2e-spec.ts)
+  ⎿  Wrote 170 lines to nestjs-project/test/videos-get.e2e-spec.ts
+       1 import { type INestApplication, ValidationPipe } from '@nestjs/c
+         ommon';
+       2 import { Test } from '@nestjs/testing';
+       3 import { ThrottlerStorage, ThrottlerStorageService } from '@nest
+         js/throttler';
+       4 import request from 'supertest';
+       5 import type { App } from 'supertest/types';
+       6 import { DataSource } from 'typeorm';
+       7 import { AppModule } from '../src/app.module';
+       8 import { DomainExceptionFilter } from '../src/common/filters/dom
+     … +163 lines (~5 KB) (ctrl+o to expand)
+
+● Running the SI's tests through a subagent, as the skill requires.
+
+● Agent(Run SI-03.13 tests)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● The test run is going in the background. I'll wait for its report before
+  regenerating openapi.json and closing out SI-03.13.
+✻ Worked for 1m 10s · done 19:00
+
+› Message from general-purpose
+  All four checks passed. I didn't modify any files.
+  1. Integration test `src/videos/videos.service.integration-spec.ts`: all 7
+  tests pass.
+  2. E2E test `test/videos-get.e2e-spec.ts`: all 3 tests pass.
+  3. `npx tsc --noEmit`: exit 0.
+  4. `eslint` on the 4 files: exit 0, no output.
+
+  The integration run printed two warnings that did not fail anything:
+  - a pg DeprecationWarning: "Calling client.query() when the client is already
+  executing a query is deprecated"
+  - a Node warning: "`--localstorage-file` was provided without a valid path"
+
+● Tests pass. Now regenerating openapi.json and confirming the new route is in
+  it.
+
+● Bash(docker compose exec -T nestjs-api npm run openapi:export 2>&1 | tail -5;
+      git status --short; python3 -c "import
+      json;d=json.load(open('openapi.json'));p=d['path…)
+  ⎿  > nestjs-project@0.0.1 openapi:export
+     > ts-node -r tsconfig-paths/register src/openapi-export.ts
+     … +6 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/openapi.json (+162 -105)
+      497          ]
+      498        }
+      499      },
+      500 +    "/videos/{publicId}": {                                   
+      501 +      "get": {                                                
+      502 +        "description": "Owner reads the video in any status, i
+          +ncluding the extracted metadata or the failure reason. Used to
+          + poll processing.",                                           
+      503 +        "operationId": "VideosController_getVideo",           
+      504 +        "parameters": [                                       
+      505 +          {                                                   
+      506 +            "name": "publicId",                               
+      507 +            "required": true,                                 
+      508 +            "in": "path",                                     
+      509 +            "schema": {                                       
+      510 +              "type": "string"                                
+      511 +            }                                                 
+      512 +          }                                                   
+      513 +        ],                                                    
+      514 +        "responses": {                                        
+      515 +          "200": {                                            
+      516 +            "description": "Video found",                     
+      517 +            "content": {                                      
+      518 +              "application/json": {                           
+      519 +                "schema": {                                   
+      520 +                  "$ref": "#/components/schemas/VideoResponseD
+          +to"                                                           
+      521 +                }                                             
+      522 +              }                                               
+      523 +            }                                                 
+      524 +          },                                                  
+      525 +          "401": {                                            
+      526 +            "description": "Missing or invalid access token", 
+      527 +            "content": {                                      
+      528 +              "application/json": {                           
+      529 +                "schema": {                                   
+      530 +                  "$ref": "#/components/schemas/ApiErrorEnvelo
+          +pe"                                                           
+      531 +                }                                             
+      532 +              }                                               
+      533 +            }                                                 
+      534 +          },                                                  
+      535 +          "404": {                                            
+      536 +            "description": "VIDEO_NOT_FOUND — unknown video or
+          + owned by another user",                                      
+     … 245 more lines (ctrl+o to expand)
+
+● Agent "Run SI-03.13 tests" finished · 17s
+
+● Bash(git diff --stat openapi.json && python3 - <<'EOF'
+      p='../docs/phases/phase-03-videos/progress.md'…)
+  ⎿   nestjs-project/openapi.json | 267 +++++++++++++++++++++++++++--------
+     ---------
+      1 file changed, 162 insertions(+), 105 deletions(-)
+  ⎿  Updated docs/phases/phase-03-videos/progress.md (+7 -4)
+      1  # phase-03-videos — Progress
+      2  
+      3  **Status:** in_progress
+      4 -**SIs:** 12/16 completed                                        
+      4 +**SIs:** 13/16 completed                                        
+      5  
+      6  ### SI-03.1 — Infra: Instalar dependências de fila e storage com
+          versões fixadas
+      7  - **Status:** completed
+     ...
+      139    - Once the running `video-worker` reloads, it registers the 
+           hourly scheduler on the `bull`-prefixed `video-maintenance` qu
+           eue.
+      140  
+      141  ### SI-03.13 — Endpoint GET /videos/:publicId (status e metada
+           dos para o dono)
+      142 -- **Status:** pending                                         
+      143 -- **Tests:** _pending_                                        
+      144 -- **Observations:** _pending_                                 
+      142 +- **Status:** completed                                       
+      143 +- **Tests:** 10 passing (`videos.service.integration-spec.ts` 
+          +7 — 3 new for `getOwnedVideo`; `test/videos-get.e2e-spec.ts` 3
+          + — spec-derived from `specs/videos-get.plan.md`). `tsc --noEmi
+          +t` and eslint on the changed files clean                      
+      144 +- **Observations:**                                           
+      145 +  - `getOwnedVideo` is a thin wrapper over `findOwnedByPublicI
+          +d`, as the plan specifies; it gives the read endpoint its own 
+          +named service method.                                         
+      146 +  - `openapi.json` regenerated; it now has `GET /videos/{publi
+          +cId}` with responses 200, 401, 404.                           
+      147 +  - The e2e suite opens one multipart upload per test through 
+          +`POST /videos` and does not abort it, like the other video e2e
+          + suites (RustFS discards stale uploads after 24 h).           
+      148  
+      149  ### SI-03.14 — Endpoints de streaming e download (302 para GET
+            pré-assinado)
+      150  - **Status:** pending
+
+● The openapi.json diff includes deletions, so I'm checking that no existing
+  route was dropped.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I added GET /videos/:publicId: a video's owner can now read its status and
+  metadata, and the tests pass. Of the 16 steps (SIs) in phase 03, 13 are now
+  done.
+
+  - What changed:
+    - VideosService.getOwnedVideo reuses the existing ownership check. Another
+      user's video, an unknown ID and a malformed ID all get the same 404 
+      VIDEO_NOT_FOUND.
+    - The new route returns 200 with the standard video response. It is
+      documented for 200, 401 and 404.
+  - Tests: 10 pass: 7 in videos.service.integration-spec.ts (3 of them new) and
+    3 in the new test/videos-get.e2e-spec.ts, written from
+    specs/videos-get.plan.md. The type-check and lint pass on the changed files.
+  - openapi.json: regenerated. The new route is the only difference in routes;
+    the rest of the diff is reordering.
+  - Progress file: docs/phases/phase-03-videos/progress.md is updated.
+
+  The tool for the visible step-by-step task list isn't available in this
+  session, so the progress file is the only tracker. Nothing is committed.
+
+  Seguir para SI-03.14?
+
+✻ Cooked for 1m 47s · done 19:01
+
+※ recap: We're working through phase 03 (video upload and processing) one step at a time, and 13 of 16 steps are done; the new owner-only video lookup endpoint works and its tests pass. Next is SI-03.14, the streaming and download endpoints, once you say go. (disable recaps in /config)
+
+❯ continuar                                                                     
+
+● Starting SI-03.14 (stream and download). First I'll check the storage presign
+  API, the test spec, and the existing exceptions.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● The current presignGetObject wraps filenames in attachment; filename="…" and
+  strips quotes, but lacks a filename*=UTF-8'' fallback. Let me check the plan
+  and library references for where this escaping should be handled.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● I found a conflict: SI-03.14 requires the video service to encode download
+  filenames with RFC 5987 filename*=UTF-8''… support, but
+  StorageService.presignGetObject only wraps bare filenames in a quoted
+  attachment; filename="…" header, giving no way to pass that form. I'll flag
+  this conflict with SI-03.4 and check before making changes.
+
+● User answered Claude's questions:
+  ⎿  · SI-03.14 asks VideosService to escape the download filename (quotes + 
+     accents via filename*=UTF-8''…), but the existing 
+     StorageService.presignGetObject (from SI-03.4) takes a bare 
+     `downloadFilename` and wraps it as `attachment; filename="…"` itself, so 
+     the filename* form is impossible as-is. How should I resolve it? → Resolva 
+     assim, sem alterar o plano:
+
+     1. Mova o escape para onde o header é montado. Crie 
+     `src/storage/content-disposition.ts` com uma função pura 
+     `attachmentContentDisposition(filename: string): string` que devolve:
+        `attachment; filename="<fallback ASCII>"; filename*=UTF-8''<nome 
+     percent-encoded>`
+        - fallback ASCII: remove acentos (NFKD + remove diacríticos), troca 
+     qualquer caractere fora de 0x20–0x7E por `_` e remove `"` e `\`
+        - filename*: `encodeURIComponent(filename)`, escapando também `'`, `(`, 
+     `)` e `*` (RFC 5987)
+        - nome vazio depois da limpeza → fallback `video`
+     2. `StorageService.presignGetObject` passa a usar essa função no lugar do 
+     `replace(/"/g, '')`. A assinatura (`downloadFilename`) não muda, e 
+     `VideosService.getPlaybackUrl` passa `original_filename` como está no 
+     plano.
+     3. Testes:
+        - unit `src/storage/content-disposition.spec.ts`: nome ASCII simples; 
+     nome com aspas; nome com acento/espaço (ex.: `Férias em família 
+     "2024".mp4`), conferindo o fallback e o `filename*` decodificável de volta 
+     para o original
+        - no integration do `getPlaybackUrl` já previsto, use um 
+     `original_filename` com acento e confira que o `Content-Disposition` 
+     devolvido pelo RustFS contém o `filename*=UTF-8''…` correto
+     4. Registre nas Observations do SI-03.14 no progress.md que o escape ficou 
+     no StorageService, que é quem monta o header, e que a interface do plano 
+     foi mantida.
+
+● I'll put the escaping logic in a pure helper within storage, keeping
+  presignGetObject's downloadFilename signature unchanged. Let me check the
+  unit-test setup and the service's imports next.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Writing the helper, wiring it into storage, and adding the service method and
+  constants.
+
+● Write(nestjs-project/src/storage/content-disposition.ts)
+  ⎿  Wrote 26 lines to nestjs-project/src/storage/content-disposition.ts
+       1 // Used when the cleaned ASCII name ends up empty.
+       2 const FALLBACK_FILENAME = 'video';
+       3 
+       4 // RFC 6266 `attachment` header with an ASCII `filename` fallbac
+         k for old
+       5 // clients and the exact name in `filename*` (RFC 5987, UTF-8).
+       6 export function attachmentContentDisposition(filename: string): 
+         string {
+       7   return `attachment; filename="${asciiFallback(filename)}"; fil
+         ename*=UTF-8''${encodeRfc5987(filename)}`;
+     … +19 lines (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      import re…)
+  ⎿  12:  StorageService,
+     36:const PUBLIC_ID_COLUMN = 'public_id';
+     62:export function titleFromFilename(filename: string): string {
+     … +4 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/src/storage/storage.service.ts (+2 -1)
+      16  import { Inject, Injectable, type OnModuleDestroy } from '@nest
+          js/common';
+      17  import type { ConfigType } from '@nestjs/config';
+      18  import storageConfig from '../config/storage.config';
+      19 +import { attachmentContentDisposition } from './content-disposi
+         +tion';                                                         
+      20  import { isNoSuchUploadError } from './storage-errors';
+      21  import { S3_CLIENT, S3_PUBLIC_CLIENT } from './storage.constant
+          s';
+      22  
+     ...
+      229          Bucket: this.bucket,
+      230          Key: key,
+      231          ResponseContentDisposition: options.downloadFilename
+      231 -          ? `attachment; filename="${options.downloadFilename.
+          -replace(/"/g, '')}"`                                          
+      232 +          ? attachmentContentDisposition(options.downloadFilen
+          +ame)                                                          
+      233            : undefined,
+      234        }),
+      235        { expiresIn: options.expiresIn },
+  ⎿  Updated nestjs-project/src/videos/videos.constants.ts (+4 -0)
+       9  
+      10  // Upper bound of part numbers per part-urls request.
+      11  export const MAX_PART_NUMBERS_PER_REQUEST = 100;
+      12 +                                                               
+      13 +// Lifetimes of the presigned GET URLs behind stream / download
+         + (TD-11).                                                      
+      14 +export const STREAM_URL_EXPIRES_IN_SECONDS = 21_600;           
+      15 +export const DOWNLOAD_URL_EXPIRES_IN_SECONDS = 900;            
+  ⎿  Updated nestjs-project/src/videos/videos.service.ts (+24 -0)
+      18  import { videoOriginalKey, videoPrefix } from '../storage/stora
+          ge-keys';
+      19  import { partContentLength, partCount } from './upload-parts.ut
+          il';
+      20  import {
+      21 +  DOWNLOAD_URL_EXPIRES_IN_SECONDS,                             
+      22    PART_URL_EXPIRES_IN_SECONDS,
+      23    PUBLIC_ID_MAX_RETRIES,
+      24 +  STREAM_URL_EXPIRES_IN_SECONDS,                               
+      25  } from './videos.constants';
+      26  import { VideoProcessingProducer } from './video-processing.pro
+          ducer';
+      27  import {
+     ...
+      29    UploadIncompleteException,
+      30    UploadSizeMismatchException,
+      31    VideoNotFoundException,
+      32 +  VideoNotReadyException,                                      
+      33    VideoUploadNotActiveException,
+      34  } from './videos.exceptions';
+      35  
+     ...
+      134      return this.findOwnedByPublicId(userId, publicId);
+      135    }
+      136  
+      137 +  // Presigned GET on the public endpoint; storage serves Rang
+          +e / 206 itself,                                               
+      138 +  // so no video bytes go through the API (TD-04, TD-11).     
+      139 +  async getPlaybackUrl(                                       
+      140 +    userId: string,                                           
+      141 +    publicId: string,                                         
+      142 +    mode: PlaybackMode,                                       
+      143 +  ): Promise<string> {                                        
+      144 +    const video = await this.findOwnedByPublicId(userId, publi
+          +cId);                                                         
+      145 +    if (video.status !== VideoStatus.READY) throw new VideoNot
+          +ReadyException();                                             
+      146 +    const key = videoOriginalKey(video.id);                   
+      147 +    if (mode === 'stream') {                                  
+      148 +      return this.storage.presignGetObject(key, {             
+      149 +        expiresIn: STREAM_URL_EXPIRES_IN_SECONDS,             
+      150 +      });                                                     
+      151 +    }                                                         
+      152 +    return this.storage.presignGetObject(key, {               
+      153 +      expiresIn: DOWNLOAD_URL_EXPIRES_IN_SECONDS,             
+      154 +      downloadFilename: video.original_filename,              
+      155 +    });                                                       
+      156 +  }                                                           
+     … 4 more lines (ctrl+o to expand)
+
+● Bash(sed -i 's/return this\.storage\.presignGetObject/return
+      this.storageService.presignGetObject/' src/videos/videos.service.ts && sed
+      -i "36i export type PlaybackM…)
+  ⎿  } from './videos.exceptions';
+
+     export type PlaybackMode = 'stream' | 'download';
+     … +27 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/src/videos/videos.service.ts (+4 -2)
+      33    VideoUploadNotActiveException,
+      34  } from './videos.exceptions';
+      35  
+      36 +export type PlaybackMode = 'stream' | 'download';              
+      37 +                                                               
+      38  const PUBLIC_ID_COLUMN = 'public_id';
+      39  
+      40  export interface InitiatedUpload {
+     ...
+      147      if (video.status !== VideoStatus.READY) throw new VideoNot
+           ReadyException();
+      148      const key = videoOriginalKey(video.id);
+      149      if (mode === 'stream') {
+      148 -      return this.storage.presignGetObject(key, {             
+      150 +      return this.storageService.presignGetObject(key, {      
+      151          expiresIn: STREAM_URL_EXPIRES_IN_SECONDS,
+      152        });
+      153      }
+      152 -    return this.storage.presignGetObject(key, {               
+      154 +    return this.storageService.presignGetObject(key, {        
+      155        expiresIn: DOWNLOAD_URL_EXPIRES_IN_SECONDS,
+      156        downloadFilename: video.original_filename,
+      157      });
+
+● Now the controller routes. I'm using @Redirect() with a dynamic URL plus
+  @Header('Cache-Control', 'no-store'), so the handler doesn't need @Res().
+
+  Called context7 2 times (ctrl+o to expand)
+
+● The docs confirm the pattern. Adding both routes to the controller.
+
+● Bash(python3 - <<'EOF'
+      p='src/videos/videos.controller.ts'…)
+  ⎿  47:  @Post()
+     80:  @Get(':publicId')
+     110:  @Get(':publicId/stream')
+     … +4 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/src/videos/videos.controller.ts (+95 -0)
+       2    Body,
+       3    Controller,
+       4    Get,
+       5 +  Header,                                                      
+       6    HttpCode,
+       7 +  type HttpRedirectResponse,                                   
+       8    HttpStatus,
+       9    Param,
+      10    Post,
+      11 +  Redirect,                                                    
+      12  } from '@nestjs/common';
+      13  import {
+      14    ApiBearerAuth,
+     ...
+      107      );
+      108    }
+      109  
+      110 +  @Get(':publicId/stream')                                    
+      111 +  @Redirect(undefined, HttpStatus.FOUND)                      
+      112 +  @Header('Cache-Control', 'no-store')                        
+      113 +  @ApiOperation({                                             
+      114 +    summary: 'Stream a video',                                
+      115 +    description:                                              
+      116 +      'Redirects to a presigned GET URL of the original file o
+          +n the storage, valid for 6 hours. The storage serves Range req
+          +uests (206) directly.',                                       
+      117 +  })                                                          
+      118 +  @ApiResponse({                                              
+      119 +    status: 302,                                              
+      120 +    description: 'Redirect to the presigned stream URL',      
+      121 +    headers: {                                                
+      122 +      Location: {                                             
+      123 +        description: 'Presigned GET URL (expires in 21600 s)',
+      124 +        schema: { type: 'string', format: 'uri' },            
+      125 +      },                                                      
+      126 +      'Cache-Control': { schema: { type: 'string', example: 'n
+          +o-store' } },                                                 
+      127 +    },                                                        
+      128 +  })                                                          
+      129 +  @ApiResponse({                                              
+      130 +    status: 401,                                              
+      131 +    description: 'Missing or invalid access token',           
+      132 +    schema: { $ref: getSchemaPath(ApiErrorEnvelope) },        
+      133 +  })                                                          
+     … 71 more lines (ctrl+o to expand)
+
+● Code is in. Next, the four test files: the helper unit test, the service unit
+  test, the integration test and the e2e test.
+
+● Write(nestjs-project/src/storage/content-disposition.spec.ts)
+  ⎿  Wrote 64 lines to
+     nestjs-project/src/storage/content-disposition.spec.ts
+       1 import { attachmentContentDisposition } from './content-disposit
+         ion';
+       2 
+       3 // Splits the header into its ASCII fallback and the decoded fil
+         ename* value.
+       4 function parse(header: string): { fallback: string; decoded: str
+         ing } {
+       5   const match =
+       6     /^attachment; filename="([^"]*)"; filename\*=UTF-8''([A-Za-z
+         0-9%!._~-]*)$/.exec(
+     … +58 lines (ctrl+o to expand)
+
+  Searched for 1 pattern, ran 1 shell command (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      p='src/videos/videos.service.spec.ts'…)  ⎿  156:  async putObject(
+     157-    key: string,
+     158-    body: PutObjectCommandInput['Body'],
+     … +6 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/src/videos/videos.service.spec.ts (+69 -0)
+      14    UploadIncompleteException,
+      15    UploadSizeMismatchException,
+      16    VideoNotFoundException,
+      17 +  VideoNotReadyException,                                      
+      18    VideoUploadNotActiveException,
+      19  } from './videos.exceptions';
+      20  import { titleFromFilename, VideosService } from './videos.serv
+          ice';
+     ...
+      48      completeMultipartUpload: jest.fn(),
+      49      headObject: jest.fn(),
+      50      deletePrefix: jest.fn(),
+      51 +    presignGetObject: jest.fn(),                               
+      52    };
+      53    const producer = { enqueue: jest.fn() };
+      54  
+     ...
+      487        logError.mockRestore();
+      488      });
+      489    });
+      490 +                                                              
+      491 +  describe('getPlaybackUrl', () => {                          
+      492 +    const ORIGINAL_FILENAME = 'Férias "2026".mp4';            
+      493 +    const ORIGINAL_KEY = `videos/${VIDEO_ID}/original`;       
+      494 +                                                              
+      495 +    const ready = () =>                                       
+      496 +      draft({                                                 
+      497 +        status: VideoStatus.READY,                            
+      498 +        upload_id: null,                                      
+      499 +        original_filename: ORIGINAL_FILENAME,                 
+      500 +      });                                                     
+      501 +                                                              
+      502 +    beforeEach(() => {                                        
+      503 +      storageService.presignGetObject.mockResolvedValue(      
+      504 +        'https://storage.example/signed',                     
+      505 +      );                                                      
+      506 +    });                                                       
+      507 +                                                              
+      508 +    it.each([VideoStatus.DRAFT, VideoStatus.PROCESSING, VideoS
+          +tatus.FAILED])(                                               
+      509 +      'throws VIDEO_NOT_READY for a %s video without signing a
+          + URL',                                                        
+      510 +      async (status) => {                                     
+      511 +        videoRepository.findOne.mockResolvedValue(draft({ stat
+          +us }));                                                       
+      512 +                                                              
+     … 45 more lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/src/videos/videos.service.integration-spec.ts
+     (+71 -0)
+      315        ).rejects.toMatchObject({ errorCode: 'VIDEO_NOT_FOUND' }
+           );
+      316      });
+      317    });
+      318 +                                                              
+      319 +  describe('getPlaybackUrl', () => {                          
+      320 +    const ORIGINAL_FILENAME = 'Férias em família "2024".mp4'; 
+      321 +    const CONTENT = Buffer.from(                              
+      322 +      Array.from({ length: 4096 }, (_, i) => i % 251),        
+      323 +    );                                                        
+      324 +                                                              
+      325 +    // A ready video whose original object holds CONTENT.     
+      326 +    async function readyVideo(): Promise<{ user: User; video: 
+          +Video }> {                                                    
+      327 +      const { user } = await createUserWithChannel();         
+      328 +      const { video } = await service.initiateUpload(user.id, 
+          +{                                                             
+      329 +        filename: ORIGINAL_FILENAME,                          
+      330 +        size_bytes: CONTENT.length,                           
+      331 +        content_type: 'video/mp4',                            
+      332 +      });                                                     
+      333 +      await storage.abortMultipartUpload(                     
+      334 +        videoOriginalKey(video.id),                           
+      335 +        video.upload_id!,                                     
+      336 +      );                                                      
+      337 +      await storage.putObject(videoOriginalKey(video.id), CONT
+          +ENT, 'video/mp4');                                            
+      338 +      await dataSource.getRepository(Video).update(           
+      339 +        { id: video.id },                                     
+      340 +        {                                                     
+      341 +          status: VideoStatus.READY,                          
+      342 +          upload_id: null,                                    
+      343 +          size_bytes: CONTENT.length,                         
+      344 +        },                                                    
+      345 +      );                                                      
+      346 +      return { user, video };                                 
+      347 +    }                                                         
+      348 +                                                              
+      349 +    it('signs a stream URL the storage answers with 206 for a 
+          +Range request', async () => {                                 
+      350 +      const { user, video } = await readyVideo();             
+      351 +                                                              
+      352 +      const url = await service.getPlaybackUrl(               
+      353 +        user.id,                                              
+      354 +        video.public_id,                                      
+     … 35 more lines (ctrl+o to expand)
+
+● Now the e2e file from the spec, mirroring the upload-parts e2e setup.
+
+● Write(nestjs-project/test/videos-playback.e2e-spec.ts)
+  ⎿  Wrote 211 lines to nestjs-project/test/videos-playback.e2e-spec.ts
+       1 import { type INestApplication, ValidationPipe } from '@nestjs/c
+         ommon';
+       2 import { Test } from '@nestjs/testing';
+       3 import { ThrottlerStorage, ThrottlerStorageService } from '@nest
+         js/throttler';
+       4 import request from 'supertest';
+       5 import type { App } from 'supertest/types';
+       6 import { DataSource } from 'typeorm';
+       7 import { AppModule } from '../src/app.module';
+       8 import { DomainExceptionFilter } from '../src/common/filters/dom
+     … +204 lines (~7 KB) (ctrl+o to expand)
+
+● Formatting the files I touched with Prettier, then running the tests through a
+  subagent. That includes the storage integration test, because
+  presignGetObject changed.
+
+● Bash(docker compose exec -T nestjs-api npx prettier --write
+      src/storage/content-disposition.ts src/storage/content-disposition.spec.ts
+      src/storage/storage.service.ts…)
+  ⎿  src/storage/content-disposition.ts 57ms (unchanged)
+     src/storage/content-disposition.spec.ts 19ms
+     src/storage/storage.service.ts 24ms (unchanged)
+     … +6 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/src/storage/content-disposition.spec.ts (+3 -1)
+      36  
+      37      expect(fallback).toBe('Ferias em familia 2024.mp4');
+      38      expect(decoded).toBe(name);
+      39 -    expect(header).toContain(`filename*=UTF-8''F%C3%A9rias%20em
+         -%20fam%C3%ADlia`);                                             
+      39 +    expect(header).toContain(                                  
+      40 +      `filename*=UTF-8''F%C3%A9rias%20em%20fam%C3%ADlia`,      
+      41 +    );                                                         
+      42    });
+      43  
+      44    it("escapes RFC 5987 reserved characters ' ( ) * in filename*
+          ", () => {
+  ⎿  Updated nestjs-project/src/videos/videos.service.integration-spec.ts
+     (+1 -1)
+      378        const disposition = res.headers.get('content-disposition
+           ') ?? '';
+      379        expect(disposition).toMatch(/^attachment; filename="/);
+      380        expect(disposition).toContain(
+      381 -          "filename*=UTF-8''F%C3%A9rias%20em%20fam%C3%ADlia%20
+          -%222024%22.mp4",                                              
+      381 +        "filename*=UTF-8''F%C3%A9rias%20em%20fam%C3%ADlia%20%2
+          +22024%22.mp4",                                                
+      382        );
+      383        const encoded = /filename\*=UTF-8''(\S+)$/.exec(disposit
+           ion)?.[1] ?? '';
+      384        expect(decodeURIComponent(encoded)).toBe(ORIGINAL_FILENA
+           ME);
+  ⎿  Updated nestjs-project/test/videos-playback.e2e-spec.ts (+12 -10)
+      104        .getRepository(Video)
+      105        .findOneByOrFail({ public_id: publicId });
+      106      videoId = row.id;
+      107 -    await storage.abortMultipartUpload(videoOriginalKey(videoI
+          -d), row.upload_id!);                                          
+      107 +    await storage.abortMultipartUpload(                       
+      108 +      videoOriginalKey(videoId),                              
+      109 +      row.upload_id!,                                         
+      110 +    );                                                        
+      111      await storage.putObject(videoOriginalKey(videoId), CONTENT
+           , 'video/mp4');
+      112      await updateRow({
+      113        status: VideoStatus.READY,
+     ...
+      133    // 1. Redirecionar para o storage
+      134  
+      135    it('stream-redireciona-para-url-pre-assinada', async () => {
+      133 -    const res = await get(`/videos/${publicId}/stream`, ownerT
+          -oken).expect(                                                 
+      134 -      302,                                                    
+      135 -    );                                                        
+      136 +    const res = await get(`/videos/${publicId}/stream`, ownerT
+          +oken).expect(302);                                            
+      137  
+      138      expect(res.headers['cache-control']).toBe('no-store');
+      139      const location = new URL(res.headers.location);
+     ...
+      162      expect(res.headers['cache-control']).toBe('no-store');
+      163      const location = new URL(res.headers.location);
+      164      expect(location.searchParams.get('X-Amz-Expires')).toBe('9
+           00');
+      164 -    expect(                                                   
+      165 -      location.searchParams.get('response-content-disposition'
+          -),                                                            
+      166 -    ).toContain('attachment');                                
+      165 +    expect(location.searchParams.get('response-content-disposi
+          +tion')).toContain(                                            
+      166 +      'attachment',                                           
+      167 +    );                                                        
+      168  
+      169      const file = await fetch(location);
+      170      expect(file.status).toBe(200);
+     ...
+      196        expect((other.body as ErrorBody).error).toBe('VIDEO_NOT_
+           FOUND');
+      197        expect(other.headers.location).toBeUndefined();
+      198  
+      198 -      const unknown = await get(`/videos/AAAAAAAAAAA/${mode}`,
+          - ownerToken).expect(                                          
+      199 -        404,                                                  
+      200 -      );                                                      
+      199 +      const unknown = await get(                              
+     … 6 more lines (ctrl+o to expand)
+
+● Agent(Run SI-03.14 tests)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● The SI-03.14 tests are running in the background. Once they report back I'll
+  regenerate openapi.json and update the progress file.
+
+✻ Crunched for 2m 22s · done 19:22
+
+› Message from general-purpose
+  1. Unit + integration: 1 failed, 60 passed (61 total). 3 suites passed:
+  content-disposition.spec, videos.service.spec,
+  videos.service.integration-spec. 1 suite failed:
+  storage.service.integration-spec.ts.
+     FAILED: StorageService (integration) › presigned URLs › should sign
+  download URLs for the public endpoint as an attachment
+     ```
+     expect(received).toBe(expected) // Object.is equality
+     Expected: "attachment; filename=\"my-video.mp4\""
+     Received: "attachment; filename=\"my-video.mp4\";
+  filename*=UTF-8''my-video.mp4"
+     > 204 |
+  expect(url.searchParams.get('response-content-disposition')).toBe(
+       205 |         'attachment; filename="my-video.mp4"',
+     at Object.<anonymous> (storage/storage.service.integration-spec.ts:204:68)
+     ```
+     The expectation in this older test does not match the new
+  content-disposition output, which now adds `filename*=UTF-8''...`. Either
+  update the test or emit `filename*` only for non-ASCII names.
+     Non-fatal warnings: a pg DeprecationWarning ("client.query() when the
+  client is already executing a query") and an invalid `--localstorage-file`
+  warning.
+  2. E2E videos-playback.e2e-spec.ts: all 5 tests pass.
+  3. tsc --noEmit: exit 0.
+  4. eslint (the listed files): exit 0, no output.
+  No files were modified.
+
+● One expected failure (fix attempt 1/3). The SI-03.4 storage test asserted the
+  old header exactly, and the format you chose now adds filename*=UTF-8''…. I'm
+  updating that assertion to the new format.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Agent "Run SI-03.14 tests" finished · 21s
+
+● Bash(python3 - <<'EOF'
+      p='src/storage/storage.service.integration-spec.ts'…)
+  ⎿  Test Suites: 1 passed, 1 total
+     Tests:       9 passed, 9 total
+     lint-ok
+  ⎿  Updated nestjs-project/src/storage/storage.service.integration-spec.ts
+     (+1 -1)
+      202  
+      203        expect(url.host).toBe(new URL(config.publicEndpoint).hos
+           t);
+      204        expect(url.searchParams.get('response-content-dispositio
+           n')).toBe(
+      205 -        'attachment; filename="my-video.mp4"',                
+      205 +        `attachment; filename="my-video.mp4"; filename*=UTF-8'
+          +'my-video.mp4`,                                               
+      206        );
+      207      });
+      208  
+
+● All the SI-03.14 tests pass now. Regenerating openapi.json and checking that
+  only the two new routes were added.
+
+● Bash(docker compose exec -T nestjs-api npm run openapi:export >/dev/null 2>&1;
+      echo $?; python3 -c "
+      import json;a=json.load(open('/tmp/claude-1000/old.json'));b=jso…)
+  ⎿  0
+     removed set() added [('/videos/{publicId}', 'get'), ('/videos/{publicI
+     d}/download', 'get'), ('/videos/{publicId}/stream', 'get')]
+     … +4 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/openapi.json (+150 -0)
+      554          ]
+      555        }
+      556      },
+      557 +    "/videos/{publicId}/stream": {                            
+      558 +      "get": {                                                
+      559 +        "description": "Redirects to a presigned GET URL of th
+          +e original file on the storage, valid for 6 hours. The storage
+          + serves Range requests (206) directly.",                      
+      560 +        "operationId": "VideosController_streamVideo",        
+      561 +        "parameters": [                                       
+      562 +          {                                                   
+      563 +            "name": "publicId",                               
+      564 +            "required": true,                                 
+      565 +            "in": "path",                                     
+      566 +            "schema": {                                       
+      567 +              "type": "string"                                
+      568 +            }                                                 
+      569 +          }                                                   
+      570 +        ],                                                    
+      571 +        "responses": {                                        
+      572 +          "302": {                                            
+      573 +            "description": "Redirect to the presigned stream U
+          +RL",                                                          
+      574 +            "headers": {                                      
+      575 +              "Location": {                                   
+      576 +                "description": "Presigned GET URL (expires in 
+          +21600 s)",                                                    
+      577 +                "schema": {                                   
+      578 +                  "type": "string",                           
+      579 +                  "format": "uri"                             
+      580 +                }                                             
+      581 +              },                                              
+      582 +              "Cache-Control": {                              
+      583 +                "schema": {                                   
+      584 +                  "type": "string",                           
+      585 +                  "example": "no-store"                       
+      586 +                }                                             
+      587 +              }                                               
+      588 +            }                                                 
+      589 +          },                                                  
+      590 +          "401": {                                            
+      591 +            "description": "Missing or invalid access token", 
+      592 +            "content": {                                      
+      593 +              "application/json": {                           
+     … 116 more lines (ctrl+o to expand)
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project && python3 - <<'EOF'
+      p='docs/phases/phase-03-videos/progress.md'…)
+  ⎿  Updated docs/phases/phase-03-videos/progress.md (+10 -4)
+      1  # phase-03-videos — Progress
+      2  
+      3  **Status:** in_progress
+      4 -**SIs:** 13/16 completed                                        
+      4 +**SIs:** 14/16 completed                                        
+      5  
+      6  ### SI-03.1 — Infra: Instalar dependências de fila e storage com
+          versões fixadas
+      7  - **Status:** completed
+     ...
+      147    - The e2e suite opens one multipart upload per test through 
+           `POST /videos` and does not abort it, like the other video e2e
+            suites (RustFS discards stale uploads after 24 h).
+      148  
+      149  ### SI-03.14 — Endpoints de streaming e download (302 para GET
+            pré-assinado)
+      150 -- **Status:** pending                                         
+      151 -- **Tests:** _pending_                                        
+      152 -- **Observations:** _pending_                                 
+      150 +- **Status:** completed                                       
+      151 +- **Tests:** 75 passing (`content-disposition.spec.ts`, `video
+          +s.service.spec.ts`, `videos.service.integration-spec.ts`, `sto
+          +rage.service.integration-spec.ts` — 61 across the 4 suites, af
+          +ter 1 fix attempt; `test/videos-playback.e2e-spec.ts` 5 — spec
+          +-derived from `specs/videos-playback.plan.md`). `tsc --noEmit`
+          + and eslint on the changed files clean                        
+      152 +- **Observations:**                                           
+      153 +  - **Content-Disposition escaping lives in `StorageService` (
+          +user decision), not in `VideosService`:** `StorageService` is 
+          +where the header is built. The plan's interface is kept: `pres
+          +ignGetObject(key, { expiresIn, downloadFilename? })` is unchan
+          +ged and `getPlaybackUrl` passes `original_filename` as is. The
+          + new pure helper `src/storage/content-disposition.ts` (`attach
+          +mentContentDisposition`) returns `attachment; filename="<ASCII
+          + fallback>"; filename*=UTF-8''<RFC 5987>`. The fallback is NFK
+          +D with diacritics removed, any character outside 0x20–0x7E rep
+          +laced by `_`, `"` and `\` removed, and `video` when nothing is
+          + left. `filename*` is `encodeURIComponent` plus `' ( ) *`. It 
+          +replaces the earlier `replace(/"/g, '')`. Unit-tested in `src/
+          +storage/content-disposition.spec.ts`. The plan's "escape de no
+          +me com aspas e acentos" unit row in `videos.service.spec.ts` t
+          +herefore checks only that the raw name is passed. The integrat
+          +ion test checks the `filename*` that RustFS returns for `Féria
+          +s em família "2024".mp4`.                                     
+      154 +  - Fix attempt 1/3: the SI-03.4 assertion in `storage.service
+          +.integration-spec.ts` expected the old header exactly (`attach
+          +ment; filename="my-video.mp4"`). It now expects the new format
+          +. The test is otherwise unchanged.                            
+      155 +  - The routes use `@Redirect(undefined, 302)` with a dynamic 
+          +`HttpRedirectResponse` plus `@Header('Cache-Control', 'no-stor
+          +e')` (no `@Res()`). `@Header` applies only on success, so the 
+          +401/404/409 error responses carry neither `Location` nor `Cach
+          +e-Control: no-store`.                                         
+      156 +  - Added `STREAM_URL_EXPIRES_IN_SECONDS = 21_600` and `DOWNLO
+          +AD_URL_EXPIRES_IN_SECONDS = 900` to `videos.constants.ts`, and
+          + exported `PlaybackMode` from `videos.service.ts`.            
+      157 +  - The integration and e2e tests abort the multipart upload t
+          +hat `POST /videos` / `initiateUpload` opens, then write the or
+          +iginal with `putObject` (4096 known bytes).                   
+      158 +  - `openapi.json` regenerated: `/videos/{publicId}/stream` an
+          +d `/download` document 302 (`Location`, `Cache-Control` header
+          +s), 401, 404 and 409.                                         
+      159  
+      160  ### SI-03.15 — Teste de fluxo completo: upload multipart diret
+           o ao storage até o vídeo pronto
+      161  - **Status:** pending
+
+● SI-03.14 is done: the video owner can now stream and download, and every test
+  passes. Of the 16 steps in phase 03, 14 are now done.
+
+  - Stream and download: both routes redirect (302) to a signed storage link
+    with Cache-Control: no-store. The stream link lasts 6 hours and the download
+    link 15 minutes. The storage serves partial requests (Range → 206) itself,
+    so no video bytes pass through the API.
+  - Errors: a video that isn't ready returns 409 VIDEO_NOT_READY. Another user's
+    video or an unknown ID returns 404, and no token returns 401. None of these
+    error responses has a Location header.
+  - Filename escaping (your decision): the new
+    src/storage/content-disposition.ts builds attachment; filename="<ASCII 
+    fallback>"; filename*=UTF-8''<encoded name>. StorageService now calls it,
+    and presignGetObject keeps the downloadFilename parameter the plan
+    specifies. The integration test confirms that the storage returns Férias em 
+    família "2024".mp4 intact.
+  - Change to an earlier step's test: the SI-03.4 test
+    storage.service.integration-spec.ts expected the old header exactly, so it
+    failed once. I updated that one expected value to the new format.
+  - Tests: 61 pass across the 4 unit and integration suites, plus 5 in the new
+    test/videos-playback.e2e-spec.ts. The type-check and lint pass on the
+    changed files.
+  - Also updated: openapi.json is regenerated with the two new routes and no
+    other route changes. progress.md records that the escaping lives in
+    StorageService and that the plan's interface was kept.
+
+  Seguir para SI-03.15?
+
+✻ Cogitated for 12m 48s · done 19:23
+
+❯ continuar                                                                     
+
+● Starting SI-03.15, the full upload-to-ready flow test. First I'll check its
+  test spec, the video fixtures, the worker module and the Jest e2e config.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● SI-03.15 only has its Tests table pointing to
+  test/videos-upload-flow.e2e-spec.ts, no separate test spec. Next I'll check
+  the duration/dimensions column types and the existing e2e cleanup helpers.
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● Extending the fixtures with generateMp4OfAtLeast. It encodes lossless testsrc2
+  frames, so the file is large and fast to make, and it doubles the duration
+  until the file is big enough.
+
+● Bash(python3 - <<'EOF'
+      p='src/test/video-fixtures.ts'…)
+  ⎿  13:export async function registerConfirmAndLogin(
+     14-  app: INestApplication<App>,
+     15-  email: string,
+     … +3 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/src/test/video-fixtures.ts (+59 -1)
+      1  import { execFile } from 'node:child_process';
+      2 -import { mkdtemp, rm, writeFile } from 'node:fs/promises';      
+      2 +import { mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
+      3  import { tmpdir } from 'node:os';
+      4  import { join } from 'node:path';
+      5  import { promisify } from 'node:util';
+     ...
+       72      cleanup: () => rm(dir, { recursive: true, force: true }),
+       73    };
+       74  }
+       75 +                                                              
+       76 +export const LARGE_FIXTURE_WIDTH = 1280;                      
+       77 +export const LARGE_FIXTURE_HEIGHT = 720;                      
+       78 +const LARGE_FIXTURE_RATE = 25;                                
+       79 +const MAX_SIZE_ATTEMPTS = 6;                                  
+       80 +                                                              
+       81 +export interface GeneratedMp4 {                               
+       82 +  path: string;                                               
+       83 +  sizeBytes: number;                                          
+       84 +  durationSeconds: number;                                    
+       85 +  width: number;                                              
+       86 +  height: number;                                             
+       87 +  cleanup: () => Promise<void>;                               
+       88 +}                                                             
+       89 +                                                              
+       90 +// A valid H.264 MP4 of at least `bytes`: testsrc2 encoded los
+          +sless (qp 0), so                                              
+       91 +// every frame is large; the duration doubles until the file i
+          +s big enough.                                                 
+       92 +export async function generateMp4OfAtLeast(                   
+       93 +  bytes: number,                                              
+       94 +): Promise<GeneratedMp4> {                                    
+       95 +  const dir = await mkdtemp(join(tmpdir(), 'video-large-'));  
+       96 +  const path = join(dir, 'large.mp4');                        
+       97 +  let durationSeconds = 1;                                    
+       98 +                                                              
+       99 +  for (let attempt = 0; attempt < MAX_SIZE_ATTEMPTS; attempt++
+          +) {                                                           
+      100 +    await execFileAsync('ffmpeg', [                           
+      101 +      '-v',                                                   
+      102 +      'error',                                                
+      103 +      '-y',                                                   
+      104 +      '-f',                                                   
+      105 +      'lavfi',                                                
+     … 27 more lines (ctrl+o to expand)
+
+● Writing the flow e2e test.
+
+● Write(nestjs-project/test/videos-upload-flow.e2e-spec.ts)
+  ⎿  Wrote 251 lines to nestjs-project/test/videos-upload-flow.e2e-spec.ts
+       1 import { readFile } from 'node:fs/promises';
+       2 import {
+       3   type INestApplication,
+       4   type INestApplicationContext,
+       5   ValidationPipe,
+       6 } from '@nestjs/common';
+       7 import { NestFactory } from '@nestjs/core';
+       8 import { Test } from '@nestjs/testing';
+       9 import { ThrottlerStorage, ThrottlerStorageService } from '@nest
+         js/throttler';
+     … +242 lines (ctrl+o to expand)
+
+● Setting testTimeout in test/jest-e2e.json (plan action 5): the flow needs well
+  over Jest's default 5 s. Then formatting and running the test.
+
+● Bash(python3 - <<'EOF'
+      p='test/jest-e2e.json'…)
+  ⎿  {
+       "moduleFileExtensions": ["js", "json", "ts"],
+       "rootDir": ".",
+     … +12 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/test/jest-e2e.json (+1 -0)
+      2    "moduleFileExtensions": ["js", "json", "ts"],
+      3    "rootDir": ".",
+      4    "testEnvironment": "node",
+      5 +  "testTimeout": 120000,                                        
+      6    "testRegex": ".e2e-spec.ts$",
+      7    "transform": {
+      8      "^.+\\.(t|j)s$": "ts-jest"
+  ⎿  Updated nestjs-project/test/videos-upload-flow.e2e-spec.ts (+8 -2)
+      107  
+      108      dataSource = moduleFixture.get(DataSource);
+      109      storage = moduleFixture.get(StorageService);
+      110 -    moduleFixture.get<ThrottlerStorageService>(ThrottlerStorag
+          -e).storage.clear();                                           
+      110 +    moduleFixture                                             
+      111 +      .get<ThrottlerStorageService>(ThrottlerStorage)         
+      112 +      .storage.clear();                                       
+      113      await cleanAllTables(dataSource);
+      114      await storage.deletePrefix('videos/');
+      115  
+     ...
+      161        (_, i) => i + 1,
+      162      );
+      163  
+      162 -    const urls = await api('post', `/videos/${publicId}/upload
+          -/part-urls`, token)                                           
+      164 +    const urls = await api(                                   
+      165 +      'post',                                                 
+      166 +      `/videos/${publicId}/upload/part-urls`,                 
+      167 +      token,                                                  
+      168 +    )                                                         
+      169        .send({ part_numbers: partNumbers })
+      170        .expect(200);
+      171      const { parts } = urls.body as PartUrlsBody;
+
+● Agent(Run SI-03.15 flow test)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+● The full-flow test is running in the background. It makes a large video file,
+  uploads it straight to storage in 3 parts, runs the worker inside the test,
+  and checks streaming at the end. I'll report when it finishes.
+
+✻ Cooked for 1m 42s · done 20:18
+
+› Message from general-purpose
+  Test: all 1 tests pass (the one test ran in 1361 ms; suite took 4.289 s). The
+  only other output was a Node warning: "`--localstorage-file` was provided
+  without a valid path".
+
+  tsc --noEmit: FAILED (exit 2):
+  ```
+  test/videos-upload-flow.e2e-spec.ts(176,58): error TS2769: No overload matches
+  this call.
+    Overload 1 of 2, '(input: string | URL | Request, init?: RequestInit |
+  undefined): Promise<Response>', gave the following error.
+      Type 'Buffer<ArrayBufferLike>' is not assignable to type 'BodyInit | null
+  | undefined'.
+        Type 'Buffer<ArrayBufferLike>' is missing the following properties from
+  type 'URLSearchParams': size, append, delete, get, and 2 more.
+    Overload 2 of 2, '(input: URL | RequestInfo, init?: RequestInit |
+  undefined): Promise<Response>', gave the following error.
+      Type 'Buffer<ArrayBufferLike>' is not assignable to type 'BodyInit | null
+  | undefined'.
+        Type 'Buffer<ArrayBufferLike>' is missing the following properties from
+  type 'URLSearchParams': size, append, delete, get, and 2 more.
+  ```
+  This is the `fetch(..., { body: <Buffer> })` call at line 176. A likely fix is
+  to pass `new Uint8Array(buffer)` as the body.
+
+  eslint: exit 0, no errors.
+
+  I didn't modify any files.
+
+● The flow test passes (the test itself ran in about 1.4 s). But tsc fails: a
+  Buffer slice from readFile doesn't match the fetch body type. Fixing that
+  (attempt 1/3) by copying each slice into a Uint8Array.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Agent "Run SI-03.15 flow test" finished · 25s
+
+● Bash(python3 - <<'EOF'
+      p='test/videos-upload-flow.e2e-spec.ts'…)
+  ⎿  tsc=0
+     lint=0
+         ✓ uploads parts straight to storage, processes the video to ready
+     … +2 lines (ctrl+o to expand)
+  ⎿  Updated nestjs-project/test/videos-upload-flow.e2e-spec.ts (+5 -1)
+      172  
+      173      for (const part of parts) {
+      174        const start = (part.part_number - 1) * layout.part_size;
+      175 -      const slice = file.subarray(start, start + part.content_
+          -length);                                                      
+      175 +      // Copy into a plain Uint8Array: fetch's BodyInit does n
+          +ot accept a                                                   
+      176 +      // Buffer backed by ArrayBufferLike.                    
+      177 +      const slice = new Uint8Array(                           
+      178 +        file.subarray(start, start + part.content_length),    
+      179 +      );                                                      
+      180        const put = await fetch(part.url, { method: 'PUT', body:
+            slice });
+      181        expect(put.status).toBe(200);
+      182      }
+
+● The test passes, and tsc and lint are clean. Updating the progress file.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project && python3 - <<'EOF'
+      p='docs/phases/phase-03-videos/progress.md'…)
+  ⎿  Updated docs/phases/phase-03-videos/progress.md (+10 -4)
+      1  # phase-03-videos — Progress
+      2  
+      3  **Status:** in_progress
+      4 -**SIs:** 14/16 completed                                        
+      4 +**SIs:** 15/16 completed                                        
+      5  
+      6  ### SI-03.1 — Infra: Instalar dependências de fila e storage com
+          versões fixadas
+      7  - **Status:** completed
+     ...
+      158    - `openapi.json` regenerated: `/videos/{publicId}/stream` an
+           d `/download` document 302 (`Location`, `Cache-Control` header
+           s), 401, 404 and 409.
+      159  
+      160  ### SI-03.15 — Teste de fluxo completo: upload multipart diret
+           o ao storage até o vídeo pronto
+      161 -- **Status:** pending                                         
+      162 -- **Tests:** _pending_                                        
+      163 -- **Observations:** _pending_                                 
+      161 +- **Status:** completed                                       
+      162 +- **Tests:** 1 passing (`test/videos-upload-flow.e2e-spec.ts`,
+          + ~1.4 s for the test itself; the suite takes ~4 s including fi
+          +xture generation). `tsc --noEmit` and eslint on the changed fi
+          +les clean                                                     
+      163 +- **Observations:**                                           
+      164 +  - `generateMp4OfAtLeast(bytes)` encodes `testsrc2` at 1280x7
+          +20 / 25 fps **lossless** (`libx264 -preset ultrafast -qp 0`). 
+          +The plan said "high bitrate"; lossless is the fastest reliable
+          + way to get large frames. The duration starts at 1 s and doubl
+          +es until the file reaches the requested size (6 attempts max).
+          + It returns `{ path, sizeBytes, durationSeconds, width, height
+          +, cleanup }`, and the test asserts `duration_seconds` / `width
+          +` / `height` against it.                                      
+      165 +  - **`testTimeout: 120000` in `test/jest-e2e.json` applies to
+          + every e2e suite**, not only the flow test, as the plan's acti
+          +on 5 says (the file is shared). `--runInBand` is unchanged (it
+          + stays in the npm script).                                    
+      166 +  - The byte counter is an `app.use` middleware registered bef
+          +ore `app.init()`, so it runs ahead of Nest's body parsers. It 
+          +sums `data` chunks of every request body, including register/l
+          +ogin. It is reset right before the flow starts.               
+      167 +  - Each part is sent as `new Uint8Array(slice)` (a copy). `fe
+          +tch`'s `BodyInit` type does not accept a `Buffer` slice from `
+          +readFile` (`Buffer<ArrayBufferLike>`), so `tsc` failed even th
+          +ough the test passed at runtime. Fix attempt 1/3.             
+      168 +  - The second upload (unique `public_id`) runs the full flow 
+          +with the small `withAudio` fixture (1 part) and waits for `rea
+          +dy`, so the worker is idle when `afterAll` closes it.         
+      169 +  - The in-process worker is `NestFactory.createApplicationCon
+          +text(WorkerModule, { logger: ['error', 'warn'] })` and uses th
+          +e `test` queue prefix (`jest-env.setup.ts`). On bootstrap it a
+          +lso registers the hourly maintenance scheduler on the `test`-p
+          +refixed `video-maintenance` queue; the drafts in the test are 
+          +fresh, so the job leaves them alone.                          
+      170  
+      171  ### SI-03.16 — Documentação e Definition of Done da fase
+      172  - **Status:** pending
+
+● SI-03.15 is done: the full-flow test passes, so a video goes from upload to
+  ready and can be streamed, with no video bytes passing through the API. Of the
+  16 steps in phase 03, 15 are now done.
+
+  What test/videos-upload-flow.e2e-spec.ts checks:
+  - Upload: a generated MP4 over 10 MiB goes straight to storage in 3 parts. All
+    3 part links point to the storage host, the API receives less than 10 KiB
+    of request bodies in total, and the stored file is exactly the uploaded
+    size.
+  - Processing: a worker started inside the test, on the separate test queue
+    prefix, brings the video to ready with the right duration and dimensions.
+    The thumbnail is saved as image/jpeg.
+  - Streaming: GET …/stream returns 302, and a partial request (Range) on that
+    link returns 206 with 1024 bytes.
+  - Unique link: a second upload gets a different public_id.
+
+  Choices you might want to know about:
+  - Test file generation: the large file is encoded lossless rather than "high
+    bitrate" as the plan says, because that is the quickest reliable way to get
+    a big valid file.
+  - Timeout scope: testTimeout: 120000 in test/jest-e2e.json applies to every
+    e2e suite, because they all share that file.
+  - One fix: the test passed on the first run, but the type-check failed on the
+    body type of the part uploads. Copying each part into a Uint8Array fixed it.
+
+  The type-check and lint pass, and progress.md is updated. SI-03.16, the last
+  step, updates the docs and runs the whole test suite.
+
+  Seguir para SI-03.16?
+
+✻ Cooked for 2m 48s · done 20:19
+
+※ recap: We're implementing phase 03 (video upload and processing), and SI-03.15, the full upload-to-ready test, now passes, so 15 of 16 steps are done. Next is SI-03.16: update the docs and run the full test suite, once you say go. (disable recaps in /config)
+
+❯ continuar                                                                     
+
+● Starting SI-03.16 (docs + Definition of Done). I'll gather the real names from
+  the code first so the docs only mention things that exist.
+
+  Searched for 1 pattern, ran 1 shell command (ctrl+o to expand)
+
+● Now I'll check how the producer sets jobId, then edit the three docs. Root
+  CLAUDE.md first.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Bash(python3 - <<'EOF'
+      p='CLAUDE.md'…)
+  ⎿   CLAUDE.md                           | 10 +++++-----
+      docs/diagrams/software-arch.mermaid |  4 ++--
+      2 files changed, 7 insertions(+), 7 deletions(-)
+  ⎿  Updated CLAUDE.md (+5 -5)
+      18  
+      19  See `docs/diagrams/software-arch.mermaid` for the full diagram.
+           Key containers:
+      20  
+      21 -- **Frontend** (Next.js) → calls API via REST, streams from Obj
+         -ect Storage                                                    
+      22 -- **API** (Nest.js) → business rules, auth, reads/writes DB, up
+         -loads to storage, publishes jobs to queue, sends emails        
+      23 -- **Video Worker** (FFmpeg) → consumes jobs from queue, process
+         -es videos, updates DB and storage                              
+      21 +- **Frontend** (Next.js) → calls API via REST, uploads video pa
+         +rts and streams directly from Object Storage through presigned 
+         +URLs                                                           
+      22 +- **API** (Nest.js) → business rules, auth, reads/writes DB, si
+         +gns storage URLs (multipart upload, stream, download), publishe
+         +s jobs to queue, sends emails                                  
+      23 +- **Video Worker** (FFmpeg/ffprobe) → second entrypoint of `nes
+         +tjs-project` (`src/worker.ts`, `WorkerModule`), run by the `vid
+         +eo-worker` Compose service; consumes jobs from the queue, extra
+         +cts metadata and the thumbnail, updates DB and storage         
+      24  - **Database** (PostgreSQL) → users, channels, videos, comments
+          , likes
+      25 -- **Object Storage** (S3/MinIO) → video files and thumbnails   
+      26 -- **Message Queue** (TBD) → video processing job queue         
+      25 +- **Object Storage** (RustFS in dev, S3 in production) → single
+         + private bucket with video files and thumbnails, accessed throu
+         +gh presigned URLs                                              
+      26 +- **Message Queue** (BullMQ + Redis) → queues `video-processing
+         +` (video processing jobs) and `video-maintenance` (scheduled cl
+         +eanup)                                                         
+      27  - **Email Service** (SMTP) → account confirmation and password 
+          recovery
+      28  
+      29  ## Docker Networking
+  ⎿  Updated docs/diagrams/software-arch.mermaid (+2 -2)
+       9          Container(api, "API", "Nest.js", "Business rules and au
+          thentication")
+      10          Container(worker, "Video Worker", "FFmpeg", "Processes 
+          videos in background")
+      11          ContainerDb(db, "Database", "PostgreSQL", "Users, chann
+          els, videos, comments, likes")
+      12 -        ContainerDb(storage, "Object Storage", "S3 or MinIO", "
+         -Video files and thumbnails")                                   
+      13 -        ContainerQueue(queue, "Message Queue", "TBD", "Enqueues
+         - video processing jobs")                                       
+      12 +        ContainerDb(storage, "Object Storage", "RustFS (dev) / 
+         +S3 (prod)", "Video files and thumbnails")                      
+      13 +        ContainerQueue(queue, "Message Queue", "BullMQ + Redis"
+         +, "Enqueues video processing jobs")                            
+      14      }
+      15  
+      16      System_Ext(email, "Email Service", "Account confirmation an
+          d password recovery")
+
+● Now nestjs-project/CLAUDE.md: add the four services to the Services list and a
+  new Videos section.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project/nestjs-project && python3 - <<'EOF'
+      p='CLAUDE.md'…)
+  ⎿  Dockerfile.dev
+     3:# ffmpeg/ffprobe for the video worker (TD-09); same image for nestjs
+     -api,
+     5:RUN apt update && apt install -y procps curl ffmpeg
+  ⎿  Updated nestjs-project/CLAUDE.md (+40 -0)
+      39  - `nestjs-api` — NestJS API, port `3000` (idle container; the A
+          PI starts only on `npm run start:dev`)
+      40  - `video-worker` — same image and code, running the worker entr
+          ypoint (`npm run start:worker:dev`); starts with `up`, no port
+      41  - `db` — PostgreSQL 17, port `5432`, database `streamtube`, use
+          r/password `streamtube`
+      42 +- `redis` — Redis 7 (BullMQ backend), port `6379`, AOF on and `
+         +maxmemory-policy noeviction`; ready when `docker compose exec r
+         +edis redis-cli ping` returns `PONG`                            
+      43 +- `storage` — RustFS (S3-compatible object storage), port `9000
+         +`; healthcheck on `/health`                                    
+      44 +- `storage-init` — one-shot AWS CLI container: creates the `S3_
+         +BUCKET` bucket (idempotent) and applies `docker/storage/cors.js
+         +on`; must exit with code `0` (`docker compose ps -a storage-ini
+         +t`)                                                            
+      45 +- `video-worker` — worker entrypoint (see above); check with `d
+         +ocker compose logs video-worker`                               
+      46  
+      47  All verification and teardown commands run on the **host machin
+          e**:
+      48  
+     ...
+      158  - Each domain feature gets its own module (e.g., `UsersModule`
+           , `VideosModule`) registered in `AppModule`
+      159  - Controllers handle HTTP routing; Services hold business logi
+           c; both are scoped to their module
+      160  
+      161 +## Videos                                                     
+      162 +                                                              
+      163 +### Endpoints (`VideosController`, all owner-only)            
+      164 +                                                              
+      165 +Every `/videos` route requires a valid access token (global `J
+          +wtAuthGuard`), and the controller is exempt from the auth thro
+          +ttler (`@SkipThrottle()`). `:publicId` is the 11-character `pu
+          +blic_id`; the internal `id` never appears in a URL. Another us
+          +er's video, an unknown `publicId` and a malformed one all retu
+          +rn the same `404 VIDEO_NOT_FOUND`.                            
+      166 +                                                              
+      167 +| Route | Effect | Main errors |                              
+      168 +|-------|--------|-------------|                              
+      169 +| `POST /videos` | Creates the draft on the caller's channel a
+          +nd opens the multipart upload | `400 VALIDATION_ERROR` |      
+      170 +| `POST /videos/:publicId/upload/part-urls` | Presigned `Uploa
+          +dPart` URLs (public endpoint, 1 h) | `400 INVALID_PART_NUMBER`
+          +, `409 VIDEO_UPLOAD_NOT_ACTIVE` |                             
+      171 +| `GET /videos/:publicId/upload/parts` | Parts already stored 
+          +(resume) | `409 VIDEO_UPLOAD_NOT_ACTIVE` |                    
+      172 +| `POST /videos/:publicId/upload/complete` | Completes the upl
+          +oad, checks the size, `draft → processing`, enqueues `process-
+          +video` (idempotent while `processing`) | `409 UPLOAD_INCOMPLET
+          +E`, `409 VIDEO_UPLOAD_NOT_ACTIVE`, `422 UPLOAD_SIZE_MISMATCH` 
+          +|                                                             
+      173 +| `GET /videos/:publicId` | Status and extracted metadata (use
+          +d to poll processing) | — |                                   
+      174 +| `GET /videos/:publicId/stream` | `302` to a presigned GET (6
+          + h), `Cache-Control: no-store`; storage serves `Range` → `206`
+          + | `409 VIDEO_NOT_READY` |                                    
+      175 +| `GET /videos/:publicId/download` | Same as stream (15 min), 
+          +with `Content-Disposition: attachment` and the original filena
+          +me | `409 VIDEO_NOT_READY` |                                  
+      176 +                                                              
+      177 +### Queue (BullMQ + Redis)                                    
+      178 +                                                              
+      179 +- Queues: `video-processing` (job `process-video`, enqueued by
+          + the API on upload complete) and `video-maintenance` (job `cle
+          +anup-abandoned-uploads`, an hourly job scheduler registered by
+          + the worker).                                                 
+      180 +- `process-video` uses `jobId` = the video `id`, so a repeated
+          + enqueue is a no-op; 3 attempts with exponential backoff (`PRO
+          +CESS_VIDEO_JOB_OPTIONS` in `src/queue/queue.constants.ts`); fa
+          +iled jobs are kept for 7 days.                                
+      181 +- The maintenance job marks drafts older than `UPLOAD_ABANDON_
+          +AFTER_HOURS` as failed (`upload_abandoned`) and re-enqueues or
+          + fails videos stuck in `processing` for more than `PROCESSING_
+          +STUCK_AFTER_MINUTES`.                                         
+      182 +- `QUEUE_PREFIX` sets the Redis key prefix (`bull` in `.env`).
+          + Jest sets it to `test` in `src/test/jest-env.setup.ts`, so te
+          +st jobs never reach the running `video-worker`.               
+      183 +                                                              
+      184 +### Worker                                                    
+      185 +                                                              
+      186 +- Entrypoint `src/worker.ts` → `WorkerModule` (no HTTP server)
+          +. Started by the `video-worker` service with `npm run start:wo
+          +rker:dev`; `npm run build` emits `dist/worker.js` (`npm run st
+          +art:worker:prod`).                                            
+      187 +- Runs on `docker compose up`; logs `Video worker started` (`d
+          +ocker compose logs video-worker`).                            
+     … 12 more lines (ctrl+o to expand)
+
+● video-worker was already in the Services list, so I'm removing the duplicate
+  line I added. Then action 4: check every name the docs mention against the
+  code.
+
+● Bash(sed -i '/^- `video-worker` — worker entrypoint (see above); check with
+      `docker compose logs video-worker`$/d' CLAUDE.md && grep -c "^-
+      \`video-worker\`" CLAUDE.…)
+  ⎿  1
+     miss=0
+     openapi not in doc set() doc not in openapi set()
+     []
+  ⎿  Updated nestjs-project/CLAUDE.md (+0 -1)
+      42  - `redis` — Redis 7 (BullMQ backend), port `6379`, AOF on and `
+          maxmemory-policy noeviction`; ready when `docker compose exec r
+          edis redis-cli ping` returns `PONG`
+      43  - `storage` — RustFS (S3-compatible object storage), port `9000
+          `; healthcheck on `/health`
+      44  - `storage-init` — one-shot AWS CLI container: creates the `S3_
+          BUCKET` bucket (idempotent) and applies `docker/storage/cors.js
+          on`; must exit with code `0` (`docker compose ps -a storage-ini
+          t`)
+      45 -- `video-worker` — worker entrypoint (see above); check with `d
+         -ocker compose logs video-worker`                               
+      45  
+      46  All verification and teardown commands run on the **host machin
+          e**:
+      47  
+
+● Everything checks out — the /videos routes, openapi.json, and all four
+  services in compose.yaml match the docs. Now I'll have a subagent run the full
+  Definition of Done: test suites, tsc, and lint.
+
+● Agent(Run Definition of Done suite)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● The docs are updated. The Definition of Done is now running in the background:
+  both full test suites, tsc and lint. I'll report when it finishes.
+
+✻ Crunched for 1m 2s · done 20:45
+
+› Message from general-purpose
+  All four commands passed (exit code 0 each).
+
+  1. `npm test -- --runInBand`: exit 0. Test Suites: 46 passed, 46 total. Tests:
+  292 passed, 292 total.
+  2. `npm run test:e2e`: exit 0. Test Suites: 9 passed, 9 total. Tests: 75
+  passed, 75 total.
+  3. `npx tsc --noEmit`: exit 0, no output.
+  4. `npm run lint` (eslint --fix): exit 0, no errors or warnings.
+
+  Git status was the same before and after: only ` M CLAUDE.md`, ` M
+  docs/diagrams/software-arch.mermaid` and ` M nestjs-project/CLAUDE.md`. Lint
+  did not change any file.
+
+  Non-fatal warnings:
+  - Unit run: pg DeprecationWarning, 17 times: "Calling client.query() when the
+  client is already executing a query is deprecated and will be removed in
+  pg@9.0."
+  - Unit and e2e runs: Node warning "`--localstorage-file` was provided without
+  a valid path".
+  - No open-handle warnings and no failures.
+
+  Logs are in
+  /tmp/claude-1000/-home-everton-fullcycle-mba-swe-ia-mba-ia-greenfield-project-
+  mba-ia-greenfield-project/d1e40011-1a83-4cd8-9a56-e364865c2fb6/scratchpad/ as
+  unit.log, e2e.log, tsc.log and lint.log.
+
+● Bash(cd /home/everton/fullcycle/mba-swe-ia/mba-ia-greenfield-project/mba-ia-gr
+      eenfield-project && python3 - <<'EOF'
+      p='docs/phases/phase-03-videos/progress.md'…)
+  ⎿  Updated docs/phases/phase-03-videos/progress.md (+9 -4)
+      1  # phase-03-videos — Progress
+      2  
+      3  **Status:** in_progress
+      4 -**SIs:** 15/16 completed                                        
+      4 +**SIs:** 16/16 completed                                        
+      5  
+      6  ### SI-03.1 — Infra: Instalar dependências de fila e storage com
+          versões fixadas
+      7  - **Status:** completed
+     ...
+      169    - The in-process worker is `NestFactory.createApplicationCon
+           text(WorkerModule, { logger: ['error', 'warn'] })` and uses th
+           e `test` queue prefix (`jest-env.setup.ts`). On bootstrap it a
+           lso registers the hourly maintenance scheduler on the `test`-p
+           refixed `video-maintenance` queue; the drafts in the test are 
+           fresh, so the job leaves them alone.
+      170  
+      171  ### SI-03.16 — Documentação e Definition of Done da fase
+      172 -- **Status:** pending                                         
+      173 -- **Tests:** _pending_                                        
+      174 -- **Observations:** _pending_                                 
+      172 +- **Status:** completed                                       
+      173 +- **Tests:** no tests (documentation). Definition of Done in t
+          +he container: `npm test -- --runInBand` 46 suites / 292 tests,
+          + `npm run test:e2e` 9 suites / 75 tests, `npx tsc --noEmit` an
+          +d `npm run lint` all exit 0 (lint changed no file)            
+      174 +- **Observations:**                                           
+      175 +  - Root `CLAUDE.md`: besides the queue, storage and worker li
+          +nes the plan asked for, the **Frontend** and **API** bullets n
+          +ow say that video parts are uploaded and streamed directly fro
+          +m storage through presigned URLs, and that the API signs those
+          + URLs. The old text said "API … uploads to storage", which no 
+          +longer matches TD-04.                                         
+      176 +  - `nestjs-project/CLAUDE.md`: added `redis`, `storage` and `
+          +storage-init` to the Services list (`video-worker` was already
+          + there), and a new `## Videos` section covering endpoints, que
+          +ue, worker and storage. The section also documents the `S3_PUB
+          +LIC_ENDPOINT=http://localhost:9000` exception and the test-tim
+          +e `http://storage:9000` override.                             
+      177 +  - Action 4: grepped every identifier cited in the three docs
+          +; none is missing. The `/videos` routes in the doc table match
+          + `openapi.json` exactly, and the four services exist in `compo
+          +se.yaml`.                                                     
+      178 +  - The diagram only changes the technology labels (`BullMQ + 
+          +Redis`, `RustFS (dev) / S3 (prod)`); relations and styles are 
+          +unchanged.                                                    
+      179 +  - Recurring non-fatal warnings in the full run: pg `Deprecat
+          +ionWarning` "client.query() when the client is already executi
+          +ng a query" (17×, unit/integration) and Node "`--localstorage-
+          +file` was provided without a valid path". Not investigated (ou
+          +t of scope).                                                  
+
+● Agent "Run Definition of Done suite" finished · 50s
+
+● All 16 of 16 SIs are complete. The docs are updated and the Definition of Done
+  passes in the container:
+  - Unit and integration tests: 292 pass in 46 suites.
+  - E2E tests: 75 pass in 9 suites.
+  - tsc --noEmit and npm run lint: both clean, and lint changed no files.
+
+  Doc changes:
+  - Root CLAUDE.md: the queue is now BullMQ + Redis, storage is RustFS in dev
+    and S3 in production, and the video worker is the src/worker.ts entrypoint
+    run by video-worker. I also corrected the Frontend and API lines, beyond
+    what the plan listed: the old text said the API uploads to storage. Now it
+    says the API signs the links and the browser uploads and streams directly
+    from storage.
+  - nestjs-project/CLAUDE.md: added redis, storage and storage-init to the
+    Services list, plus a new Videos section. It covers the routes and their
+    main errors, the queues and jobs, the worker, the storage keys, and the
+    S3_PUBLIC_ENDPOINT=localhost exception.
+  - docs/diagrams/software-arch.mermaid: only the queue and storage labels
+    changed.
+
+  Every name the docs mention exists in the code. The /videos routes in the doc
+  match openapi.json exactly, and the four services exist in compose.yaml.
+
+  Final verification covers the plan's remaining deliverables: the
+  infrastructure checks and npm run build with dist/worker.js present.
+
+  Rodar final verification?
+
+✻ Cogitated for 2m 5s · done 20:46
+
+※ recap: I've been implementing phase 03 (video upload and processing), and all 16 steps are done, with the full tests, type-check and lint passing. Next is the final verification (infrastructure checks and the build), which waits on your go-ahead. (disable recaps in /config)
+
+❯ Antes de fechar o SI-03.16, alinhe estes pontos da documentação que ficaram   
+  incoerentes com o código:                                                     
+                                                                                
+  1. CLAUDE.md (raiz), Repository Structure: next-frontend/ existe (Next.js 16, 
+  fase 02). Troque "not yet initialized" por uma descrição real e corrija "two  
+  main areas" para bater com a lista.                                           
+  2. CLAUDE.md (raiz), Docker Networking: acrescente uma linha dizendo que a    
+  única exceção é S3_PUBLIC_ENDPOINT (URLs pré-assinadas entregues ao navegador 
+  do host), com referência à seção Storage do nestjs-project/CLAUDE.md.         
+  3. nestjs-project/CLAUDE.md, lista Services: inclua mailpit (portas 1025 SMTP 
+  e 8025 UI), conforme o compose.yaml.                                          
+  4. README.md:                                                                 
+     - seção Arquitetura: Video Worker, Object Storage e Message Queue deixam   
+  de ser "planejado — Fase 03" e passam a citar FFmpeg/ffprobe no serviço       
+  video-worker, RustFS (dev) / S3 (prod) e BullMQ + Redis; o Database também    
+  guarda vídeos                                                                 
+     - seção "Como rodar → Backend": o título e o comentário do up passam a     
+  citar Redis, RustFS e o worker; diga que o video-worker sobe sozinho e que o  
+  npm install precisa rodar antes (senão ele reinicia em loop até as            
+  dependências existirem)                                                       
+     - tabela de serviços: acrescente Redis (localhost:6379) e RustFS (API S3   
+  em http://localhost:9000)                                                     
+     - linha de status: inclua a Fase 03 — Upload e Processamento de Vídeos     
+  (backend) como concluída                                                      
+  5. Confira de novo, com grep, que cada nome citado existe no código, rode a   
+  DoD (npm test -- --runInBand, npm run test:e2e, npx tsc --noEmit, npm run     
+  lint) e registre os ajustes nas Observations do SI-03.16 no progress.md.      
+● I'll make the doc fixes. First I'll read the relevant parts of root CLAUDE.md,
+  README.md and the frontend's package.json.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Applying the four edits.
+
+● Bash(python3 - <<'EOF'
+      def rep(p, pairs):…)
+  ⎿   CLAUDE.md                               | 18 ++++++++-------
+      README.md                               | 21 +++++++++--------
+      docs/diagrams/software-arch.mermaid     |  4 ++--
+     … +4 lines (ctrl+o to expand)
+  ⎿  Updated CLAUDE.md (+5 -3)
+       8  
+       9  ## Repository Structure
+      10  
+      11 -This is a monorepo with two main areas:                        
+      11 +This is a monorepo with three main areas:                      
+      12  
+      13 -- `nestjs-project/` — Backend API (NestJS 11, TypeScript, Expre
+         -ss). Contains modules for users, channels, videos, comments, et
+         -c.                                                             
+      13 +- `nestjs-project/` — Backend API (NestJS 11, TypeScript, Expre
+         +ss) and the video worker entrypoint. Contains modules for users
+         +, channels, videos, comments, etc.                             
+      14 +- `next-frontend/` — Frontend (Next.js 16, App Router, React 19
+         +). BFF model: the browser calls same-origin Route Handlers in `
+         +app/api/**`, which proxy to the API. Auth screens delivered in 
+         +Phase 02.                                                      
+      15  - `docs/` — Project documentation, architecture diagrams, and p
+          lanning.
+      15 -- `next-frontend/` (Next.js) — not yet initialized             
+      16  
+      17  ## Architecture (C4 Container Diagram)
+      18  
+     ...
+      37  
+      38  This applies to all environment variables, configuration files,
+           and code that references service hosts.
+      39  
+      40 +The only exception is `S3_PUBLIC_ENDPOINT`: it signs presigned 
+         +URLs handed to the browser on the host, so it uses `localhost` 
+         +(see `nestjs-project/CLAUDE.md` → Videos → Storage).           
+      41 +                                                               
+      42  ## Working Principles
+      43  
+      44  - **Single Responsibility:** each module, service, and function
+           should have a clear, focused responsibility. Re-evaluate adher
+          ence at every step — when a module starts owning logic or entit
+          ies that are not its own (e.g., a service creating an entity fr
+          om another domain), extract it immediately into the proper modu
+          le instead of deferring to a later corrective task.
+  ⎿  Updated nestjs-project/CLAUDE.md (+1 -0)
+      39  - `nestjs-api` — NestJS API, port `3000` (idle container; the A
+          PI starts only on `npm run start:dev`)
+      40  - `video-worker` — same image and code, running the worker entr
+          ypoint (`npm run start:worker:dev`); starts with `up`, no port
+      41  - `db` — PostgreSQL 17, port `5432`, database `streamtube`, use
+          r/password `streamtube`
+      42 +- `mailpit` — SMTP capture for transactional emails: SMTP on po
+         +rt `1025`, web UI on `8025`                                    
+      43  - `redis` — Redis 7 (BullMQ backend), port `6379`, AOF on and `
+          maxmemory-policy noeviction`; ready when `docker compose exec r
+          edis redis-cli ping` returns `PONG`
+      44  - `storage` — RustFS (S3-compatible object storage), port `9000
+          `; healthcheck on `/health`
+      45  - `storage-init` — one-shot AWS CLI container: creates the `S3_
+          BUCKET` bucket (idempotent) and applies `docker/storage/cors.js
+          on`; must exit with code `0` (`docker compose ps -a storage-ini
+          t`)
+  ⎿  Updated README.md (+12 -9)
+      43  
+      44  - **Frontend** (Next.js 16, App Router + React Server Component
+          s) — interface da plataforma. Segue o **modelo BFF**: o navegad
+          or nunca chama a API NestJS diretamente; todo tráfego passa por
+           Route Handlers same-origin em `app/api/**`, que fazem proxy se
+          rver-side para a API.
+      45  - **API** (NestJS 11) — regras de negócio, autenticação (JWT + 
+          refresh token rotation), envio de e-mails e acesso ao banco.
+      46 -- **Database** (PostgreSQL 17) — usuários, canais e tokens de a
+         -utenticação.                                                   
+      46 +- **Database** (PostgreSQL 17) — usuários, canais, tokens de au
+         +tenticação e vídeos.                                           
+      47  - **Email Service** (Mailpit) — captura os e-mails transacionai
+          s (confirmação de conta e recuperação de senha) em uma UI local
+          .
+      48 -- **Video Worker** (FFmpeg) — processamento de vídeos *(planeja
+         -do — Fase 03)*.                                                
+      49 -- **Object Storage** (S3/MinIO) — arquivos de vídeo e thumbnail
+         -s *(planejado — Fase 03)*.                                     
+      50 -- **Message Queue** — fila de processamento de vídeos *(planeja
+         -do — Fase 03)*.                                                
+      48 +- **Video Worker** (FFmpeg/ffprobe) — serviço `video-worker` do
+         + Compose, segundo entrypoint do `nestjs-project` (`src/worker.t
+         +s`): extrai metadados, gera a thumbnail e marca o vídeo como pr
+         +onto ou falho.                                                 
+      49 +- **Object Storage** (RustFS em dev / S3 em produção) — bucket 
+         +privado com os arquivos de vídeo e thumbnails; upload multipart
+         +, streaming e download por URLs pré-assinadas, direto entre o n
+         +avegador e o storage.                                          
+      50 +- **Message Queue** (BullMQ + Redis) — filas `video-processing`
+         + (processamento) e `video-maintenance` (limpeza agendada).     
+      51  
+      52  O diagrama de arquitetura completo (C4) está em `docs/diagrams/
+          software-arch.mermaid`.
+      53  
+     ...
+      55  
+      56  Os dois subprojetos têm stacks Docker **separadas**. Suba prime
+          iro o backend, rode as migrations e depois o frontend.
+      57  
+      58 -### 1. Backend (NestJS + PostgreSQL + Mailpit)                 
+      58 +### 1. Backend (NestJS + PostgreSQL + Mailpit + Redis + RustFS 
+         ++ worker)                                                      
+      59  
+      60  ```bash
+      61  cd nestjs-project
+      62  
+      63 -# Sobe API, banco e Mailpit                                    
+      63 +# Sobe API, banco, Mailpit, Redis, RustFS (com o bucket criado 
+         +pelo storage-init) e o video-worker                            
+      64  docker compose up -d
+      65  
+      66 -# Instala dependências (apenas na primeira vez)                
+      66 +# Instala dependências (apenas na primeira vez) — o video-worke
+         +r sobe sozinho com o `up`                                      
+      67 +# e reinicia em loop até as dependências existirem             
+      68  docker compose exec nestjs-api npm install
+      69  
+      70  # Cria o schema do banco (obrigatório — synchronize está desabi
+          litado)
+     ...
+      81  | API NestJS | http://localhost:3000 |
+      82  | PostgreSQL | `localhost:5432` (db/user/senha: `streamtube`) |
+      83  | Mailpit (UI de e-mails) | http://localhost:8025 |
+      84 +| Redis | `localhost:6379` |                                   
+      85 +| RustFS (API S3) | http://localhost:9000 |                    
+      86  | Swagger (opcional) | http://localhost:3000/api/docs — habilit
+          e com `SWAGGER_ENABLED=true` |
+     … 18 more lines (ctrl+o to expand)
+
+● Re-checking that every name in the three docs exists in the code.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Every name is found. Running the full Definition of Done again through a
+  subagent.
+
+● Agent(Re-run Definition of Done)
+  ⎿  Backgrounded agent (↓ to manage · ctrl+o to expand)
+
+● The four doc fixes are in, and every name they mention exists in the code. The
+  Definition of Done is running again in the background. When it finishes I'll
+  record the changes in the SI-03.16 Observations in progress.md.
+
+✻ Worked for 34s · done 21:00
+
+› Message from general-purpose
+  All four checks passed.
+  1. `npm test -- --runInBand` exited 0. Test Suites: 46 passed of 46. Tests:
+  292 passed of 292.
+  2. `npm run test:e2e` exited 0. Test Suites: 9 passed of 9. Tests: 75 passed
+  of 75.
+  3. `npx tsc --noEmit` exited 0 with no errors.
+  4. `npm run lint` (`eslint --fix`) exited 0 with no errors.
+
+  `git status --short` was the same before and after: CLAUDE.md, README.md,
+  docs/diagrams/software-arch.mermaid, docs/phases/phase-03-videos/progress.md
+  and nestjs-project/CLAUDE.md were modified. The lint fix changed no files.
+
+  Non-fatal warnings:
+  - pg DeprecationWarning in the integration tests: "Calling client.query() when
+  the client is already executing a query is deprecated and will be removed in
+  pg@9.0."
+  - Node warning in e2e: "`--localstorage-file` was provided without a valid
+  path".
+
+● Bash(python3 - <<'EOF'
+      p='docs/phases/phase-03-videos/progress.md'…)
+  ⎿  Updated docs/phases/phase-03-videos/progress.md (+11 -0)
+      176    - `nestjs-project/CLAUDE.md`: added `redis`, `storage` and `
+           storage-init` to the Services list (`video-worker` was already
+            there), and a new `## Videos` section covering endpoints, que
+           ue, worker and storage. The section also documents the `S3_PUB
+           LIC_ENDPOINT=http://localhost:9000` exception and the test-tim
+           e `http://storage:9000` override.
+      177    - Action 4: grepped every identifier cited in the three docs
+           ; none is missing. The `/videos` routes in the doc table match
+            `openapi.json` exactly, and the four services exist in `compo
+           se.yaml`.
+      178    - The diagram only changes the technology labels (`BullMQ + 
+           Redis`, `RustFS (dev) / S3 (prod)`); relations and styles are 
+           unchanged.
+      179 +  - **Doc alignment requested by the user before closing the S
+          +I (outside the plan's actions 1–3):**                         
+      180 +    - Root `CLAUDE.md` → Repository Structure: "two main areas
+          +" → "three main areas". `next-frontend/` is now described for 
+          +real (Next.js 16, App Router, React 19, BFF Route Handlers in 
+          +`app/api/**`, auth screens from Phase 02) instead of "not yet 
+          +initialized". `nestjs-project/` also mentions the video worker
+          + entrypoint.                                                  
+      181 +    - Root `CLAUDE.md` → Docker Networking: new line naming `S
+          +3_PUBLIC_ENDPOINT` (presigned URLs for the browser on the host
+          +) as the only exception to "never `localhost`", pointing to `n
+          +estjs-project/CLAUDE.md` → Videos → Storage.                  
+      182 +    - `nestjs-project/CLAUDE.md` → Services: added `mailpit` (
+          +SMTP `1025`, UI `8025`), as in `compose.yaml`.                
+      183 +    - `README.md`:                                            
+      184 +      - Architecture: Video Worker (FFmpeg/ffprobe, `video-wor
+          +ker`, `src/worker.ts`), Object Storage (RustFS dev / S3 prod, 
+          +presigned URLs) and Message Queue (BullMQ + Redis, `video-proc
+          +essing` / `video-maintenance`) are no longer "planejado — Fase
+          + 03". Database now also lists videos.                         
+      185 +      - "Como rodar → Backend": the title and the `up` comment
+          + mention Redis, RustFS (`storage-init`) and the worker. The `n
+          +pm install` comment says `video-worker` starts with `up` and r
+          +estarts in a loop until the dependencies exist.               
+      186 +      - Services table: added Redis (`localhost:6379`) and Rus
+          +tFS (S3 API at `http://localhost:9000`).                      
+      187 +      - Status: Phase 03 (backend) marked as done, both in the
+          + "Funcionalidades implementadas" line and in the phase table (
+          +`✅ Concluída (backend)`).                                    
+      188 +    - Re-checked with grep that every cited name exists (paths
+          +, `next`/`react` versions, Compose services and ports, env var
+          +s, npm scripts, queues/jobs, `WorkerModule`, `Video worker sta
+          +rted`); none missing.                                         
+      189 +    - DoD re-run after these edits: `npm test -- --runInBand` 
+          +46 suites / 292 tests, `npm run test:e2e` 9 suites / 75 tests,
+          + `tsc --noEmit` and `npm run lint` exit 0 (lint changed no fil
+          +e).                                                           
+      190    - Recurring non-fatal warnings in the full run: pg `Deprecat
+           ionWarning` "client.query() when the client is already executi
+           ng a query" (17×, unit/integration) and Node "`--localstorage-
+           file` was provided without a valid path". Not investigated (ou
+           t of scope).
+
+● Agent "Re-run Definition of Done" finished · 45s
+
+● I fixed all four doc points, and the Definition of Done still passes. Unit and
+  integration: 292 tests in 46 suites. E2E: 75 tests in 9 suites. tsc and lint
+  are clean, and lint changed no files.
+
+  - Root CLAUDE.md:
+    - Repository Structure: now says "three main areas" and describes
+      next-frontend/ as Next.js 16 with the same-origin proxy routes in
+      app/api/** and the Phase 02 auth screens.
+    - Docker Networking: one new line names S3_PUBLIC_ENDPOINT as the only
+      exception to "never localhost" and points to the Storage section of
+      nestjs-project/CLAUDE.md.
+  - nestjs-project/CLAUDE.md: mailpit is now in the Services list, with SMTP on
+    1025 and the web UI on 8025.
+  - README.md:
+    - Architecture: the worker, storage and queue are described as built instead
+      of "planejado — Fase 03", and the database now also lists videos.
+    - Backend setup: it mentions Redis, RustFS and the worker. It also says
+      video-worker starts with up and restarts in a loop until npm install has
+      run.
+    - Services table: Redis (localhost:6379) and RustFS (http://localhost:9000)
+      are added.
+    - Status: Phase 03 is marked as done for the backend.
+
+  I changed one thing beyond your list: in README.md I also marked Phase 03 as
+  done in the phases table, not only in the status line, so the two agree.
+
+  All names in the docs exist in the code. The changes are recorded in the
+  SI-03.16 Observations in progress.md.
+
+  Final verification will run the infrastructure checks and npm run build, and
+  confirm dist/worker.js exists.
+
+  Rodar final verification?
+
+✻ Sautéed for 1m 33s · done 21:01
+
+※ recap: We're implementing phase 03 (video upload and processing backend): all 16 steps are done, the docs are fixed and every test, type check and lint passes. Next, once you say yes, I'll run the final verification: infrastructure checks plus the build. (disable recaps in /config)
