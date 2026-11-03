@@ -1,7 +1,7 @@
 # phase-03-videos — Progress
 
 **Status:** in_progress
-**SIs:** 15/16 completed
+**SIs:** 16/16 completed
 
 ### SI-03.1 — Infra: Instalar dependências de fila e storage com versões fixadas
 - **Status:** completed
@@ -169,6 +169,22 @@
   - The in-process worker is `NestFactory.createApplicationContext(WorkerModule, { logger: ['error', 'warn'] })` and uses the `test` queue prefix (`jest-env.setup.ts`). On bootstrap it also registers the hourly maintenance scheduler on the `test`-prefixed `video-maintenance` queue; the drafts in the test are fresh, so the job leaves them alone.
 
 ### SI-03.16 — Documentação e Definition of Done da fase
-- **Status:** pending
-- **Tests:** _pending_
-- **Observations:** _pending_
+- **Status:** completed
+- **Tests:** no tests (documentation). Definition of Done in the container: `npm test -- --runInBand` 46 suites / 292 tests, `npm run test:e2e` 9 suites / 75 tests, `npx tsc --noEmit` and `npm run lint` all exit 0 (lint changed no file)
+- **Observations:**
+  - Root `CLAUDE.md`: besides the queue, storage and worker lines the plan asked for, the **Frontend** and **API** bullets now say that video parts are uploaded and streamed directly from storage through presigned URLs, and that the API signs those URLs. The old text said "API … uploads to storage", which no longer matches TD-04.
+  - `nestjs-project/CLAUDE.md`: added `redis`, `storage` and `storage-init` to the Services list (`video-worker` was already there), and a new `## Videos` section covering endpoints, queue, worker and storage. The section also documents the `S3_PUBLIC_ENDPOINT=http://localhost:9000` exception and the test-time `http://storage:9000` override.
+  - Action 4: grepped every identifier cited in the three docs; none is missing. The `/videos` routes in the doc table match `openapi.json` exactly, and the four services exist in `compose.yaml`.
+  - The diagram only changes the technology labels (`BullMQ + Redis`, `RustFS (dev) / S3 (prod)`); relations and styles are unchanged.
+  - **Doc alignment requested by the user before closing the SI (outside the plan's actions 1–3):**
+    - Root `CLAUDE.md` → Repository Structure: "two main areas" → "three main areas". `next-frontend/` is now described for real (Next.js 16, App Router, React 19, BFF Route Handlers in `app/api/**`, auth screens from Phase 02) instead of "not yet initialized". `nestjs-project/` also mentions the video worker entrypoint.
+    - Root `CLAUDE.md` → Docker Networking: new line naming `S3_PUBLIC_ENDPOINT` (presigned URLs for the browser on the host) as the only exception to "never `localhost`", pointing to `nestjs-project/CLAUDE.md` → Videos → Storage.
+    - `nestjs-project/CLAUDE.md` → Services: added `mailpit` (SMTP `1025`, UI `8025`), as in `compose.yaml`.
+    - `README.md`:
+      - Architecture: Video Worker (FFmpeg/ffprobe, `video-worker`, `src/worker.ts`), Object Storage (RustFS dev / S3 prod, presigned URLs) and Message Queue (BullMQ + Redis, `video-processing` / `video-maintenance`) are no longer "planejado — Fase 03". Database now also lists videos.
+      - "Como rodar → Backend": the title and the `up` comment mention Redis, RustFS (`storage-init`) and the worker. The `npm install` comment says `video-worker` starts with `up` and restarts in a loop until the dependencies exist.
+      - Services table: added Redis (`localhost:6379`) and RustFS (S3 API at `http://localhost:9000`).
+      - Status: Phase 03 (backend) marked as done, both in the "Funcionalidades implementadas" line and in the phase table (`✅ Concluída (backend)`).
+    - Re-checked with grep that every cited name exists (paths, `next`/`react` versions, Compose services and ports, env vars, npm scripts, queues/jobs, `WorkerModule`, `Video worker started`); none missing.
+    - DoD re-run after these edits: `npm test -- --runInBand` 46 suites / 292 tests, `npm run test:e2e` 9 suites / 75 tests, `tsc --noEmit` and `npm run lint` exit 0 (lint changed no file).
+  - Recurring non-fatal warnings in the full run: pg `DeprecationWarning` "client.query() when the client is already executing a query" (17×, unit/integration) and Node "`--localstorage-file` was provided without a valid path". Not investigated (out of scope).
