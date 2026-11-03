@@ -60,6 +60,9 @@ Os dois subprojetos têm stacks Docker **separadas**. Suba primeiro o backend, r
 ```bash
 cd nestjs-project
 
+# Cria o .env a partir do exemplo (apenas na primeira vez)
+cp .env.example .env
+
 # Sobe API, banco, Mailpit, Redis, RustFS (com o bucket criado pelo storage-init) e o video-worker
 docker compose up -d
 
