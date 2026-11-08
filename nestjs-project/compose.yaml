@@ -25,6 +25,16 @@ services:
       dockerfile: Dockerfile.dev
     command: npm run start:worker:dev
     restart: unless-stopped
+    # The container's main process is `nest start --watch`, which outlives the
+    # worker child: if the worker dies, the container stays "running". This
+    # check makes `docker compose ps` show "unhealthy" in that case.
+    # Exec form (no shell) so the check's own command line can't match.
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "dist/worker"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
     volumes:
       - .:/home/node/app
     depends_on:
@@ -37,6 +47,7 @@ services:
 
   db:
     image: postgres:17
+    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
@@ -57,6 +68,7 @@ services:
 
   redis:
     image: redis:7
+    restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory-policy noeviction
     ports:
       - "6379:6379"
@@ -70,6 +82,7 @@ services:
 
   storage:
     image: rustfs/rustfs:1.0.3
+    restart: unless-stopped
     ports:
       - "9000:9000"
     environment:
