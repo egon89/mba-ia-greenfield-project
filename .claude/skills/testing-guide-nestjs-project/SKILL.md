@@ -68,7 +68,7 @@ When implementing a new feature, use this checklist to ensure all artifacts have
 | Service with DB only (no branching) | Integration: DB contract | `artifacts/services.md` |
 | Service with configured lib (JWT, cache) | Unit: real lib with test config | `artifacts/services.md` |
 | Service with side-effect dep (email, storage) | Integration: real capture service (Mailpit) or local adapter | `artifacts/services.md` |
-| Module with configured imports | Unit: compilation test | `artifacts/modules.md` |
+| Module with configured imports | Compilation test — Unit (`*.module.spec.ts`) if no real infra; Integration (`*.module.integration-spec.ts`) if it opens a real DB/Redis/service connection | `artifacts/modules.md` |
 | Controller | E2E only — do NOT write unit tests | `artifacts/controllers.md` |
 | DTO | E2E: one validation wiring test per endpoint | `artifacts/dtos.md` |
 | Guard (delegates to service for business logic) | E2E + Unit if complex internal logic | `artifacts/guards.md` |
@@ -89,7 +89,7 @@ When creating or modifying an artifact, read the corresponding guide for the com
 |---|---|---|---|
 | Entities | `*.entity.ts` | Integration (real DB) | `artifacts/entities.md` |
 | Services | `*.service.ts` | Unit and/or Integration | `artifacts/services.md` |
-| Modules | `*.module.ts` | Unit (compilation) | `artifacts/modules.md` |
+| Modules | `*.module.ts` | Unit or Integration (compilation, by real I/O) | `artifacts/modules.md` |
 | Controllers | `*.controller.ts` | E2E only | `artifacts/controllers.md` |
 | DTOs | `*.dto.ts` | E2E (validation wiring) | `artifacts/dtos.md` |
 | Guards | `*.guard.ts` | E2E or Unit+E2E | `artifacts/guards.md` |

@@ -25,7 +25,7 @@ Entities are **never** tested at the unit layer — they have no logic, only str
 ## Setup pattern
 
 ```typescript
-// user.entity.integration.spec.ts
+// user.entity.integration-spec.ts
 import { DataSource, Repository } from 'typeorm';
 import { User } from './user.entity';
 

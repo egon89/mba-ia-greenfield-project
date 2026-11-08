@@ -6,8 +6,8 @@
 
 | Layer | File Pattern | Location | Jest Config |
 |---|---|---|---|
-| **Unit** | `*.spec.ts` | Colocated with source in `src/` | `package.json` → `jest` section (rootDir: `src`, testRegex: `.*\.spec\.ts$`) |
-| **Integration** | `*.integration.spec.ts` | Colocated with source in `src/` | Same config as unit (matched by `.*\.spec\.ts$`) |
+| **Unit** | `*.spec.ts` | Colocated with source in `src/` | `package.json` → `jest` section (rootDir: `src`, testRegex: `.*\.(spec|integration-spec)\.ts$`) |
+| **Integration** | `*.integration-spec.ts` | Colocated with source in `src/` | Same config as unit (matched by the same `testRegex`); `npm run test:integration` runs only these |
 | **E2E** | `*.e2e-spec.ts` | `test/` directory | `test/jest-e2e.json` (rootDir: `.`, testRegex: `.e2e-spec.ts$`) |
 
 ### Examples
@@ -17,16 +17,19 @@ src/
   users/
     users.service.ts
     users.service.spec.ts              # Unit test
-    users.service.integration.spec.ts  # Integration test
+    users.service.integration-spec.ts  # Integration test
     users.module.ts
-    users.module.spec.ts               # Module compilation test
+    users.module.integration-spec.ts   # Module compilation test (real DB via TypeOrmModule.forRoot)
     user.entity.ts
-    user.entity.integration.spec.ts    # Entity integration test
+    user.entity.integration-spec.ts    # Entity integration test
   auth/
     auth.service.ts
     auth.service.spec.ts               # Unit test
     auth.module.ts
-    auth.module.spec.ts                # Module compilation test
+    auth.module.integration-spec.ts    # Module compilation test (real DB via TypeOrmModule.forRoot)
+  mail/
+    mail.module.ts
+    mail.module.spec.ts                # Module compilation test (no real connection)
 test/
   users.e2e-spec.ts                    # E2E tests for /users
   auth.e2e-spec.ts                     # E2E tests for /auth
@@ -39,11 +42,14 @@ test/
 All commands run inside the Docker container:
 
 ```bash
-# Unit + integration tests (all *.spec.ts in src/)
+# Unit + integration tests (all *.spec.ts and *.integration-spec.ts in src/)
 docker compose -f nestjs-project/compose.yaml exec nestjs-api npm test
 
 # Unit + integration tests in watch mode
 docker compose -f nestjs-project/compose.yaml exec nestjs-api npm run test:watch
+
+# Integration tests only (*.integration-spec.ts)
+docker compose -f nestjs-project/compose.yaml exec nestjs-api npm run test:integration
 
 # E2E tests
 docker compose -f nestjs-project/compose.yaml exec nestjs-api npm run test:e2e
