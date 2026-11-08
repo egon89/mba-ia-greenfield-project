@@ -12,33 +12,44 @@
 
 | Scenario | Layer | Why |
 |---|---|---|
-| Module with configured imports (TypeORM, JWT, Bull, Throttler, etc.) | **Unit** (compilation test) | DI wiring errors are runtime-only; TypeScript cannot catch missing imports |
+| Module with configured imports, compiled **without** real infrastructure (JWT, Mailer, S3 client, BullMQ shared config only, Throttler, etc.) | **Unit** (compilation test, `*.module.spec.ts`) | DI wiring errors are runtime-only; TypeScript cannot catch missing imports |
+| Module whose compilation test imports `TypeOrmModule.forRoot`, connects to Redis/BullMQ (registered queues, workers) or any other real service | **Integration** (compilation test, `*.module.integration-spec.ts`) | Same DI concern, but the test opens a real connection — `nestjs-project/CLAUDE.md` forbids real I/O in `*.spec.ts` |
 | Simple module with only local providers and no configured imports | **Skip** | If the module only registers plain services/controllers, DI errors will surface in other tests |
+
+**The suffix follows the real I/O, not the artifact type.** A compilation test is Unit only while nothing in it opens a connection; as soon as it needs a real database, Redis or another service, it is an Integration test and must be named `*.module.integration-spec.ts`.
 
 **Critical:** Module compilation tests are NOT wiring tests. They verify that the DI container can resolve all dependencies — a real runtime concern that TypeScript's type system cannot check.
 
 ## Setup pattern
 
-```typescript
-// users.module.spec.ts
-import { Test } from '@nestjs/testing';
-import { UsersModule } from './users.module';
+**Unit — no real infrastructure** (e.g., `MailModule`, `StorageModule`, `QueueModule`):
 
-describe('UsersModule', () => {
+```typescript
+// mail.module.spec.ts
+import { Test } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import mailConfig from '../config/mail.config';
+import { MailModule } from './mail.module';
+
+describe('MailModule', () => {
   it('should compile successfully', async () => {
     const module = await Test.createTestingModule({
-      imports: [UsersModule],
+      imports: [
+        ConfigModule.forRoot({ isGlobal: true, load: [mailConfig] }),
+        MailModule,
+      ],
     }).compile();
 
     expect(module).toBeDefined();
+    await module.close();
   });
 });
 ```
 
-**For modules with database dependencies** (TypeORM):
+**Integration — modules with database dependencies** (TypeORM; same applies to Redis/BullMQ queues):
 
 ```typescript
-// users.module.spec.ts
+// users.module.integration-spec.ts
 import { Test } from '@nestjs/testing';
 import { UsersModule } from './users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -102,10 +113,12 @@ describe('VideosModule', () => {
 
 ## Examples from project
 
-Currently only `AppModule` exists (basic, no configured imports — skip).
-
-When domain modules are created, each module with configured imports needs a compilation test:
-- **UsersModule** [TypeOrmModule.forFeature([User])] → compilation test
-- **AuthModule** [JwtModule.register(), PassportModule] → compilation test
-- **VideosModule** [TypeOrmModule.forFeature([Video]), BullModule.registerQueue()] → compilation test
-- **ChannelsModule** [TypeOrmModule.forFeature([Channel])] → compilation test
+- **Unit** (`*.module.spec.ts`) — no real connection:
+  - `MailModule` [MailerModule.forRootAsync] — builds the transport, does not connect
+  - `StorageModule` — instantiates the S3 clients only
+  - `QueueModule` [BullModule.forRootAsync] — only builds the shared BullMQ config
+- **Integration** (`*.module.integration-spec.ts`) — `TypeOrmModule.forRoot` and/or registered BullMQ queues:
+  - `UsersModule`, `AuthModule`, `ChannelsModule`
+  - `VideosModule`, `VideoProcessingModule` (DB + queues)
+  - `WorkerModule` (initializes the `DataSource` and the queues)
+- **Skip:** `AppModule` — covered by the E2E suites

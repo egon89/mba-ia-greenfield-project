@@ -85,7 +85,7 @@ describe('AuthService (unit)', () => {
 ## Setup pattern — Integration test (DB contract)
 
 ```typescript
-// users.service.integration.spec.ts
+// users.service.integration-spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';

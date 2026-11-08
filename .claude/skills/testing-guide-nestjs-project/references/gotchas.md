@@ -130,7 +130,7 @@ await dataSource.query(`DELETE FROM "${tableName}"`);
 
 **Rule of thumb:**
 - **E2E** (`*.e2e-spec.ts`): `imports: [AppModule]` → full app, real HTTP stack
-- **Integration** (`*.integration.spec.ts`): `imports: [TypeOrmModule.forRoot(...), TypeOrmModule.forFeature([Entity])]` + specific providers
+- **Integration** (`*.integration-spec.ts`): `imports: [TypeOrmModule.forRoot(...), TypeOrmModule.forFeature([Entity])]` + specific providers
 - **Unit** (`*.spec.ts`): `providers: [ServiceUnderTest, { provide: Dep, useValue: mock }]` — no module imports
 
 ---
