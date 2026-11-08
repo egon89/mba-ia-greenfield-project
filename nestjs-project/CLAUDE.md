@@ -7,7 +7,7 @@
 After starting infrastructure, always confirm the containers are up before proceeding:
 
 ```bash
-docker compose ps   # all services must show status "running"
+docker compose ps   # all services must show status "running"; video-worker must show "(healthy)"
 ```
 
 Then verify each infrastructure service is actually ready to accept connections — not just running:
@@ -16,7 +16,9 @@ Then verify each infrastructure service is actually ready to accept connections 
 - **Redis:** `docker compose exec redis redis-cli ping` — expect `PONG`
 - **Storage bucket:** `docker compose ps -a storage-init` — the one-shot `storage-init` must have exited with code `0`
 
-**Exception — `video-worker`:** the video worker (`src/worker.ts`, script `start:worker:dev`) is part of the infrastructure and **does** start on `docker compose up`, so videos are processed after upload with no manual step. Check it with `docker compose logs video-worker` (expect `Video worker started`); it opens no HTTP port. Dependencies must be installed (`docker compose exec nestjs-api npm install`) before the first `up`, otherwise `video-worker` restarts in a loop (`restart: unless-stopped`).
+**Exception — `video-worker`:** the video worker (`src/worker.ts`, script `start:worker:dev`) is part of the infrastructure and **does** start on `docker compose up`, so videos are processed after upload with no manual step. Check it with `docker compose ps video-worker` — expect `(healthy)` (the healthcheck runs `pgrep -f dist/worker`; it can show `(health: starting)` for up to 120 s on the first `up`, while `npm install`/compilation finish) — and `docker compose logs video-worker` (expect `Video worker started`); it opens no HTTP port. `(unhealthy)` means the worker process died while the container stayed up (the `nest start --watch` parent survives it): recover with `docker compose restart video-worker`. Dependencies must be installed (`docker compose exec nestjs-api npm install`) before the first `up`, otherwise `video-worker` restarts in a loop (`restart: unless-stopped`).
+
+**Restart policy:** `video-worker`, `db`, `redis` and `storage` use `restart: unless-stopped`, so they come back together when the machine (or the Docker daemon) restarts. `storage-init` (one-shot), `nestjs-api` (idle) and `mailpit` do not; run `docker compose up -d` after a reboot to bring them back.
 
 Only start the NestJS dev server (`npm run start:dev`) when the user **explicitly** asks to run the application — never as part of "start the environment".
 
@@ -37,11 +39,11 @@ docker compose exec nestjs-api npm run start:dev
 
 Services:
 - `nestjs-api` — NestJS API, port `3000` (idle container; the API starts only on `npm run start:dev`)
-- `video-worker` — same image and code, running the worker entrypoint (`npm run start:worker:dev`); starts with `up`, no port
-- `db` — PostgreSQL 17, port `5432`, database `streamtube`, user/password `streamtube`
+- `video-worker` — same image and code, running the worker entrypoint (`npm run start:worker:dev`); starts with `up`, no port; `restart: unless-stopped`; healthy when `docker compose ps` shows `(healthy)` (`unhealthy` = worker stopped → `docker compose restart video-worker`)
+- `db` — PostgreSQL 17 (`restart: unless-stopped`), port `5432`, database `streamtube`, user/password `streamtube`
 - `mailpit` — SMTP capture for transactional emails: SMTP on port `1025`, web UI on `8025`
-- `redis` — Redis 7 (BullMQ backend), port `6379`, AOF on and `maxmemory-policy noeviction`; ready when `docker compose exec redis redis-cli ping` returns `PONG`
-- `storage` — RustFS (S3-compatible object storage), port `9000`; healthcheck on `/health`
+- `redis` — Redis 7 (BullMQ backend, `restart: unless-stopped`), port `6379`, AOF on and `maxmemory-policy noeviction`; ready when `docker compose exec redis redis-cli ping` returns `PONG`
+- `storage` — RustFS (S3-compatible object storage, `restart: unless-stopped`), port `9000`; healthcheck on `/health`
 - `storage-init` — one-shot AWS CLI container: creates the `S3_BUCKET` bucket (idempotent) and applies `docker/storage/cors.json`; must exit with code `0` (`docker compose ps -a storage-init`)
 
 All verification and teardown commands run on the **host machine**:
@@ -185,6 +187,7 @@ Every `/videos` route requires a valid access token (global `JwtAuthGuard`), and
 
 - Entrypoint `src/worker.ts` → `WorkerModule` (no HTTP server). Started by the `video-worker` service with `npm run start:worker:dev`; `npm run build` emits `dist/worker.js` (`npm run start:worker:prod`).
 - Runs on `docker compose up`; logs `Video worker started` (`docker compose logs video-worker`).
+- Healthcheck: `pgrep -f dist/worker` (every 30 s, 3 retries, `start_period` 120 s). The container's main process is `nest start --watch`, which keeps running if the worker child dies, so `docker compose ps` shows `(unhealthy)` instead of a stopped container. Recover with `docker compose restart video-worker`.
 - Uses `ffprobe` (metadata) and `ffmpeg` (thumbnail), both installed in the image (`Dockerfile.dev`). The video ends as `ready`, or `failed` with `invalid_media` / `processing_failed`.
 
 ### Storage (RustFS in dev, S3 in production)
